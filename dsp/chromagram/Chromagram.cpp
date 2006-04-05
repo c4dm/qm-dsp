@@ -1,0 +1,146 @@
+/* -*- c-basic-offset: 4 indent-tabs-mode: nil -*-  vi:set ts=8 sts=4 sw=4: */
+
+/*
+    QM DSP Library
+
+    Centre for Digital Music, Queen Mary, University of London.
+    This file copyright 2005-2006 Christian Landone.
+    All rights reserved.
+*/
+
+#include <iostream>
+#include <cmath>
+#include "dsp/maths/MathUtilities.h"
+#include "Chromagram.h"
+
+//----------------------------------------------------------------------------
+
+Chromagram::Chromagram( ChromaConfig Config ) 
+{
+    initialise( Config );
+}
+
+int Chromagram::initialise( ChromaConfig Config )
+{	
+    m_FMin = Config.min;		// min freq
+    m_FMax = Config.max;		// max freq
+    m_BPO  = Config.BPO;		// bins per octave
+    isNormalised = Config.isNormalised; // true if frame normalisation is required
+
+    // No. of constant Q bins
+    m_uK = ( unsigned int ) ceil( m_BPO * log(m_FMax/m_FMin)/log(2.0));	
+
+    // Create array for chroma result
+    m_chromadata = new double[ m_BPO ];
+
+    // Initialise FFT object	
+    m_FFT = new FFT;
+
+    // Create Config Structure for ConstantQ operator
+    CQConfig ConstantQConfig;
+
+    // Populate CQ config structure with parameters
+    // inherited from the Chroma config
+    ConstantQConfig.FS	 = Config.FS;
+    ConstantQConfig.min = m_FMin;
+    ConstantQConfig.max = m_FMax;
+    ConstantQConfig.BPO = m_BPO;
+    ConstantQConfig.CQThresh = Config.CQThresh;
+	
+    // Initialise ConstantQ operator
+    m_ConstantQ = new ConstantQ( ConstantQConfig );
+
+    // Initialise working arrays
+    m_frameSize = m_ConstantQ->getfftlength();
+    m_hopSize = m_ConstantQ->gethop();
+
+    m_FFTRe = new double[ m_frameSize ];
+    m_FFTIm = new double[ m_frameSize ];
+    m_CQRe  = new double[ m_uK ];
+    m_CQIm  = new double[ m_uK ];
+
+    // Generate CQ Kernel 
+    m_ConstantQ->sparsekernel();
+    return 1;
+}
+
+Chromagram::~Chromagram()
+{
+    deInitialise();
+}
+
+int Chromagram::deInitialise()
+{
+    delete [] m_chromadata;
+
+    delete m_FFT;
+
+    delete m_ConstantQ;
+
+    delete [] m_FFTRe;
+    delete [] m_FFTIm;
+    delete [] m_CQRe;
+    delete [] m_CQIm;
+    return 1;
+}
+
+//----------------------------------------------------------------------------------
+// returns the absolute value of complex number xx + i*yy
+double Chromagram::kabs(double xx, double yy)
+{
+    double ab = sqrt(xx*xx + yy*yy);
+    return(ab);
+}
+//-----------------------------------------------------------------------------------
+
+
+void Chromagram::unityNormalise(double *src)
+{
+    double min, max;
+
+    double val = 0;
+
+    MathUtilities::getFrameMinMax( src, m_BPO, & min, &max );
+
+    for( unsigned int i = 0; i < m_BPO; i++ )
+    {
+	val = src[ i ] / max;
+
+	src[ i ] = val;
+    }
+}
+
+
+double* Chromagram::process( double *data )
+{
+    //initialise chromadata to 0
+    for (unsigned i=0; i<m_BPO; i++) 
+	m_chromadata[i]=0;
+
+    double cmax = 0.0;
+    double cval = 0;
+
+    // FFT of current frame
+    m_FFT->process( m_frameSize, 0, data, NULL, m_FFTRe, m_FFTIm ); 
+
+    // Calculate ConstantQ frame
+    m_ConstantQ->process( m_FFTRe, m_FFTIm, m_CQRe, m_CQIm );
+	
+    // add each octave of cq data into Chromagram
+    const unsigned octaves = (int)floor(double( m_uK/m_BPO))-1;
+    for (unsigned octave=0; octave<=octaves; octave++) 
+    {
+	unsigned firstBin = octave*m_BPO;
+	for (unsigned i=0; i<m_BPO; i++) 
+	{
+	    m_chromadata[i] += kabs( m_CQRe[ firstBin + i ], m_CQIm[ firstBin + i ]);
+	}
+    }
+
+    if( isNormalised )
+	unityNormalise( m_chromadata );
+
+    return m_chromadata;
+}
+
+

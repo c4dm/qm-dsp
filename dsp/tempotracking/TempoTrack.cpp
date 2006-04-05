@@ -1,0 +1,774 @@
+/* -*- c-basic-offset: 4 indent-tabs-mode: nil -*-  vi:set ts=8 sts=4 sw=4: */
+
+/*
+    QM DSP Library
+
+    Centre for Digital Music, Queen Mary, University of London.
+    This file copyright 2005-2006 Christian Landone.
+    All rights reserved.
+*/
+
+#include "TempoTrack.h"
+
+#include "dsp/maths/MathAliases.h"
+#include "dsp/maths/MathUtilities.h"
+
+
+//////////////////////////////////////////////////////////////////////
+// Construction/Destruction
+//////////////////////////////////////////////////////////////////////
+
+TempoTrack::TempoTrack( TTParams Params )
+{
+    m_tempoScratch = NULL;
+    m_rawDFFrame = NULL;
+    m_smoothDFFrame = NULL;
+    m_frameACF = NULL;
+
+    m_dataLength = 0;
+    m_winLength = 0;
+    m_lagLength = 0;
+
+    m_rayparam = 0;
+    m_sigma = 0;
+    m_DFWVNnorm = 0;
+
+    initialise( Params );
+}
+
+TempoTrack::~TempoTrack()
+{
+    deInitialise();
+}
+
+void TempoTrack::initialise( TTParams Params )
+{	
+    m_winLength = Params.winLength;
+    m_lagLength = Params.lagLength;
+
+    m_rayparam	 = 43.0;
+    m_sigma = sqrt(3.9017);
+    m_DFWVNnorm = exp( ( log( 2.0 ) / m_rayparam ) * ( m_winLength + 2 ) );
+
+    m_rawDFFrame = new double[ m_winLength ];
+    m_smoothDFFrame = new double[ m_winLength ];
+    m_frameACF = new double[ m_winLength ];
+    m_tempoScratch = new double[ m_lagLength ];
+
+    unsigned int winPre = Params.WinT.pre;
+    unsigned int winPost = Params.WinT.post;
+
+    m_DFFramer.configure( m_winLength, m_lagLength );
+	
+    m_DFPParams.length = m_winLength;
+    m_DFPParams.AlphaNormParam = Params.alpha;
+    m_DFPParams.LPOrd = Params.LPOrd;
+    m_DFPParams.LPACoeffs = Params.LPACoeffs;
+    m_DFPParams.LPBCoeffs = Params.LPBCoeffs;
+    m_DFPParams.winPre = Params.WinT.pre;
+    m_DFPParams.winPost = Params.WinT.post;
+    m_DFPParams.isMedianPositive = true;
+	
+    m_DFConditioning = new DFProcess( m_DFPParams );
+
+}
+
+void TempoTrack::deInitialise()
+{	
+    delete [] m_rawDFFrame;
+	
+    delete [] m_smoothDFFrame;
+	
+    delete [] m_frameACF;
+
+    delete [] m_tempoScratch;
+
+    delete m_DFConditioning;
+}
+
+void TempoTrack::createCombFilter(double* Filter, unsigned int winLength, unsigned int TSig, double beatLag)
+{
+    unsigned int i;
+
+    if( beatLag == 0 )
+    {
+	for( i = 0; i < winLength; i++ )
+	{    
+	    Filter[ i ] = ( ( i + 1 ) / pow( m_rayparam, 2.0) ) * exp( ( -pow(( i + 1 ),2.0 ) / ( 2.0 * pow( m_rayparam, 2.0))));
+	}
+    }
+    else
+    {	
+	m_sigma = beatLag/8;
+	for( i = 0; i < winLength; i++ )
+	{
+	    double dlag = (double)(i+1) - beatLag;
+	    Filter[ i ] =  exp(-0.5 * pow(( dlag / m_sigma), 2.0) ) / (sqrt( 2 * PI) * m_sigma);
+	}
+    }
+}
+
+double TempoTrack::tempoMM(double* ACF, double* weight, int tsig)
+{
+
+    double period = 0;
+    double maxValRCF = 0.0;
+    unsigned int maxIndexRCF = 0;
+
+    double* pdPeaks;
+
+    unsigned int maxIndexTemp;
+    double	maxValTemp;
+    unsigned int count; 
+	
+    unsigned int numelem;
+    int i, a, b;
+
+    for( i = 0; i < m_lagLength; i++ )
+	m_tempoScratch[ i ] = 0.0;
+
+    if( tsig == 0 ) 
+    {
+	//if time sig is unknown, use metrically unbiased version of Filterbank
+	numelem = 4;
+    }
+    else
+    {
+	numelem = tsig;
+    }
+
+    for(i=1;i<m_lagLength-1;i++)
+    {
+	//first and last output values are left intentionally as zero
+	for (a=1;a<=numelem;a++)
+	{
+	    for(b=(1-a);b<a;b++)
+	    {
+		if( tsig == 0 )
+		{					
+		    m_tempoScratch[i] += ACF[a*(i+1)+b-1] * (1.0 / (2.0 * (double)a-1)) * weight[i];
+		}
+		else
+		{
+		    m_tempoScratch[i] += ACF[a*(i+1)+b-1] * 1 * weight[i];
+		}
+	    }
+	}
+    }
+
+
+    //NOW FIND MAX INDEX OF ACFOUT
+    for( i = 0; i < m_lagLength; i++)
+    {
+	if( m_tempoScratch[ i ] > maxValRCF)
+	{
+	    maxValRCF = m_tempoScratch[ i ];
+	    maxIndexRCF = i;
+	}
+    }
+	
+    if( tsig == 0 )
+	tsig = 4;
+
+	
+    if( tsig == 4 )
+    {
+	pdPeaks = new double[ 4 ];
+	for( i = 0; i < 4; i++ ){ pdPeaks[ i ] = 0.0;}
+
+	pdPeaks[ 0 ] = ( double )maxIndexRCF + 1;
+
+	maxIndexTemp = 0;
+	maxValTemp = 0.0;
+	count = 0;
+
+	for( i = (2 * maxIndexRCF + 1) - 1; i < (2 * maxIndexRCF + 1) + 2; i++ )
+	{
+	    if( ACF[ i ] > maxValTemp )
+	    {
+		maxValTemp = ACF[ i ];
+		maxIndexTemp = count;
+	    }
+	    count++;
+	}
+	pdPeaks[ 1 ] = (double)( maxIndexTemp + 1 + ( (2 * maxIndexRCF + 1 ) - 2 ) + 1 )/2;
+
+	maxIndexTemp = 0;
+	maxValTemp = 0.0;
+	count = 0;
+
+	for( i = (3 * maxIndexRCF + 2 ) - 2; i < (3 * maxIndexRCF + 2 ) + 3; i++ )
+	{
+	    if( ACF[ i ] > maxValTemp )
+	    {
+		maxValTemp = ACF[ i ];
+		maxIndexTemp = count;
+	    }
+	    count++;
+	}
+	pdPeaks[ 2 ] = (double)( maxIndexTemp + 1 + ( (3 * maxIndexRCF + 2) - 4 ) + 1 )/3;
+
+	maxIndexTemp = 0;
+	maxValTemp = 0.0;
+	count = 0;
+
+	for( i = ( 4 * maxIndexRCF + 3) - 3; i < ( 4 * maxIndexRCF + 3) + 4; i++ )
+	{
+	    if( ACF[ i ] > maxValTemp )
+	    {
+		maxValTemp = ACF[ i ];
+		maxIndexTemp = count;
+	    }
+	    count++;
+	}
+	pdPeaks[ 3 ] = (double)( maxIndexTemp + 1 + ( (4 * maxIndexRCF + 3) - 9 ) + 1 )/4 ;
+
+
+	period = MathUtilities::mean( pdPeaks, 4 );
+    }
+    else
+    {
+	pdPeaks = new double[ 3 ];
+	for( i = 0; i < 3; i++ ){ pdPeaks[ i ] = 0.0;}
+
+	pdPeaks[ 0 ] = ( double )maxIndexRCF + 1;
+
+	maxIndexTemp = 0;
+	maxValTemp = 0.0;
+	count = 0;
+
+	for( i = (2 * maxIndexRCF + 1) - 1; i < (2 * maxIndexRCF + 1) + 2; i++ )
+	{
+	    if( ACF[ i ] > maxValTemp )
+	    {
+		maxValTemp = ACF[ i ];
+		maxIndexTemp = count;
+	    }
+	    count++;
+	}
+	pdPeaks[ 1 ] = (double)( maxIndexTemp + 1 + ( (2 * maxIndexRCF + 1 ) - 2 ) + 1 )/2;
+
+	maxIndexTemp = 0;
+	maxValTemp = 0.0;
+	count = 0;
+
+	for( i = (3 * maxIndexRCF + 2 ) - 2; i < (3 * maxIndexRCF + 2 ) + 3; i++ )
+	{
+	    if( ACF[ i ] > maxValTemp )
+	    {
+		maxValTemp = ACF[ i ];
+		maxIndexTemp = count;
+	    }
+	    count++;
+	}
+	pdPeaks[ 2 ] = (double)( maxIndexTemp + 1 + ( (3 * maxIndexRCF + 2) - 4 ) + 1 )/3;
+
+
+	period = MathUtilities::mean( pdPeaks, 3 );
+    }
+
+    delete [] pdPeaks;
+
+    return period;
+}
+
+void TempoTrack::stepDetect( double* periodP, double* periodG, int currentIdx, int* flag )
+{
+    double stepthresh = 1 * 3.9017;
+
+    if( *flag )
+    {
+	if(abs(periodG[ currentIdx ] - periodP[ currentIdx ]) > stepthresh)
+	{
+	    // do nuffin'
+	}
+    }
+    else
+    {
+	if(fabs(periodG[ currentIdx ]-periodP[ currentIdx ]) > stepthresh)
+	{
+	    *flag = 3;
+	}
+    }
+}
+
+void TempoTrack::constDetect( double* periodP, int currentIdx, int* flag )
+{
+    double constthresh = 2 * 3.9017;
+
+    if( fabs( 2 * periodP[ currentIdx ] - periodP[ currentIdx - 1] - periodP[ currentIdx - 2] ) < constthresh)
+    {
+	*flag = 1;
+    }
+    else
+    {
+	*flag = 0;
+    }
+}
+
+int TempoTrack::findMeter(double *ACF, unsigned int len, double period)
+{
+    int i;
+    int p = (int)MathUtilities::round( period );
+    int tsig;
+
+    double Energy_3 = 0.0;
+    double Energy_4 = 0.0;
+
+    double temp3A = 0.0;
+    double temp3B = 0.0;
+    double temp4A = 0.0;
+    double temp4B = 0.0;
+
+    double* dbf = new double[ len ]; int t = 0;
+    for( unsigned int u = 0; u < len; u++ ){ dbf[ u ] = 0.0; }
+
+    if( (double)len < 6 * p + 2 )
+    {
+	for( i = ( 3 * p - 2 ); i < ( 3 * p + 2 ) + 1; i++ )
+	{
+	    temp3A += ACF[ i ];
+	    dbf[ t++ ] = ACF[ i ];
+	}
+	
+	for( i = ( 4 * p - 2 ); i < ( 4 * p + 2 ) + 1; i++ )
+	{
+	    temp4A += ACF[ i ];
+	}
+
+	Energy_3 = temp3A;
+	Energy_4 = temp4A;
+    }
+    else
+    {
+	for( i = ( 3 * p - 2 ); i < ( 3 * p + 2 ) + 1; i++ )
+	{
+	    temp3A += ACF[ i ];
+	}
+	
+	for( i = ( 4 * p - 2 ); i < ( 4 * p + 2 ) + 1; i++ )
+	{
+	    temp4A += ACF[ i ];
+	}
+
+	for( i = ( 6 * p - 2 ); i < ( 6 * p + 2 ) + 1; i++ )
+	{
+	    temp3B += ACF[ i ];
+	}
+	
+	for( i = ( 2 * p - 2 ); i < ( 2 * p + 2 ) + 1; i++ )
+	{
+	    temp4B += ACF[ i ];
+	}
+
+	Energy_3 = temp3A + temp3B;
+	Energy_4 = temp4A + temp4B;
+    }
+
+    if (Energy_3 > Energy_4)
+    {
+	tsig = 3;
+    }
+    else
+    {
+	tsig = 4;
+    }
+
+
+    return tsig;
+}
+
+void TempoTrack::createPhaseExtractor(double *Filter, unsigned int winLength, double period, unsigned int fsp, unsigned int lastBeat)
+{	
+    int p = (int)MathUtilities::round( period );
+    int predictedOffset = 0;
+
+    double* phaseScratch = new double[ p*2 ];
+
+	
+    if( lastBeat != 0 )
+    {
+	lastBeat = (int)MathUtilities::round((double)lastBeat );///(double)winLength);
+
+	    predictedOffset = lastBeat + p - fsp;
+
+	    if (predictedOffset < 0) 
+	    {
+		lastBeat = 0;
+	    }
+    }
+
+    if( lastBeat != 0 )
+    {
+	int mu = p;
+	double sigma = (double)p/4;
+	double PhaseMin = 0.0;
+	double PhaseMax = 0.0;
+	unsigned int scratchLength = p*2;
+	double temp = 0.0;
+
+	for(  int i = 0; i < scratchLength; i++ )
+	{
+	    phaseScratch[ i ] = exp( -0.5 * pow( ( i - mu ) / sigma, 2 ) ) / ( sqrt( 2*PI ) *sigma );
+	}
+
+	MathUtilities::getFrameMinMax( phaseScratch, scratchLength, &PhaseMin, &PhaseMax );
+			
+	for(int i = 0; i < scratchLength; i ++)
+	{
+	    temp = phaseScratch[ i ];
+	    phaseScratch[ i ] = (temp - PhaseMin)/PhaseMax;
+	}
+
+	unsigned int index = 0;
+	for(int i = p - ( predictedOffset - 1); i < p + ( p - predictedOffset) + 1; i++)
+	{
+	    Filter[ index++ ] = phaseScratch[ i ];
+	}
+    }
+    else
+    {
+	for( int i = 0; i < p; i ++)
+	{
+	    Filter[ i ] = 1;
+	}
+    }
+	
+    delete [] phaseScratch;
+}
+
+int TempoTrack::phaseMM(double *DF, double *weighting, unsigned int winLength, double period)
+{
+    int alignment = 0;
+    int p = (int)MathUtilities::round( period );
+
+    double temp = 0.0;
+
+    double* y = new double[ winLength ];
+    double* align = new double[ p ];
+
+    for( int i = 0; i < winLength; i++ )
+    {	
+	y[ i ] = (double)( -i + winLength  )/(double)winLength;
+    }
+
+    for( int o = 0; o < p; o++ )
+    { 
+	temp = 0.0;
+	for(int i = 1 + (o - 1); i< winLength; i += (p + 1))
+	{
+	    temp = temp + DF[ i ] * y[ i ]; 
+	}
+	align[ o ] = temp * weighting[ o ];       
+    }
+
+
+    double valTemp = 0.0;
+    for(int i = 0; i < p; i++)
+    {
+	if( align[ i ] > valTemp )
+	{
+	    valTemp = align[ i ];
+	    alignment = i;
+	}
+    }
+
+    delete [] y;
+    delete [] align;
+
+    return alignment;
+}
+
+int TempoTrack::beatPredict(unsigned int FSP0, double alignment, double period, unsigned int step )
+{
+    int beat = 0;
+
+    int p = (int)MathUtilities::round( period );
+    int align = (int)MathUtilities::round( alignment );
+    int FSP = (int)MathUtilities::round( FSP0 );
+
+    int FEP = FSP + ( step );
+
+    beat = FSP + align;
+
+    m_beats.push_back( beat );
+
+    while( beat + p < FEP )
+    {
+	beat += p;
+		
+	m_beats.push_back( beat );
+    }
+
+    return beat;
+}
+
+vector<int> TempoTrack::process(double *DF, unsigned int length)
+{
+    m_dataLength = length;
+	
+    double	period = 0.0;
+    int stepFlag = 0;
+    int constFlag = 0;
+    int FSP = 0;
+    int tsig = 0;
+    int lastBeat = 0;
+
+	
+    double* RW = new double[ m_lagLength ];
+    for( unsigned int clear = 0; clear < m_lagLength; clear++){ RW[ clear ] = 0.0;}
+
+    double* GW = new double[ m_lagLength ];
+    for(unsigned int clear = 0; clear < m_lagLength; clear++){ GW[ clear ] = 0.0;}
+
+    double* PW = new double[ m_lagLength ];
+    for(unsigned int clear = 0; clear < m_lagLength; clear++){ PW[ clear ] = 0.0;}
+
+    m_DFFramer.setSource( DF, m_dataLength );
+
+    unsigned int TTFrames = m_DFFramer.getMaxNoFrames();
+	
+    double* periodP = new double[ TTFrames ];
+    for(unsigned int  clear = 0; clear < TTFrames; clear++){ periodP[ clear ] = 0.0;}
+	
+    double* periodG = new double[ TTFrames ];
+    for(unsigned int  clear = 0; clear < TTFrames; clear++){ periodG[ clear ] = 0.0;}
+	
+    double* alignment = new double[ TTFrames ];
+    for(unsigned int  clear = 0; clear < TTFrames; clear++){ alignment[ clear ] = 0.0;}
+
+    m_beats.clear();
+
+    createCombFilter( RW, m_lagLength, 0, 0 );
+
+    int TTLoopIndex = 0;
+
+    for( unsigned int i = 0; i < TTFrames; i++ )
+    {
+	m_DFFramer.getFrame( m_rawDFFrame );
+
+	m_DFConditioning->process( m_rawDFFrame, m_smoothDFFrame );
+
+	m_correlator.doAutoUnBiased( m_smoothDFFrame, m_frameACF, m_winLength );
+		
+	periodP[ TTLoopIndex ] = tempoMM( m_frameACF, RW, 0 );
+
+	if( GW[ 0 ] != 0 )
+	{
+	    periodG[ TTLoopIndex ] = tempoMM( m_frameACF, GW, tsig );
+	}
+	else
+	{
+	    periodG[ TTLoopIndex ] = 0.0;
+	}
+
+	stepDetect( periodP, periodG, TTLoopIndex, &stepFlag );
+
+	if( stepFlag == 1)
+	{
+	    constDetect( periodP, TTLoopIndex, &constFlag );
+	    stepFlag = 0;
+	}
+	else
+	{
+	    stepFlag -= 1;
+	}
+
+	if( stepFlag < 0 )
+	{
+	    stepFlag = 0;
+	}
+
+	if( constFlag != 0)
+	{
+	    tsig = findMeter( m_frameACF, m_winLength, periodP[ TTLoopIndex ] );
+	
+	    createCombFilter( GW, m_lagLength, tsig, periodP[ TTLoopIndex ] );
+			
+	    periodG[ TTLoopIndex ] = tempoMM( m_frameACF, GW, tsig ); 
+
+	    period = periodG[ TTLoopIndex ];
+
+	    createPhaseExtractor( PW, m_winLength, period, FSP, 0 ); 
+
+	    constFlag = 0;
+
+	}
+	else
+	{
+	    if( GW[ 0 ] != 0 )
+	    {
+		period = periodG[ TTLoopIndex ];
+		createPhaseExtractor( PW, m_winLength, period, FSP, lastBeat ); 
+
+	    }
+	    else
+	    {
+		period = periodP[ TTLoopIndex ];
+		createPhaseExtractor( PW, m_winLength, period, FSP, 0 ); 
+	    }
+	}
+
+	alignment[ TTLoopIndex ] = phaseMM( m_rawDFFrame, PW, m_winLength, period ); 
+
+	lastBeat = beatPredict(FSP, alignment[ TTLoopIndex ], period, m_lagLength );
+
+	FSP += (m_lagLength);
+
+	TTLoopIndex++;
+    }
+
+
+    delete [] periodP;
+    delete [] periodG;
+    delete [] alignment;
+
+    delete [] RW;
+    delete [] GW;
+    delete [] PW;
+
+    return m_beats;
+}
+
+
+
+
+
+vector<int> TempoTrack::process( vector <double> DF )
+{
+    m_dataLength = DF.size();
+	
+    double	period = 0.0;
+    int stepFlag = 0;
+    int constFlag = 0;
+    int FSP = 0;
+    int tsig = 0;
+    int lastBeat = 0;
+
+    vector <double> causalDF;
+
+    causalDF = DF;
+
+    //Prepare Causal Extension DFData
+    unsigned int DFCLength = m_dataLength + m_winLength;
+	
+    for( unsigned int j = 0; j < m_winLength; j++ )
+    {
+	causalDF.push_back( 0 );
+    }
+	
+	
+    double* RW = new double[ m_lagLength ];
+    for( unsigned int clear = 0; clear < m_lagLength; clear++){ RW[ clear ] = 0.0;}
+
+    double* GW = new double[ m_lagLength ];
+    for(unsigned int clear = 0; clear < m_lagLength; clear++){ GW[ clear ] = 0.0;}
+
+    double* PW = new double[ m_lagLength ];
+    for(unsigned clear = 0; clear < m_lagLength; clear++){ PW[ clear ] = 0.0;}
+
+    m_DFFramer.setSource( &causalDF[0], m_dataLength );
+
+    unsigned int TTFrames = m_DFFramer.getMaxNoFrames();
+	
+    double* periodP = new double[ TTFrames ];
+    for(unsigned clear = 0; clear < TTFrames; clear++){ periodP[ clear ] = 0.0;}
+	
+    double* periodG = new double[ TTFrames ];
+    for(unsigned clear = 0; clear < TTFrames; clear++){ periodG[ clear ] = 0.0;}
+	
+    double* alignment = new double[ TTFrames ];
+    for(unsigned clear = 0; clear < TTFrames; clear++){ alignment[ clear ] = 0.0;}
+
+    m_beats.clear();
+
+    createCombFilter( RW, m_lagLength, 0, 0 );
+
+    int TTLoopIndex = 0;
+
+    for( unsigned int i = 0; i < TTFrames; i++ )
+    {
+	m_DFFramer.getFrame( m_rawDFFrame );
+
+	m_DFConditioning->process( m_rawDFFrame, m_smoothDFFrame );
+
+	m_correlator.doAutoUnBiased( m_smoothDFFrame, m_frameACF, m_winLength );
+		
+	periodP[ TTLoopIndex ] = tempoMM( m_frameACF, RW, 0 );
+
+	if( GW[ 0 ] != 0 )
+	{
+	    periodG[ TTLoopIndex ] = tempoMM( m_frameACF, GW, tsig );
+	}
+	else
+	{
+	    periodG[ TTLoopIndex ] = 0.0;
+	}
+
+	stepDetect( periodP, periodG, TTLoopIndex, &stepFlag );
+
+	if( stepFlag == 1)
+	{
+	    constDetect( periodP, TTLoopIndex, &constFlag );
+	    stepFlag = 0;
+	}
+	else
+	{
+	    stepFlag -= 1;
+	}
+
+	if( stepFlag < 0 )
+	{
+	    stepFlag = 0;
+	}
+
+	if( constFlag != 0)
+	{
+	    tsig = findMeter( m_frameACF, m_winLength, periodP[ TTLoopIndex ] );
+	
+	    createCombFilter( GW, m_lagLength, tsig, periodP[ TTLoopIndex ] );
+			
+	    periodG[ TTLoopIndex ] = tempoMM( m_frameACF, GW, tsig ); 
+
+	    period = periodG[ TTLoopIndex ];
+
+	    createPhaseExtractor( PW, m_winLength, period, FSP, 0 ); 
+
+	    constFlag = 0;
+
+	}
+	else
+	{
+	    if( GW[ 0 ] != 0 )
+	    {
+		period = periodG[ TTLoopIndex ];
+		createPhaseExtractor( PW, m_winLength, period, FSP, lastBeat ); 
+
+	    }
+	    else
+	    {
+		period = periodP[ TTLoopIndex ];
+		createPhaseExtractor( PW, m_winLength, period, FSP, 0 ); 
+	    }
+	}
+
+	alignment[ TTLoopIndex ] = phaseMM( m_rawDFFrame, PW, m_winLength, period ); 
+
+	lastBeat = beatPredict(FSP, alignment[ TTLoopIndex ], period, m_lagLength );
+
+	FSP += (m_lagLength);
+
+	TTLoopIndex++;
+    }
+
+
+    delete [] periodP;
+    delete [] periodG;
+    delete [] alignment;
+
+    delete [] RW;
+    delete [] GW;
+    delete [] PW;
+
+    return m_beats;
+}
