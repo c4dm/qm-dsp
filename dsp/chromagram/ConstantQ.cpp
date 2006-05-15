@@ -68,18 +68,36 @@ void ConstantQ::sparsekernel()
 	
     for (unsigned k = m_uK; k--; ) 
     {
+        for (unsigned u=0; u < m_FFTLength; u++) 
+        {
+            hammingWindowRe[u] = 0;
+            hammingWindowIm[u] = 0;
+        }
+        
 	// Computing a hamming window
 	const unsigned hammingLength = (int) ceil( m_dQ * m_FS / ( m_FMin * pow(2,((double)(k))/(double)m_BPO)));
+
+        unsigned origin = m_FFTLength/2 - hammingLength/2;
+
 	for (unsigned i=0; i<hammingLength; i++) 
 	{
 	    const double angle = 2*PI*m_dQ*i/hammingLength;
 	    const double real = cos(angle);
 	    const double imag = sin(angle);
 	    const double absol = hamming(hammingLength, i)/hammingLength;
-	    hammingWindowRe[ i ] = absol*real;
-	    hammingWindowIm[ i ] = absol*imag;
+	    hammingWindowRe[ origin + i ] = absol*real;
+	    hammingWindowIm[ origin + i ] = absol*imag;
 	}
 
+        for (unsigned i = 0; i < m_FFTLength/2; ++i) {
+            double temp = hammingWindowRe[i];
+            hammingWindowRe[i] = hammingWindowRe[i + m_FFTLength/2];
+            hammingWindowRe[i + m_FFTLength/2] = temp;
+            temp = hammingWindowIm[i];
+            hammingWindowIm[i] = hammingWindowIm[i + m_FFTLength/2];
+            hammingWindowIm[i + m_FFTLength/2] = temp;
+        }
+    
 	//do fft of hammingWindow
 	m_FFT.process( m_FFTLength, 0, hammingWindowRe, hammingWindowIm, transfHammingWindowRe, transfHammingWindowIm );
 

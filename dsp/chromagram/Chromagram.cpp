@@ -113,25 +113,29 @@ void Chromagram::unityNormalise(double *src)
 
 double* Chromagram::process( double *data )
 {
-    //initialise chromadata to 0
-    for (unsigned i=0; i<m_BPO; i++) 
-	m_chromadata[i]=0;
+    // FFT of current frame
+    m_FFT->process( m_frameSize, 0, data, NULL, m_FFTRe, m_FFTIm ); 
+
+    return process(m_FFTRe, m_FFTIm);
+}
+
+double* Chromagram::process( double *real, double *imag )
+{
+    // initialise chromadata to 0
+    for (unsigned i = 0; i < m_BPO; i++) m_chromadata[i] = 0;
 
     double cmax = 0.0;
     double cval = 0;
 
-    // FFT of current frame
-    m_FFT->process( m_frameSize, 0, data, NULL, m_FFTRe, m_FFTIm ); 
-
     // Calculate ConstantQ frame
-    m_ConstantQ->process( m_FFTRe, m_FFTIm, m_CQRe, m_CQIm );
+    m_ConstantQ->process( real, imag, m_CQRe, m_CQIm );
 	
     // add each octave of cq data into Chromagram
     const unsigned octaves = (int)floor(double( m_uK/m_BPO))-1;
-    for (unsigned octave=0; octave<=octaves; octave++) 
+    for (unsigned octave = 0; octave <= octaves; octave++) 
     {
 	unsigned firstBin = octave*m_BPO;
-	for (unsigned i=0; i<m_BPO; i++) 
+	for (unsigned i = 0; i < m_BPO; i++) 
 	{
 	    m_chromadata[i] += kabs( m_CQRe[ firstBin + i ], m_CQIm[ firstBin + i ]);
 	}

@@ -30,7 +30,8 @@ public:
     Chromagram( ChromaConfig Config );
     ~Chromagram();
 	
-    double* process( double *data );
+    double* process( double *data ); // time domain
+    double* process( double *real, double *imag ); // frequency domain
     void unityNormalise( double* src );
 
     // Complex arithmetic
@@ -56,7 +57,7 @@ private:
     unsigned int m_frameSize;
     unsigned int m_hopSize;
 
-    FFT*	 m_FFT;
+    FFT* m_FFT;
     ConstantQ* m_ConstantQ;
 
     double* m_FFTRe;
