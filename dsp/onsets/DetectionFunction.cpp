@@ -17,10 +17,9 @@
 DetectionFunction::DetectionFunction( DFConfig Config ) :
     m_window(0)
 {
-    magHistory = NULL;
-    phaseHistory = NULL;
-    phaseHistoryOld = NULL;
-    j = ComplexData( 0, 1 );
+    m_magHistory = NULL;
+    m_phaseHistory = NULL;
+    m_phaseHistoryOld = NULL;
 
     initialise( Config );
 }
@@ -37,14 +36,14 @@ void DetectionFunction::initialise( DFConfig Config )
     m_halfLength = m_dataLength/2;
     m_DFType = Config.DFType;
 
-    magHistory = new double[ m_halfLength ];
-    memset(magHistory,0, m_halfLength*sizeof(double));
+    m_magHistory = new double[ m_halfLength ];
+    memset(m_magHistory,0, m_halfLength*sizeof(double));
 		
-    phaseHistory = new double[ m_halfLength ];
-    memset(phaseHistory,0, m_halfLength*sizeof(double));
+    m_phaseHistory = new double[ m_halfLength ];
+    memset(m_phaseHistory,0, m_halfLength*sizeof(double));
 
-    phaseHistoryOld = new double[ m_halfLength ];
-    memset(phaseHistoryOld,0, m_halfLength*sizeof(double));
+    m_phaseHistoryOld = new double[ m_halfLength ];
+    memset(m_phaseHistoryOld,0, m_halfLength*sizeof(double));
 
     m_phaseVoc = new PhaseVocoder;
 
@@ -57,9 +56,9 @@ void DetectionFunction::initialise( DFConfig Config )
 
 void DetectionFunction::deInitialise()
 {
-    delete [] magHistory ;
-    delete [] phaseHistory ;
-    delete [] phaseHistoryOld ;
+    delete [] m_magHistory ;
+    delete [] m_phaseHistory ;
+    delete [] m_phaseHistoryOld ;
 
     delete m_phaseVoc;
 
@@ -72,11 +71,26 @@ void DetectionFunction::deInitialise()
 
 double DetectionFunction::process( double *TDomain )
 {
-    double retVal = 0;
-
     m_window->cut( TDomain, m_DFWindowedFrame );
 	
     m_phaseVoc->process( m_dataLength, m_DFWindowedFrame, m_magnitude, m_thetaAngle );
+
+    return runDF();
+}
+
+double DetectionFunction::process( double *magnitudes, double *phases )
+{
+    for (size_t i = 0; i < m_halfLength; ++i) {
+        m_magnitude[i] = magnitudes[i];
+        m_thetaAngle[i] = phases[i];
+    }
+
+    return runDF();
+}
+
+double DetectionFunction::runDF()
+{
+    double retVal = 0;
 
     switch( m_DFType )
     {
@@ -121,7 +135,7 @@ double DetectionFunction::specDiff(unsigned int length, double *src)
 
     for( i = 0; i < length; i++)
     {
-	temp = fabs( (src[ i ] * src[ i ]) - (magHistory[ i ] * magHistory[ i ]) );
+	temp = fabs( (src[ i ] * src[ i ]) - (m_magHistory[ i ] * m_magHistory[ i ]) );
 		
 	diff= sqrt(temp);
 
@@ -130,7 +144,7 @@ double DetectionFunction::specDiff(unsigned int length, double *src)
 	    val += diff;
 	}
 
-	magHistory[ i ] = src[ i ];
+	m_magHistory[ i ] = src[ i ];
     }
 
     return val;
@@ -148,7 +162,7 @@ double DetectionFunction::phaseDev(unsigned int length, double *srcMagnitude, do
 
     for( i = 0; i < length; i++)
     {
-	tmpPhase = (srcPhase[ i ]- 2*phaseHistory[ i ]+phaseHistoryOld[ i ]);
+	tmpPhase = (srcPhase[ i ]- 2*m_phaseHistory[ i ]+m_phaseHistoryOld[ i ]);
 	dev = MathUtilities::princarg( tmpPhase );
 		
 	if( srcMagnitude[ i  ] > 0.1)
@@ -157,8 +171,8 @@ double DetectionFunction::phaseDev(unsigned int length, double *srcMagnitude, do
 	    val += tmpVal ;
 	}
 
-	phaseHistoryOld[ i ] = phaseHistory[ i ] ;
-	phaseHistory[ i ] = srcPhase[ i ];
+	m_phaseHistoryOld[ i ] = m_phaseHistory[ i ] ;
+	m_phaseHistory[ i ] = srcPhase[ i ];
     }
 	
 	
@@ -176,22 +190,23 @@ double DetectionFunction::complexSD(unsigned int length, double *srcMagnitude, d
    
     double dev = 0;
     ComplexData meas = ComplexData( 0, 0 );
+    ComplexData j = ComplexData( 0, 1 );
 
     for( i = 0; i < length; i++)
     {
-	tmpPhase = (srcPhase[ i ]- 2*phaseHistory[ i ]+phaseHistoryOld[ i ]);
+	tmpPhase = (srcPhase[ i ]- 2*m_phaseHistory[ i ]+m_phaseHistoryOld[ i ]);
 	dev= MathUtilities::princarg( tmpPhase );
 		
-	meas = magHistory[i] - ( srcMagnitude[ i ] * exp( j * dev) );
+	meas = m_magHistory[i] - ( srcMagnitude[ i ] * exp( j * dev) );
 
 	tmpReal = real( meas );
 	tmpImag = imag( meas );
 
 	val += sqrt( (tmpReal * tmpReal) + (tmpImag * tmpImag) );
 		
-	phaseHistoryOld[ i ] = phaseHistory[ i ] ;
-	phaseHistory[ i ] = srcPhase[ i ];
-	magHistory[ i ] = srcMagnitude[ i ];
+	m_phaseHistoryOld[ i ] = m_phaseHistory[ i ] ;
+	m_phaseHistory[ i ] = srcPhase[ i ];
+	m_magHistory[ i ] = srcMagnitude[ i ];
     }
 
     return val;

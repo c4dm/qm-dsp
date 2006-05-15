@@ -35,8 +35,11 @@ public:
     DetectionFunction( DFConfig Config );
     virtual ~DetectionFunction();
     double process( double* TDomain );
+    double process( double* magnitudes, double* phases );
 
 private:
+    double runDF();
+
     double HFC( unsigned int length, double* src);
     double specDiff( unsigned int length, double* src);
     double phaseDev(unsigned int length, double *srcMagnitude, double *srcPhase);
@@ -50,23 +53,16 @@ private:
     unsigned int m_dataLength;
     unsigned int m_halfLength;
 
-    double* magHistory;
-    double* phaseHistory;
-    double* phaseHistoryOld;
+    double* m_magHistory;
+    double* m_phaseHistory;
+    double* m_phaseHistoryOld;
 
     double* m_DFWindowedFrame; // Array for windowed analysis frame
     double* m_magnitude; // Magnitude of analysis frame ( frequency domain )
     double* m_thetaAngle;// Phase of analysis frame ( frequency domain )
 
-
-    vector < ComplexData > meas ;
-	
-    ComplexData j;
-
     Window<double> *m_window;
-
-    PhaseVocoder*	m_phaseVoc;	// Phase Vocoder
-
+    PhaseVocoder* m_phaseVoc;	// Phase Vocoder
 };
 
 #endif 
