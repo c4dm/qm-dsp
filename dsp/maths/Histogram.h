@@ -136,7 +136,10 @@ public:
     //! return number of containers
     unsigned int getSize() const							{	return m_counters.size();};
     //! returns i-th counter
-    unsigned int operator [] (unsigned int i) const					{	ASSERT( i < m_counters.size() ); return m_counters[i];};
+    unsigned int operator [] (unsigned int i) const {
+//	ASSERT( i < m_counters.size() );
+        return m_counters[i];
+    };
     //! return the computed histogram
     const std::vector<unsigned int>& geTHistogram() const	{	return m_counters;};
     //! return the computed histogram, in TOuts
