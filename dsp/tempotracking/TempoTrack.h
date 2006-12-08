@@ -47,7 +47,7 @@ public:
     TempoTrack( TTParams Params );
     virtual ~TempoTrack();
 
-    vector<int> process( vector <double> DF );
+    vector<int> process( vector <double> DF, vector <double> *tempoReturn = 0);
     vector<int> process( double* DF, unsigned int length );
 
 	
@@ -73,6 +73,8 @@ private:
     double		 m_DFWVNnorm;
 
     vector<int>	 m_beats; // Vector of detected beats
+
+    double m_lockedTempo;
 
     double* m_tempoScratch;
 	

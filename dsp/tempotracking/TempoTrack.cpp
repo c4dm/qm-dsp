@@ -13,6 +13,8 @@
 #include "dsp/maths/MathAliases.h"
 #include "dsp/maths/MathUtilities.h"
 
+#include <iostream>
+
 
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
@@ -166,7 +168,12 @@ double TempoTrack::tempoMM(double* ACF, double* weight, int tsig)
 	    maxIndexRCF = i;
 	}
     }
-	
+
+    double locked = 5168.f / maxIndexRCF;
+    if (locked >= 30 && locked <= 180) {
+        m_lockedTempo = locked;
+    }
+
     if( tsig == 0 )
 	tsig = 4;
 
@@ -634,10 +641,13 @@ vector<int> TempoTrack::process(double *DF, unsigned int length)
 
 
 
-vector<int> TempoTrack::process( vector <double> DF )
+vector<int> TempoTrack::process( vector <double> DF,
+                                 vector <double> *tempoReturn )
 {
     m_dataLength = DF.size();
 	
+    m_lockedTempo = 0.0;
+
     double	period = 0.0;
     int stepFlag = 0;
     int constFlag = 0;
@@ -757,6 +767,8 @@ vector<int> TempoTrack::process( vector <double> DF )
 	lastBeat = beatPredict(FSP, alignment[ TTLoopIndex ], period, m_lagLength );
 
 	FSP += (m_lagLength);
+
+        if (tempoReturn) tempoReturn->push_back(m_lockedTempo);
 
 	TTLoopIndex++;
     }
