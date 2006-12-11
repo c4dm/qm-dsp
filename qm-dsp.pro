@@ -4,27 +4,18 @@ CONFIG -= qt
 OBJECTS_DIR = tmp_obj
 MOC_DIR = tmp_moc
 
-DEPENDPATH += base \
-              dsp/chromagram \
-              dsp/maths \
-              dsp/onsets \
-              dsp/phasevocoder \
-              dsp/rateconversion \
-              dsp/signalconditioning \
-              dsp/tempotracking \
-              dsp/tonal \
-              dsp/transforms
-INCLUDEPATH += . \
-               base \
-               dsp/maths \
-               dsp/chromagram \
-               dsp/transforms \
-               dsp/onsets \
-               dsp/phasevocoder \
-               dsp/signalconditioning \
-               dsp/rateconversion \
-               dsp/tempotracking \
-               dsp/tonal
+#DEPENDPATH += base \
+#              dsp/chromagram \
+#              dsp/keydetection \
+#              dsp/maths \
+#              dsp/onsets \
+#              dsp/phasevocoder \
+#              dsp/rateconversion \
+#              dsp/signalconditioning \
+#              dsp/tempotracking \
+#              dsp/tonal \
+#              dsp/transforms
+INCLUDEPATH += . 
 
 # Input
 HEADERS += base/Pitch.h \
@@ -32,6 +23,7 @@ HEADERS += base/Pitch.h \
            dsp/chromagram/Chromagram.h \
            dsp/chromagram/ChromaProcess.h \
            dsp/chromagram/ConstantQ.h \
+           dsp/keydetection/GetKeyMode.h \
            dsp/maths/Correlation.h \
            dsp/maths/Histogram.h \
            dsp/maths/MathAliases.h \
@@ -54,6 +46,7 @@ SOURCES += base/Pitch.cpp \
            dsp/chromagram/Chromagram.cpp \
            dsp/chromagram/ChromaProcess.cpp \
            dsp/chromagram/ConstantQ.cpp \
+           dsp/keydetection/GetKeyMode.cpp \
            dsp/maths/Correlation.cpp \
            dsp/maths/MathUtilities.cpp \
            dsp/onsets/DetectionFunction.cpp \

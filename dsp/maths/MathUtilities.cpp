@@ -168,3 +168,54 @@ void MathUtilities::getFrameMinMax(const double *data, unsigned int len, double 
 		
     }
 }
+
+int MathUtilities::getMax( double* pData, unsigned int Length, double* pMax )
+{
+	unsigned int index = 0;
+	unsigned int i;
+	double temp = 0.0;
+	
+	double max = pData[0];
+
+	for( i = 0; i < Length; i++)
+	{
+		temp = pData[ i ];
+
+		if( temp > max )
+		{
+			max =  temp ;
+			index = i;
+		}
+		
+   	}
+
+	*pMax = max;
+
+
+	return index;
+}
+
+void MathUtilities::circShift( double* pData, int length, int shift)
+{
+	shift = shift % length;
+	double temp;
+	int i,n;
+
+	for( i = 0; i < shift; i++)
+	{
+		temp=*(pData + length - 1);
+
+		for( n = length-2; n >= 0; n--)
+		{
+			*(pData+n+1)=*(pData+n);
+		}
+
+        *pData = temp;
+    }
+}
+
+int MathUtilities::compareInt (const void * a, const void * b)
+{
+  return ( *(int*)a - *(int*)b );
+}
+

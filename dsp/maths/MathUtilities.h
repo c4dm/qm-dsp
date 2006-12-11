@@ -25,6 +25,9 @@ public:
     static double mod( double x, double y);
     static void	  getAlphaNorm(const double *data, unsigned int len, unsigned int alpha, double* ANorm);
     static double getAlphaNorm(const std::vector <double> &data, unsigned int alpha );
+    static void   circShift( double* data, int length, int shift);
+    static int	  getMax( double* data, unsigned int length, double* max );
+    static int    compareInt(const void * a, const void * b);
 };
 
 #endif
