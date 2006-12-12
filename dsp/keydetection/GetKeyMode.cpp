@@ -236,5 +236,6 @@ int GetKeyMode::process(double *PCMData)
 
 int GetKeyMode::isModeMinor( int key )
 { 
-	return ((key-1 - (int)MathUtilities::mod((double)(key-1),(double)12))/12); 
+//	return ((key-1 - (int)MathUtilities::mod((double)(key-1),(double)12))/12); 
+	return (key > 12);
 }
