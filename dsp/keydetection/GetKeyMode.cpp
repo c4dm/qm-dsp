@@ -4,6 +4,9 @@
 
 #include "GetKeyMode.h"
 #include "dsp/maths/MathUtilities.h"
+#include "base/Pitch.h"
+
+#include <iostream>
 
 // Chords profile
 static double MajProfile[36] = 
@@ -23,7 +26,8 @@ static double MinProfile[36] =
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
 
-GetKeyMode::GetKeyMode( double hpcpAverage, double medianAverage )
+GetKeyMode::GetKeyMode( int sampleRate, float tuningFrequency,
+			double hpcpAverage, double medianAverage )
 :
 m_hpcpAverage( hpcpAverage ),
 m_medianAverage( medianAverage ),
@@ -40,25 +44,32 @@ m_SortedBuffer(0)
 	m_DecimationFactor = 8;
 
 	//Chromagram configuration parameters
-	m_CromaConfig.isNormalised = 1;
-	m_CromaConfig.FS = lrint(44100.0/(double)m_DecimationFactor);
-	m_CromaConfig.min = 111.0641;
-	m_CromaConfig.max = 1.7770e+003;
-	m_CromaConfig.BPO = 36;
-	m_CromaConfig.CQThresh = 0.0054;
+	m_ChromaConfig.isNormalised = 1;
+	m_ChromaConfig.FS = lrint(sampleRate/(double)m_DecimationFactor);
+
+//	m_ChromaConfig.min = 111.0641;
+//	m_ChromaConfig.max = 1.7770e+003;
+
+	m_ChromaConfig.min = Pitch::getFrequencyForPitch
+		(12, 0, tuningFrequency);
+	m_ChromaConfig.max = Pitch::getFrequencyForPitch
+		(96, 0, tuningFrequency);
+
+	m_ChromaConfig.BPO = 36;
+	m_ChromaConfig.CQThresh = 0.0054;
 
 	//Chromagram inst.
-	m_Chroma = new Chromagram( m_CromaConfig );
+	m_Chroma = new Chromagram( m_ChromaConfig );
 
 	//Get calculated parameters from chroma object
 	m_ChromaFrameSize = m_Chroma->getFrameSize();
 	//override hopsize for this application
 	m_ChromaHopSize = m_ChromaFrameSize;//m_Chroma->GetHopSize();
-	m_BPO = m_CromaConfig.BPO;
+	m_BPO = m_ChromaConfig.BPO;
 
 	//Chromagram average and estimated key median filter lengths
-	m_ChromaBuffersize = (int)ceil( m_hpcpAverage * m_CromaConfig.FS/m_ChromaFrameSize );
-	m_MedianWinsize = (int)ceil( m_medianAverage * m_CromaConfig.FS/m_ChromaFrameSize );
+	m_ChromaBuffersize = (int)ceil( m_hpcpAverage * m_ChromaConfig.FS/m_ChromaFrameSize );
+	m_MedianWinsize = (int)ceil( m_medianAverage * m_ChromaConfig.FS/m_ChromaFrameSize );
 
 	//Reset counters
 	m_bufferindex = 0;
@@ -145,6 +156,12 @@ int GetKeyMode::process(double *PCMData)
 
 	m_ChrPointer = m_Chroma->process( m_DecimatedBuffer );		
 
+	std::cout << "raw chroma: ";
+	for (int ii = 0; ii < m_BPO; ++ii) {
+		std::cout << m_ChrPointer[ii] << " ";
+	}
+	std::cout << std::endl;
+
 	// populate hpcp values;
 	int cbidx;
 	for( j = 0; j < m_BPO; j++ )
@@ -189,9 +206,16 @@ int GetKeyMode::process(double *PCMData)
 		m_Keys[k+m_BPO] = m_MinCorr[k];
 	}
 
+	std::cout << "raw keys: ";
+	for (int ii = 0; ii < 2*m_BPO; ++ii) {
+		std::cout << m_Keys[ii] << " ";
+	}
+	std::cout << std::endl;
 
 	double dummy;
-	key = 1 + (int)ceil( (double)MathUtilities::getMax( m_Keys, 2* m_BPO, &dummy )/3 );
+	key = /*1 +*/ (int)ceil( (double)MathUtilities::getMax( m_Keys, 2* m_BPO, &dummy )/3 );
+
+	std::cout << "key pre-sorting: " << key << std::endl;
 
 
 	//Median filtering
@@ -221,6 +245,12 @@ int GetKeyMode::process(double *PCMData)
 
 	//quicksort 
 	qsort(m_SortedBuffer, m_MedianBufferFilling, sizeof(unsigned int), MathUtilities::compareInt);
+
+	std::cout << "sorted: ";
+	for (int ii = 0; ii < m_MedianBufferFilling; ++ii) {
+		std::cout << m_SortedBuffer[ii] << " ";
+	}
+	std::cout << std::endl;
 
 	int sortlength = m_MedianBufferFilling;
 	int midpoint = (int)ceil((double)sortlength/2);

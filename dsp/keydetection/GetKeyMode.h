@@ -25,7 +25,8 @@
 class GetKeyMode  
 {
 public:
-	GetKeyMode( double hpcpAverage, double medianAverage );
+	GetKeyMode( int sampleRate, float tuningFrequency,
+		    double hpcpAverage, double medianAverage );
 
 	virtual ~GetKeyMode();
 
@@ -53,7 +54,7 @@ protected:
 	Decimator* m_Decimator;
 
 	//chroma configuration
-	ChromaConfig m_CromaConfig;
+	ChromaConfig m_ChromaConfig;
 
 	//Chromagram object
 	Chromagram* m_Chroma;
