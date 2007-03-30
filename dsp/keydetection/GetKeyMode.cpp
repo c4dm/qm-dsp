@@ -50,10 +50,24 @@ m_SortedBuffer(0)
 //	m_ChromaConfig.min = 111.0641;
 //	m_ChromaConfig.max = 1.7770e+003;
 
+//	m_ChromaConfig.min = Pitch::getFrequencyForPitch
+//		(12, 0, tuningFrequency);
+//	m_ChromaConfig.max = Pitch::getFrequencyForPitch
+//		(96, 0, tuningFrequency);
+
+	// The chromagram minimum pitch is 1/6 of a tone above A, two
+	// octaves below middle C (for a 36-bin chromagram).  The
+	// maximum pitch is four octaves higher.
+
 	m_ChromaConfig.min = Pitch::getFrequencyForPitch
-		(12, 0, tuningFrequency);
-	m_ChromaConfig.max = Pitch::getFrequencyForPitch
-		(96, 0, tuningFrequency);
+		(45, 1.f / 3.f, tuningFrequency);
+
+	m_ChromaConfig.max = m_ChromaConfig.min * 2;
+	m_ChromaConfig.max = m_ChromaConfig.max * 2;
+	m_ChromaConfig.max = m_ChromaConfig.max * 2;
+	m_ChromaConfig.max = m_ChromaConfig.max * 2;
+
+	std::cerr << "Chromagram range: " << m_ChromaConfig.min << " -> " << m_ChromaConfig.max << std::endl;
 
 	m_ChromaConfig.BPO = 36;
 	m_ChromaConfig.CQThresh = 0.0054;
