@@ -219,17 +219,17 @@ int GetKeyMode::process(double *PCMData)
 		m_Keys[k] = m_MajCorr[k];
 		m_Keys[k+m_BPO] = m_MinCorr[k];
 	}
-
+/*
 	std::cout << "raw keys: ";
 	for (int ii = 0; ii < 2*m_BPO; ++ii) {
 		std::cout << m_Keys[ii] << " ";
 	}
 	std::cout << std::endl;
-
+*/
 	double dummy;
 	key = /*1 +*/ (int)ceil( (double)MathUtilities::getMax( m_Keys, 2* m_BPO, &dummy )/3 );
 
-	std::cout << "key pre-sorting: " << key << std::endl;
+//	std::cout << "key pre-sorting: " << key << std::endl;
 
 
 	//Median filtering
@@ -259,13 +259,13 @@ int GetKeyMode::process(double *PCMData)
 
 	//quicksort 
 	qsort(m_SortedBuffer, m_MedianBufferFilling, sizeof(unsigned int), MathUtilities::compareInt);
-
+/*
 	std::cout << "sorted: ";
 	for (int ii = 0; ii < m_MedianBufferFilling; ++ii) {
 		std::cout << m_SortedBuffer[ii] << " ";
 	}
 	std::cout << std::endl;
-
+*/
 	int sortlength = m_MedianBufferFilling;
 	int midpoint = (int)ceil((double)sortlength/2);
 
