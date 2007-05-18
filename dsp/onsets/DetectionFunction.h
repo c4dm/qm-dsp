@@ -20,12 +20,14 @@
 #define DF_SPECDIFF (2)
 #define DF_PHASEDEV (3)
 #define DF_COMPLEXSD (4)
+#define DF_BROADBAND (5)
 
 struct DFConfig{
     double stepSecs; // DF step in seconds
     unsigned int stepSize; // DF step in samples
     unsigned int frameLength; // DF analysis window - usually 2*step
     int DFType; // type of detection function ( see defines )
+    double dbRise; // only used for broadband df (and required for it)
 };
 
 class DetectionFunction  
@@ -44,6 +46,7 @@ private:
     double specDiff( unsigned int length, double* src);
     double phaseDev(unsigned int length, double *srcMagnitude, double *srcPhase);
     double complexSD(unsigned int length, double *srcMagnitude, double *srcPhase);
+    double broadband(unsigned int length, double *srcMagnitude, double *srcPhase);
 	
 private:
     void initialise( DFConfig Config );
@@ -52,6 +55,7 @@ private:
     int m_DFType;
     unsigned int m_dataLength;
     unsigned int m_halfLength;
+    double m_dbRise;
 
     double* m_magHistory;
     double* m_phaseHistory;

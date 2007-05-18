@@ -20,7 +20,7 @@
 #include "dsp/signalconditioning/DFProcess.h"
 
 
-struct WinThresh
+struct PPWinThresh
 {
     unsigned int pre;
     unsigned int  post;
@@ -42,7 +42,7 @@ struct PPickParams
     unsigned int LPOrd; // low-pass Filter order
     double* LPACoeffs; //low pass Filter den coefficients
     double* LPBCoeffs; //low pass Filter num coefficients
-    WinThresh WinT;//window size in frames for adaptive thresholding [pre post]:
+    PPWinThresh WinT;//window size in frames for adaptive thresholding [pre post]:
     QFitThresh QuadThresh;
 };
 
@@ -63,7 +63,6 @@ private:
     DFProcConfig m_DFProcessingParams;
 
     unsigned int m_DFLength ;
-    double m_alphaNormParam ;
     double Qfilta ;
     double Qfiltb;
     double Qfiltc;

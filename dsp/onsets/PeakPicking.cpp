@@ -11,6 +11,7 @@
 #include "PeakPicking.h"
 #include "dsp/maths/Polyfit.h"
 
+#include <iostream>
 
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
@@ -99,9 +100,10 @@ int PeakPicking::quadEval( vector<double> &src, vector<int> &idx )
     }
     for( unsigned int i = 2; i < src.size() - 2; i++)
     {
-	if( (src[ i ] > src[ i  - 1 ]) && (src[ i ] > src[ i  + 1 ]) && (src[ i ] > 0) )
+	if( (src[i] > src[i-1]) && (src[i] > src[i+1]) && (src[i] > 0) )
 	{
-	    m_maxIndex.push_back(  i + 1 );
+//	    m_maxIndex.push_back(  i + 1 );
+            m_maxIndex.push_back(i);
 	}
     }
 
@@ -111,7 +113,7 @@ int PeakPicking::quadEval( vector<double> &src, vector<int> &idx )
 
     for( unsigned int j = 0; j < maxLength ; j++)
     {
-	for(  int k = -3; k < 2; k++)
+        for (int k = -2; k <= 2; ++k)
 	{
 	    selMax = src[ m_maxIndex[j] + k ] ;
 	    m_maxFit.push_back(selMax);			
@@ -124,13 +126,13 @@ int PeakPicking::quadEval( vector<double> &src, vector<int> &idx )
 	double h = m_poly[2];
 
 	int kk = m_poly.size();
-		
-	if( h < -Qfilta || f  >  Qfiltc)
-	{
-	    idx.push_back( m_maxIndex[j] );
-	}
 
-	m_maxFit.erase( m_maxFit.begin(), m_maxFit.end() );
+	if (h < -Qfilta || f > Qfiltc)
+	{
+	    idx.push_back(m_maxIndex[j]);
+	}
+		
+	m_maxFit.clear();
     }
 
     return 1;

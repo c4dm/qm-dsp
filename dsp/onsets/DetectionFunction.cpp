@@ -109,6 +109,9 @@ double DetectionFunction::runDF()
     case DF_COMPLEXSD:
 	retVal = complexSD( m_halfLength, m_magnitude, m_thetaAngle);
 	break;
+
+    case DF_BROADBAND:
+        retVal = broadband( m_halfLength, m_magnitude, m_thetaAngle);
     }
 	
     return retVal;
@@ -211,6 +214,20 @@ double DetectionFunction::complexSD(unsigned int length, double *srcMagnitude, d
 
     return val;
 }
+
+double DetectionFunction::broadband(unsigned int length, double *srcMagnitude, double *srcPhase)
+{
+    double val = 0;
+    for (unsigned int i = 0; i < length; ++i) {
+        double sqrmag = srcMagnitude[i] * srcMagnitude[i];
+        if (m_magHistory[i] > 0.0) {
+            double diff = 10.0 * log10(sqrmag / m_magHistory[i]);
+            if (diff > m_dbRise) val = val + 1;
+        }
+        m_magHistory[i] = sqrmag;
+    }
+    return val;
+}        
 
 double* DetectionFunction::getSpectrumMagnitude()
 {

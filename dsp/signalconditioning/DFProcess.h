@@ -22,7 +22,8 @@ struct DFProcConfig{
     unsigned int winPre;
     unsigned int winPost; 
     double AlphaNormParam;
-    bool isMedianPositive;};
+    bool isMedianPositive;
+};
 
 class DFProcess  
 {
