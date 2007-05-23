@@ -55,6 +55,8 @@ private:
     int m_DFType;
     unsigned int m_dataLength;
     unsigned int m_halfLength;
+    double m_stepSecs;
+    unsigned int m_stepSize;
     double m_dbRise;
 
     double* m_magHistory;

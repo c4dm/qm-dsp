@@ -35,6 +35,8 @@ void DetectionFunction::initialise( DFConfig Config )
     m_dataLength = Config.frameLength;
     m_halfLength = m_dataLength/2;
     m_DFType = Config.DFType;
+    m_stepSecs = Config.stepSecs;
+    m_stepSize = Config.stepSize;
 
     m_magHistory = new double[ m_halfLength ];
     memset(m_magHistory,0, m_halfLength*sizeof(double));
@@ -98,7 +100,7 @@ double DetectionFunction::runDF()
 	retVal = HFC( m_halfLength, m_magnitude);
 	break;
 	
-    case  DF_SPECDIFF:
+    case DF_SPECDIFF:
 	retVal = specDiff( m_halfLength, m_magnitude);
 	break;
 	
@@ -142,10 +144,9 @@ double DetectionFunction::specDiff(unsigned int length, double *src)
 		
 	diff= sqrt(temp);
 
-	if( src[ i ] > 0.1)
-	{
-	    val += diff;
-	}
+        // (See note in phaseDev below.)
+
+        val += diff;
 
 	m_magHistory[ i ] = src[ i ];
     }
@@ -167,12 +168,17 @@ double DetectionFunction::phaseDev(unsigned int length, double *srcMagnitude, do
     {
 	tmpPhase = (srcPhase[ i ]- 2*m_phaseHistory[ i ]+m_phaseHistoryOld[ i ]);
 	dev = MathUtilities::princarg( tmpPhase );
+
+        // A previous version of this code only counted the value here
+        // if the magnitude exceeded 0.1.  My impression is that
+        // doesn't greatly improve the results for "loud" music (so
+        // long as the peak picker is reasonably sophisticated), but
+        // does significantly damage its ability to work with quieter
+        // music, so I'm removing it and counting the result always.
+        // Same goes for the spectral difference measure above.
 		
-	if( srcMagnitude[ i  ] > 0.1)
-	{
-	    tmpVal  = fabs( dev);
-	    val += tmpVal ;
-	}
+        tmpVal  = fabs(dev);
+        val += tmpVal ;
 
 	m_phaseHistoryOld[ i ] = m_phaseHistory[ i ] ;
 	m_phaseHistory[ i ] = srcPhase[ i ];
