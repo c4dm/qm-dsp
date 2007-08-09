@@ -21,6 +21,7 @@
 #define DF_PHASEDEV (3)
 #define DF_COMPLEXSD (4)
 #define DF_BROADBAND (5)
+#define DF_POWER (6)
 
 struct DFConfig{
     double stepSecs; // DF step in seconds
@@ -28,6 +29,9 @@ struct DFConfig{
     unsigned int frameLength; // DF analysis window - usually 2*step
     int DFType; // type of detection function ( see defines )
     double dbRise; // only used for broadband df (and required for it)
+    bool adaptiveWhitening; // perform adaptive whitening
+    double whiteningRelaxCoeff; // if < 0, a sensible default will be used
+    double whiteningFloor; // if < 0, a sensible default will be used
 };
 
 class DetectionFunction  
@@ -40,13 +44,15 @@ public:
     double process( double* magnitudes, double* phases );
 
 private:
+    void whiten();
     double runDF();
 
     double HFC( unsigned int length, double* src);
     double specDiff( unsigned int length, double* src);
-    double phaseDev(unsigned int length, double *srcMagnitude, double *srcPhase);
+    double phaseDev(unsigned int length, double *srcPhase);
     double complexSD(unsigned int length, double *srcMagnitude, double *srcPhase);
-    double broadband(unsigned int length, double *srcMagnitude, double *srcPhase);
+    double broadband(unsigned int length, double *srcMagnitude);
+    double power(unsigned int length, double *src);
 	
 private:
     void initialise( DFConfig Config );
@@ -58,10 +64,14 @@ private:
     double m_stepSecs;
     unsigned int m_stepSize;
     double m_dbRise;
+    bool m_whiten;
+    double m_whitenRelaxCoeff;
+    double m_whitenFloor;
 
     double* m_magHistory;
     double* m_phaseHistory;
     double* m_phaseHistoryOld;
+    double* m_magPeaks;
 
     double* m_DFWindowedFrame; // Array for windowed analysis frame
     double* m_magnitude; // Magnitude of analysis frame ( frequency domain )

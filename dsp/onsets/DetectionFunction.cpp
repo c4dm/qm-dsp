@@ -20,6 +20,7 @@ DetectionFunction::DetectionFunction( DFConfig Config ) :
     m_magHistory = NULL;
     m_phaseHistory = NULL;
     m_phaseHistoryOld = NULL;
+    m_magPeaks = NULL;
 
     initialise( Config );
 }
@@ -34,9 +35,16 @@ void DetectionFunction::initialise( DFConfig Config )
 {
     m_dataLength = Config.frameLength;
     m_halfLength = m_dataLength/2;
+
     m_DFType = Config.DFType;
     m_stepSecs = Config.stepSecs;
     m_stepSize = Config.stepSize;
+
+    m_whiten = Config.adaptiveWhitening;
+    m_whitenRelaxCoeff = Config.whiteningRelaxCoeff;
+    m_whitenFloor = Config.whiteningFloor;
+    if (m_whitenRelaxCoeff < 0) m_whitenRelaxCoeff = 0.9997;
+    if (m_whitenFloor < 0) m_whitenFloor = 0.01;
 
     m_magHistory = new double[ m_halfLength ];
     memset(m_magHistory,0, m_halfLength*sizeof(double));
@@ -46,6 +54,9 @@ void DetectionFunction::initialise( DFConfig Config )
 
     m_phaseHistoryOld = new double[ m_halfLength ];
     memset(m_phaseHistoryOld,0, m_halfLength*sizeof(double));
+
+    m_magPeaks = new double[ m_halfLength ];
+    memset(m_magPeaks,0, m_halfLength*sizeof(double));
 
     m_phaseVoc = new PhaseVocoder;
 
@@ -61,6 +72,7 @@ void DetectionFunction::deInitialise()
     delete [] m_magHistory ;
     delete [] m_phaseHistory ;
     delete [] m_phaseHistoryOld ;
+    delete [] m_magPeaks ;
 
     delete m_phaseVoc;
 
@@ -77,6 +89,8 @@ double DetectionFunction::process( double *TDomain )
 	
     m_phaseVoc->process( m_dataLength, m_DFWindowedFrame, m_magnitude, m_thetaAngle );
 
+    if (m_whiten) whiten();
+
     return runDF();
 }
 
@@ -87,7 +101,22 @@ double DetectionFunction::process( double *magnitudes, double *phases )
         m_thetaAngle[i] = phases[i];
     }
 
+    if (m_whiten) whiten();
+
     return runDF();
+}
+
+void DetectionFunction::whiten()
+{
+    for (unsigned int i = 0; i < m_halfLength; ++i) {
+        double m = m_magnitude[i];
+        if (m < m_magPeaks[i]) {
+            m = m + (m_magPeaks[i] - m) * m_whitenRelaxCoeff;
+        }
+        if (m < m_whitenFloor) m = m_whitenFloor;
+        m_magPeaks[i] = m;
+        m_magnitude[i] /= m;
+    }
 }
 
 double DetectionFunction::runDF()
@@ -105,7 +134,7 @@ double DetectionFunction::runDF()
 	break;
 	
     case DF_PHASEDEV:
-	retVal = phaseDev( m_halfLength, m_magnitude, m_thetaAngle);
+	retVal = phaseDev( m_halfLength, m_thetaAngle);
 	break;
 	
     case DF_COMPLEXSD:
@@ -113,7 +142,12 @@ double DetectionFunction::runDF()
 	break;
 
     case DF_BROADBAND:
-        retVal = broadband( m_halfLength, m_magnitude, m_thetaAngle);
+        retVal = broadband( m_halfLength, m_magnitude);
+        break;
+
+    case DF_POWER:
+        retVal = power( m_halfLength, m_magnitude );
+        break;
     }
 	
     return retVal;
@@ -155,7 +189,7 @@ double DetectionFunction::specDiff(unsigned int length, double *src)
 }
 
 
-double DetectionFunction::phaseDev(unsigned int length, double *srcMagnitude, double *srcPhase)
+double DetectionFunction::phaseDev(unsigned int length, double *srcPhase)
 {
     unsigned int i;
     double tmpPhase = 0;
@@ -221,16 +255,25 @@ double DetectionFunction::complexSD(unsigned int length, double *srcMagnitude, d
     return val;
 }
 
-double DetectionFunction::broadband(unsigned int length, double *srcMagnitude, double *srcPhase)
+double DetectionFunction::broadband(unsigned int length, double *src)
 {
     double val = 0;
     for (unsigned int i = 0; i < length; ++i) {
-        double sqrmag = srcMagnitude[i] * srcMagnitude[i];
+        double sqrmag = src[i] * src[i];
         if (m_magHistory[i] > 0.0) {
             double diff = 10.0 * log10(sqrmag / m_magHistory[i]);
             if (diff > m_dbRise) val = val + 1;
         }
         m_magHistory[i] = sqrmag;
+    }
+    return val;
+}        
+
+double DetectionFunction::power(unsigned int length, double *src)
+{
+    double val = 0;
+    for (unsigned int i = 0; i < length; ++i) {
+        val += src[i];
     }
     return val;
 }        
