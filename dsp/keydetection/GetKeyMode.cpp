@@ -11,7 +11,7 @@
 // Chords profile
 static double MajProfile[36] = 
 { 0.0384, 0.0629, 0.0258, 0.0121, 0.0146, 0.0106, 0.0364, 0.0610, 0.0267,
-  0.0126, 0.0121, 0.0086, 0.0364, 0.0623, 0.0279, 0.0275, 0.0414, 0.0186,
+  0.0126, 0.0121, 0.0086, 0.0364, 0.0623, 0.0279, 0.0275, 0.0414, 0.0186, 
   0.0173, 0.0248, 0.0145, 0.0364, 0.0631, 0.0262, 0.0129, 0.0150, 0.0098,
   0.0312, 0.0521, 0.0235, 0.0129, 0.0142, 0.0095, 0.0289, 0.0478, 0.0239};
 
@@ -50,23 +50,24 @@ m_SortedBuffer(0)
 //	m_ChromaConfig.min = 111.0641;
 //	m_ChromaConfig.max = 1.7770e+003;
 
-//	m_ChromaConfig.min = Pitch::getFrequencyForPitch
-//		(12, 0, tuningFrequency);
-//	m_ChromaConfig.max = Pitch::getFrequencyForPitch
-//		(96, 0, tuningFrequency);
+	// Set C (= MIDI #12) as our base :
+	// This implies that key = 1 => Cmaj, key = 12 => Bmaj, key = 13 => Cmin, etc.
+	m_ChromaConfig.min = Pitch::getFrequencyForPitch
+		(12, 0, tuningFrequency);
+	m_ChromaConfig.max = Pitch::getFrequencyForPitch
+		(96, 0, tuningFrequency);
 
 	// The chromagram minimum pitch is 1/6 of a tone above A, two
 	// octaves below middle C (for a 36-bin chromagram).  The
 	// maximum pitch is four octaves higher.
-
-	m_ChromaConfig.min = Pitch::getFrequencyForPitch
+/*	m_ChromaConfig.min = Pitch::getFrequencyForPitch
 		(45, 1.f / 3.f, tuningFrequency);
 
 	m_ChromaConfig.max = m_ChromaConfig.min * 2;
 	m_ChromaConfig.max = m_ChromaConfig.max * 2;
 	m_ChromaConfig.max = m_ChromaConfig.max * 2;
 	m_ChromaConfig.max = m_ChromaConfig.max * 2;
-
+*/
 	std::cerr << "Chromagram range: " << m_ChromaConfig.min << " -> " << m_ChromaConfig.max << std::endl;
 
 	m_ChromaConfig.BPO = 36;
@@ -170,6 +171,11 @@ int GetKeyMode::process(double *PCMData)
 
 	m_ChrPointer = m_Chroma->process( m_DecimatedBuffer );		
 
+	
+	// Move bins such that the centre of the base note is in the middle of its three bins :
+	// Added 21.11.07 by Chris Sutton based on debugging with Katy Noland + comparison with Matlab equivalent.
+	MathUtilities::circShift( m_ChrPointer, m_BPO, 1);
+
 	std::cout << "raw chroma: ";
 	for (int ii = 0; ii < m_BPO; ++ii) {
 		std::cout << m_ChrPointer[ii] << " ";
@@ -213,23 +219,25 @@ int GetKeyMode::process(double *PCMData)
 		MathUtilities::circShift( MajProfile, m_BPO, 1 );
 		MathUtilities::circShift( MinProfile, m_BPO, 1 );
 	}
-
+	
 	for( k = 0; k < m_BPO; k++ )
 	{
 		m_Keys[k] = m_MajCorr[k];
 		m_Keys[k+m_BPO] = m_MinCorr[k];
 	}
-/*
+
+
 	std::cout << "raw keys: ";
 	for (int ii = 0; ii < 2*m_BPO; ++ii) {
 		std::cout << m_Keys[ii] << " ";
 	}
 	std::cout << std::endl;
-*/
-	double dummy;
-	key = /*1 +*/ (int)ceil( (double)MathUtilities::getMax( m_Keys, 2* m_BPO, &dummy )/3 );
 
-//	std::cout << "key pre-sorting: " << key << std::endl;
+	double dummy;
+	// '1 +' because we number keys 1-24, not 0-23.
+	key = 1 + (int)ceil( (double)MathUtilities::getMax( m_Keys, 2* m_BPO, &dummy )/3 );
+
+	std::cout << "key pre-sorting: " << key << std::endl;
 
 
 	//Median filtering
@@ -259,13 +267,13 @@ int GetKeyMode::process(double *PCMData)
 
 	//quicksort 
 	qsort(m_SortedBuffer, m_MedianBufferFilling, sizeof(unsigned int), MathUtilities::compareInt);
-/*
+
 	std::cout << "sorted: ";
 	for (int ii = 0; ii < m_MedianBufferFilling; ++ii) {
 		std::cout << m_SortedBuffer[ii] << " ";
 	}
 	std::cout << std::endl;
-*/
+
 	int sortlength = m_MedianBufferFilling;
 	int midpoint = (int)ceil((double)sortlength/2);
 
