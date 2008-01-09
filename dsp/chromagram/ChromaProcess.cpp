@@ -10,7 +10,7 @@
 
 
 #include "ChromaProcess.h"
-#include "dsp/maths/Histogram.h"
+#include "maths/Histogram.h"
 #include <math.h>
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction

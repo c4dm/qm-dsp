@@ -12,8 +12,8 @@
 #define CONSTANTQ_H
 
 #include <vector>
-#include "dsp/maths/MathAliases.h"
-#include "dsp/maths/MathUtilities.h"
+#include "maths/MathAliases.h"
+#include "maths/MathUtilities.h"
 
 struct CQConfig{
     unsigned int FS;

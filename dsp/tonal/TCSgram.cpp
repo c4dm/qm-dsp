@@ -15,7 +15,7 @@
 #include <iostream>
 #include <limits>
 
-#include "dsp/maths/MathUtilities.h"
+#include "maths/MathUtilities.h"
 
 TCSGram::TCSGram() :
 	m_uNumBins(6)

@@ -10,7 +10,7 @@
 
 #include <iostream>
 #include <cmath>
-#include "dsp/maths/MathUtilities.h"
+#include "maths/MathUtilities.h"
 #include "Chromagram.h"
 
 //----------------------------------------------------------------------------

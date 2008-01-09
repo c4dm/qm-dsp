@@ -9,7 +9,7 @@
 */
 
 #include "DFProcess.h"
-#include "dsp/maths/MathUtilities.h"
+#include "maths/MathUtilities.h"
 
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction

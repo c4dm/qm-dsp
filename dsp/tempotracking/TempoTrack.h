@@ -16,7 +16,7 @@
 #include <vector>
 
 #include "dsp/signalconditioning/DFProcess.h"
-#include "dsp/maths/Correlation.h"
+#include "maths/Correlation.h"
 #include "dsp/signalconditioning/Framer.h"
 
 

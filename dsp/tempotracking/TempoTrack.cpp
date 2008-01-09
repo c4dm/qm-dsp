@@ -10,8 +10,8 @@
 
 #include "TempoTrack.h"
 
-#include "dsp/maths/MathAliases.h"
-#include "dsp/maths/MathUtilities.h"
+#include "maths/MathAliases.h"
+#include "maths/MathUtilities.h"
 
 #include <iostream>
 

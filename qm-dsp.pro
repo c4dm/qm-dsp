@@ -24,11 +24,6 @@ HEADERS += base/Pitch.h \
            dsp/chromagram/ChromaProcess.h \
            dsp/chromagram/ConstantQ.h \
            dsp/keydetection/GetKeyMode.h \
-           dsp/maths/Correlation.h \
-           dsp/maths/Histogram.h \
-           dsp/maths/MathAliases.h \
-           dsp/maths/MathUtilities.h \
-           dsp/maths/Polyfit.h \
            dsp/onsets/DetectionFunction.h \
            dsp/onsets/PeakPicking.h \
            dsp/phasevocoder/PhaseVocoder.h \
@@ -41,14 +36,17 @@ HEADERS += base/Pitch.h \
            dsp/tonal/ChangeDetectionFunction.h \
            dsp/tonal/TCSgram.h \
            dsp/tonal/TonalEstimator.h \
-           dsp/transforms/FFT.h
+           dsp/transforms/FFT.h \
+           maths/Correlation.h \
+           maths/Histogram.h \
+           maths/MathAliases.h \
+           maths/MathUtilities.h \
+           maths/Polyfit.h
 SOURCES += base/Pitch.cpp \
            dsp/chromagram/Chromagram.cpp \
            dsp/chromagram/ChromaProcess.cpp \
            dsp/chromagram/ConstantQ.cpp \
            dsp/keydetection/GetKeyMode.cpp \
-           dsp/maths/Correlation.cpp \
-           dsp/maths/MathUtilities.cpp \
            dsp/onsets/DetectionFunction.cpp \
            dsp/onsets/PeakPicking.cpp \
            dsp/phasevocoder/PhaseVocoder.cpp \
@@ -61,4 +59,6 @@ SOURCES += base/Pitch.cpp \
            dsp/tonal/ChangeDetectionFunction.cpp \
            dsp/tonal/TCSgram.cpp \
            dsp/tonal/TonalEstimator.cpp \
-           dsp/transforms/FFT.cpp 
+           dsp/transforms/FFT.cpp \
+           maths/Correlation.cpp \
+           maths/MathUtilities.cpp

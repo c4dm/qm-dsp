@@ -3,7 +3,7 @@
 //////////////////////////////////////////////////////////////////////
 
 #include "GetKeyMode.h"
-#include "dsp/maths/MathUtilities.h"
+#include "maths/MathUtilities.h"
 #include "base/Pitch.h"
 
 #include <iostream>

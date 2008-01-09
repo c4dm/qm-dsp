@@ -15,8 +15,8 @@
 #ifndef PEAKPICKING_H
 #define PEAKPICKING_H
 
-#include "dsp/maths/MathUtilities.h"
-#include "dsp/maths/MathAliases.h"
+#include "maths/MathUtilities.h"
+#include "maths/MathAliases.h"
 #include "dsp/signalconditioning/DFProcess.h"
 
 

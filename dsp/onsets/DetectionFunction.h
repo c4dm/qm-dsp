@@ -11,8 +11,8 @@
 #ifndef DETECTIONFUNCTION_H
 #define DETECTIONFUNCTION_H
 
-#include "dsp/maths/MathUtilities.h"
-#include "dsp/maths/MathAliases.h"
+#include "maths/MathUtilities.h"
+#include "maths/MathAliases.h"
 #include "dsp/phasevocoder/PhaseVocoder.h"
 #include "base/Window.h"
 
@@ -21,7 +21,6 @@
 #define DF_PHASEDEV (3)
 #define DF_COMPLEXSD (4)
 #define DF_BROADBAND (5)
-#define DF_POWER (6)
 
 struct DFConfig{
     double stepSecs; // DF step in seconds
@@ -52,7 +51,6 @@ private:
     double phaseDev(unsigned int length, double *srcPhase);
     double complexSD(unsigned int length, double *srcMagnitude, double *srcPhase);
     double broadband(unsigned int length, double *srcMagnitude);
-    double power(unsigned int length, double *src);
 	
 private:
     void initialise( DFConfig Config );

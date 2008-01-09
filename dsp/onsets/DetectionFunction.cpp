@@ -144,10 +144,6 @@ double DetectionFunction::runDF()
     case DF_BROADBAND:
         retVal = broadband( m_halfLength, m_magnitude);
         break;
-
-    case DF_POWER:
-        retVal = power( m_halfLength, m_magnitude );
-        break;
     }
 	
     return retVal;
@@ -265,15 +261,6 @@ double DetectionFunction::broadband(unsigned int length, double *src)
             if (diff > m_dbRise) val = val + 1;
         }
         m_magHistory[i] = sqrmag;
-    }
-    return val;
-}        
-
-double DetectionFunction::power(unsigned int length, double *src)
-{
-    double val = 0;
-    for (unsigned int i = 0; i < length; ++i) {
-        val += src[i];
     }
     return val;
 }        

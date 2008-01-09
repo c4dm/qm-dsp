@@ -9,7 +9,7 @@
 */
 
 #include "PeakPicking.h"
-#include "dsp/maths/Polyfit.h"
+#include "maths/Polyfit.h"
 
 #include <iostream>
 
