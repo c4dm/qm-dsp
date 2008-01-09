@@ -12,14 +12,14 @@
 #include <stdlib.h>
 #include <float.h>
 #include <time.h>				/* to seed random number generator */
-#include "clapack.h"		/* LAPACK for matrix inversion */
+#include <clapack.h>		/* LAPACK for matrix inversion */
 #ifdef _MAC_OS_X
 #include <vecLib/cblas.h>
 #else
 #include <cblas.h>		/* BLAS for matrix multiplication */
 #endif
 
-#include "hmm.h"
+#include "HMM.h"
 
 model_t* hmm_init(double** x, int T, int L, int N)
 {
