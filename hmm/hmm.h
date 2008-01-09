@@ -1,6 +1,10 @@
 #ifndef _HMM_H
 #define _HMM_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /*
  *  hmm.h
  *  soundbite
@@ -34,6 +38,10 @@ void invert(double** cov, int L, double** icov, double* detcov);			/* uses LAPAC
 double gauss(double* x, int L, double* mu, double** icov, double detcov, double* y, double* z);
 double loggauss(double* x, int L, double* mu, double** icov, double detcov, double* y, double* z);
 void hmm_print(model_t* model);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
 

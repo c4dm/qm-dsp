@@ -36,6 +36,7 @@ void cq2chroma(double** cq, int nframes, int ncoeff, int bins, double** chroma)
 			sum += chroma[t][b];
 		for (b = 0; b < bins; b++)
 			chroma[t][b] /= sum;
+		*/
 		/* normalise to unit max - NO this made results much worse!
 		maxchroma = 0;
 		for (b = 0; b < bins; b++)

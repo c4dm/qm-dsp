@@ -12,6 +12,10 @@
 #include <stdlib.h>
 #include <math.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 void cluster_melt(double *h,		/* normalised histograms, as a vector in row major order */
 				  int m,			/* number of dimensions (i.e. histogram bins) */
 				  int n,			/* number of histograms */
@@ -21,5 +25,9 @@ void cluster_melt(double *h,		/* normalised histograms, as a vector in row major
 				  int l,			/* neighbourhood limit (supply zero to use default value) */
 				  int *c			/* sequence of cluster assignments */
 );
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

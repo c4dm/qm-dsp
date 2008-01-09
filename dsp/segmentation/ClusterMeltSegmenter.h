@@ -11,8 +11,9 @@
 
 #include "segment.h"
 #include "Segmenter.h"
-#include "hmm.h"
-#include "lib_constQ.h"
+#include "hmm/hmm.h"
+#include "base/Window.h"
+#include "dsp/chromagram/ConstantQ.h"
 
 using std::vector;
 
@@ -40,8 +41,8 @@ public:
 	ClusterMeltSegmenter(ClusterMeltSegmenterParams params);
 	virtual ~ClusterMeltSegmenter();
 	virtual void initialise(int samplerate);
-	virtual int getWindowsize() { return static_cast<int>(windowSize * samplerate); }
-	virtual int getHopsize() { return static_cast<int>(hopSize * samplerate); }
+	virtual int getWindowsize();
+	virtual int getHopsize();
 	virtual void extractFeatures(double* samples, int nsamples);
 	void setFeatures(const vector<vector<double> >& f);		// provide the features yourself
 	virtual void segment();		// segment into default number of segment-types
@@ -51,9 +52,9 @@ protected:
 	//void mpeg7ConstQ();
 	void makeSegmentation(int* q, int len);
 	
-	double* window;
-	int windowLength;			// in samples
-	constQ_t* constq;	
+	Window<double> *window;
+//	int windowLength;			// in samples
+	ConstantQ* constq;	
 	model_t* model;				// the HMM
 	//vector<int> stateSequence;
 	//vector<int> segmentTypeSequence;

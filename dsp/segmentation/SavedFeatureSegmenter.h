@@ -11,7 +11,7 @@
 
 #include "segment.h"
 #include "Segmenter.h"
-#include "hmm.h"
+#include "hmm/hmm.h"
 
 using std::vector;
 
@@ -59,3 +59,4 @@ protected:
 	int histogramLength;
 	int neighbourhoodLimit;
 };
+

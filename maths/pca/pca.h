@@ -1,6 +1,10 @@
 #ifndef _PCA_H
 #define _PCA_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /*
  *  pca.h
  *  soundbite
@@ -11,6 +15,10 @@
  */
 
 void pca_project(double** data, int n, int m, int ncomponents);
+
+#ifdef __cplusplus
+}
+#endif
 
 
 #endif

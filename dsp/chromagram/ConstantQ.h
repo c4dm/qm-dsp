@@ -16,11 +16,11 @@
 #include "maths/MathUtilities.h"
 
 struct CQConfig{
-    unsigned int FS;
-    double min;
-    double max;
-    unsigned int BPO;
-    double CQThresh;
+    unsigned int FS;   // samplerate
+    double min;        // minimum frequency
+    double max;        // maximum frequency
+    unsigned int BPO;  // bins per octave
+    double CQThresh;   // threshold
 };
 
 class ConstantQ {

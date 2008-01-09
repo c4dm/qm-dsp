@@ -10,6 +10,8 @@
 #include "ConstantQ.h"
 #include "dsp/transforms/FFT.h"
 
+#include <iostream>
+
 //---------------------------------------------------------------------------
 // nextpow2 returns the smallest integer n such that 2^n >= x.
 static double nextpow2(double x) {
@@ -168,10 +170,14 @@ void ConstantQ::initialise( CQConfig Config )
     m_dQ = 1/(pow(2,(1/(double)m_BPO))-1);	// Work out Q value for Filter bank
     m_uK = (unsigned int) ceil(m_BPO * log(m_FMax/m_FMin)/log(2.0));	// No. of constant Q bins
 
+    std::cerr << "ConstantQ::initialise: rate = " << m_FS << ", fmin = " << m_FMin << ", fmax = " << m_FMax << ", bpo = " << m_BPO << ", K = " << m_uK << ", Q = " << m_dQ << std::endl;
+
     // work out length of fft required for this constant Q Filter bank
     m_FFTLength = (int) pow(2, nextpow2(ceil( m_dQ*m_FS/m_FMin )));
 
     m_hop = m_FFTLength/8; // <------ hop size is window length divided by 32
+
+    std::cerr << "ConstantQ::initialise: -> fft length = " << m_FFTLength << ", hop = " << m_hop << std::endl;
 
     // allocate memory for cqdata
     m_CQdata = new double [2*m_uK];

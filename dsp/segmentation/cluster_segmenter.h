@@ -17,8 +17,12 @@
 
 #include "segment.h"
 #include "cluster_melt.h"
-#include "hmm.h"
-#include "pca.h"
+#include "hmm/hmm.h"
+#include "maths/pca/pca.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /* applies MPEG-7 normalisation to constant-Q features, storing normalised envelope (norm) in last feature dimension */
 void mpeg7_constq(double** features, int nframes, int ncoeff);
@@ -34,5 +38,8 @@ void cluster_segment(int* q, double** features, int frames_read, int feature_len
 void constq_segment(int* q, double** features, int frames_read, int bins, int ncoeff, int feature_type, 
 			 int nHMM_states, int histogram_length, int nclusters, int neighbour_limit);
 
+#ifdef __cplusplus
+}
+#endif
 
 #endif

@@ -1,5 +1,5 @@
 TEMPLATE = lib
-CONFIG += release warn_on staticlib
+CONFIG += warn_on staticlib release
 CONFIG -= qt
 OBJECTS_DIR = tmp_obj
 MOC_DIR = tmp_moc
@@ -28,6 +28,12 @@ HEADERS += base/Pitch.h \
            dsp/onsets/PeakPicking.h \
            dsp/phasevocoder/PhaseVocoder.h \
            dsp/rateconversion/Decimator.h \
+           dsp/segmentation/cluster_melt.h \
+           dsp/segmentation/ClusterMeltSegmenter.h \
+           dsp/segmentation/cluster_segmenter.h \
+           dsp/segmentation/SavedFeatureSegmenter.h \
+           dsp/segmentation/Segmenter.h \
+           dsp/segmentation/segment.h \
            dsp/signalconditioning/DFProcess.h \
            dsp/signalconditioning/Filter.h \
            dsp/signalconditioning/FiltFilt.h \
@@ -53,6 +59,11 @@ SOURCES += base/Pitch.cpp \
            dsp/onsets/PeakPicking.cpp \
            dsp/phasevocoder/PhaseVocoder.cpp \
            dsp/rateconversion/Decimator.cpp \
+           dsp/segmentation/cluster_melt.c \
+           dsp/segmentation/ClusterMeltSegmenter.cpp \
+           dsp/segmentation/cluster_segmenter.c \
+           dsp/segmentation/SavedFeatureSegmenter.cpp \
+           dsp/segmentation/Segmenter.cpp \
            dsp/signalconditioning/DFProcess.cpp \
            dsp/signalconditioning/Filter.cpp \
            dsp/signalconditioning/FiltFilt.cpp \

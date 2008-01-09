@@ -1,6 +1,10 @@
 #ifndef _SEGMENT_H
 #define _SEGMENT_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /*
  *  segment.h
  *  soundbite
@@ -31,6 +35,10 @@ typedef enum
 	FEATURE_TYPE_CONSTQ = 1, 
 	FEATURE_TYPE_CHROMA 
 } feature_types;
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
 

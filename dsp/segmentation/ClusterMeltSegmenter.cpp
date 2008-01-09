@@ -11,15 +11,16 @@
 #include <cmath>
 
 #include "ClusterMeltSegmenter.h"
-#include "lib_constQ.h"
 #include "cluster_segmenter.h"
 #include "segment.h"
+
+#include "dsp/transforms/FFT.h"
 
 ClusterMeltSegmenter::ClusterMeltSegmenter(ClusterMeltSegmenterParams params) : window(NULL),
 constq(NULL),
 featureType(params.featureType),
-windowSize(params.windowSize),
 hopSize(params.hopSize),
+windowSize(params.windowSize),
 fmin(params.fmin),
 fmax(params.fmax),
 nbins(params.nbins),
@@ -36,47 +37,102 @@ void ClusterMeltSegmenter::initialise(int fs)
 	samplerate = fs;
 	if (featureType != FEATURE_TYPE_UNKNOWN)
 	{
-		ncoeff = static_cast<int>(ceil(nbins * (log(fmax / static_cast<double>(fmin))) / log(2.0)));
-		constq = init_constQ(fmin, fmax, nbins, samplerate, ncoeff);	
+//!!!		ncoeff = static_cast<int>(ceil(nbins * (log(fmax / static_cast<double>(fmin))) / log(2.0)));
+		CQConfig config;
+		config.FS = samplerate;
+		config.min = fmin;
+		config.max = fmax;
+		config.BPO = nbins;
+		config.CQThresh = 0.0054;
+		constq = new ConstantQ(config);
+//!!!		constq = init_constQ(fmin, fmax, nbins, samplerate, ncoeff);	
+		ncoeff = constq->getK();
 	}
 }
 
 ClusterMeltSegmenter::~ClusterMeltSegmenter() 
 {
-	delete [] window;
-	if (constq)
-		close_constQ(constq);
+	delete window;
+	delete constq;
+//!!!	if (constq)
+//		close_constQ(constq);
+}
+
+int
+ClusterMeltSegmenter::getWindowsize()
+{
+	if (featureType != FEATURE_TYPE_UNKNOWN) {
+		std::cerr << "rate = " << samplerate << ", fft length = " << constq->getfftlength() << ", fmin = " << fmin << ", fmax = " << fmax << ", nbins = " << nbins << ", K = " << constq->getK() << ", Q = " << constq->getQ() << std::endl;
+		return constq->getfftlength();
+	} else {
+		return static_cast<int>(windowSize * samplerate);
+	}
+}
+
+int
+ClusterMeltSegmenter::getHopsize()
+{
+	return static_cast<int>(hopSize * samplerate);
 }
 
 void ClusterMeltSegmenter::extractFeatures(double* samples, int nsamples)
 {
 	// create a new window if needed
+/*!!!
 	if (!window || nsamples != windowLength)
 	{
 		if (window)
 			delete [] window;
-		window = hamming_p(nsamples);
+//		Window<double>(HammingWindow, nsamples).cut
+//!!!		window = hamming_p(nsamples);
 		windowLength = nsamples;
 	}	
-	
+*/
+	if (!window || window->getSize() != nsamples) {
+		delete window;
+		window = new Window<double>(HammingWindow, nsamples);
+	}
+
 	// copy the samples before windowing in case we need them for something else
 	double* frame = new double[nsamples];
-	for (int i = 0; i < nsamples; i++)
-		frame[i] = samples[i] * window[i];
+//	for (int i = 0; i < nsamples; i++)
+//		frame[i] = samples[i] * window[i];
+	window->cut(frame);
 	
+	std::cerr << "nsamples = " << nsamples << std::endl;
+
+	double *real = new double[nsamples];
+	double *imag = new double[nsamples];
+
+	FFT::process(nsamples, false, frame, 0, real, imag);
+
+	double *cqre = new double[ncoeff];
+	double *cqim = new double[ncoeff];
+
+	constq->process(real, imag, cqre, cqim);
+
 	// extract const-Q
-	do_constQ(constq, frame, nsamples);
-	int ncq = constq->ncoeff;
-	
+//!!!	do_constQ(constq, frame, nsamples);
+//	int ncq = constq->ncoeff;
+
 	delete [] frame;
+	delete [] real;
+	delete [] imag;
 	
-	if (ncq == ncoeff)		// else feature extraction failed
-	{
-		vector<double> cq(ncq);
-		for (int i = 0; i < ncq; i++)
-			cq[i] = constq->absconstQtransform[i];
+//!!!	if (ncq == ncoeff)		// else feature extraction failed
+//	{
+//		vector<double> cq(ncq);
+//		for (int i = 0; i < ncq; i++)
+//			cq[i] = constq->absconstQtransform[i];
+		vector<double> cq(ncoeff);
+		for (int i = 0; i < ncoeff; ++i) {
+			cq[i] = sqrt(cqre[i] * cqre[i] + cqim[i] * cqim[i]);
+		}
 		features.push_back(cq);
-	}
+//	}
+
+		delete[] cqre;
+		delete[] cqim;
 }
 
 void ClusterMeltSegmenter::segment(int m)
@@ -95,7 +151,8 @@ void ClusterMeltSegmenter::segment()
 {
 	if (constq)
 	{
-		close_constQ(constq);		// finished extracting features
+//!!!		close_constQ(constq);		// finished extracting features
+		delete constq;
 		constq = NULL;
 	}
 	
