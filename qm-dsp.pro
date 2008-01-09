@@ -37,13 +37,13 @@ HEADERS += base/Pitch.h \
            dsp/tonal/TCSgram.h \
            dsp/tonal/TonalEstimator.h \
            dsp/transforms/FFT.h \
-           hmm/HMM.h \
+           hmm/hmm.h \
            maths/Correlation.h \
            maths/Histogram.h \
            maths/MathAliases.h \
            maths/MathUtilities.h \
            maths/Polyfit.h \
-           maths/pca/PCA.h
+           maths/pca/pca.h
 SOURCES += base/Pitch.cpp \
            dsp/chromagram/Chromagram.cpp \
            dsp/chromagram/ChromaProcess.cpp \
@@ -62,7 +62,7 @@ SOURCES += base/Pitch.cpp \
            dsp/tonal/TCSgram.cpp \
            dsp/tonal/TonalEstimator.cpp \
            dsp/transforms/FFT.cpp \
-           hmm/HMM.c \
+           hmm/hmm.c \
            maths/Correlation.cpp \
            maths/MathUtilities.cpp \
-           maths/pca/PCA.c
+           maths/pca/pca.c

@@ -23,7 +23,7 @@
 #include <stdlib.h>
 #include <math.h>
 
-#include "PCA.h"
+#include "pca.h"
 
 #define SIGN(a, b) ( (b) < 0 ? -fabs(a) : fabs(a) )
 

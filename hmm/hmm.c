@@ -19,7 +19,7 @@
 #include <cblas.h>		/* BLAS for matrix multiplication */
 #endif
 
-#include "HMM.h"
+#include "hmm.h"
 
 model_t* hmm_init(double** x, int T, int L, int N)
 {
