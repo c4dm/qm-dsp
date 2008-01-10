@@ -76,14 +76,30 @@ void ClusterMeltSegmenter::initialise(int fs)
         
     } else if (featureType == FEATURE_TYPE_MFCC) {
 
+        // run internal processing at 22050 or thereabouts
+        int internalRate = 22050;
+        int decimationFactor = samplerate / internalRate;
+        if (decimationFactor < 1) decimationFactor = 1;
+
+        // must be a power of two
+        while (decimationFactor & (decimationFactor - 1)) ++decimationFactor;
+
+        if (decimationFactor > Decimator::getHighestSupportedFactor()) {
+            decimationFactor = Decimator::getHighestSupportedFactor();
+        }
+
+        if (decimationFactor > 1) {
+            decimator = new Decimator(getWindowsize(), decimationFactor);
+        }
+
         MFCCConfig config;
-        config.FS = samplerate;
-        config.fftsize = 1024;
-        config.nceps = 20;
-        config.want_c0 = false;
+        config.FS = samplerate / decimationFactor;
+        config.fftsize = 2048;
+        config.nceps = 19;
+        config.want_c0 = true;
 
         mfcc = new MFCC(config);
-        ncoeff = config.nceps;
+        ncoeff = config.nceps + 1;
     }
 }
 
@@ -235,6 +251,13 @@ void ClusterMeltSegmenter::extractFeaturesMFCC(const double* samples, int nsampl
     const double *psource = samples;
     int pcount = nsamples;
 
+    if (decimator) {
+        pcount = nsamples / decimator->getFactor();
+        double *decout = new double[pcount];
+        decimator->process(samples, decout);
+        psource = decout;
+    }
+
     int origin = 0;
     int frames = 0;
 
@@ -271,6 +294,8 @@ void ClusterMeltSegmenter::extractFeaturesMFCC(const double* samples, int nsampl
     for (int i = 0; i < ncoeff; ++i) {
         cc[i] /= frames;
     }
+
+    if (decimator) delete[] psource;
 
     features.push_back(cc);
 }
