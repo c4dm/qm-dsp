@@ -10,6 +10,8 @@
 
 #include "Decimator.h"
 
+#include <iostream>
+
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
@@ -37,7 +39,32 @@ void Decimator::initialise( unsigned int inLength, unsigned int decFactor)
 
     decBuffer = new double[ m_inputLength ];
 
-    if( m_decFactor == 4 )
+    // If adding new factors here, add them to
+    // getHighestSupportedFactor in the header as well
+
+    if(m_decFactor == 8)
+    {
+        //////////////////////////////////////////////////
+        b[0] = 0.060111378492136;
+        b[1] = -0.257323420830598;
+        b[2] = 0.420583503165928;
+        b[3] = -0.222750785197418;
+        b[4] = -0.222750785197418;
+        b[5] = 0.420583503165928;
+        b[6] = -0.257323420830598;
+        b[7] = 0.060111378492136;
+
+        a[0] = 1;
+        a[1] = -5.667654878577432;
+        a[2] = 14.062452278088417;
+        a[3] = -19.737303840697738;
+        a[4] = 16.889698874608641;
+        a[5] = -8.796600612325928;
+        a[6] = 2.577553446979888;
+        a[7] = -0.326903916815751;
+        //////////////////////////////////////////////////
+    }
+    else if( m_decFactor == 4 )
     {
 	//////////////////////////////////////////////////
 	b[ 0 ] = 0.10133306904918619;
@@ -82,6 +109,10 @@ void Decimator::initialise( unsigned int inLength, unsigned int decFactor)
     }
     else
     {
+        if ( m_decFactor != 1 ) {
+            std::cerr << "WARNING: Decimator::initialise: unsupported decimation factor " << m_decFactor << ", no antialiasing filter will be used" << std::endl;
+        }
+
 	//////////////////////////////////////////////////
 	b[ 0 ] = 1;
 	b[ 1 ] = 0;
@@ -117,7 +148,7 @@ void Decimator::resetFilter()
     o1=o2=o3=o4=o5=o6=o7=0;
 }
 
-void Decimator::doAntiAlias(double *src, double *dst, unsigned int length)
+void Decimator::doAntiAlias(const double *src, double *dst, unsigned int length)
 {
 
     for( unsigned int i = 0; i < length; i++ )
@@ -139,7 +170,7 @@ void Decimator::doAntiAlias(double *src, double *dst, unsigned int length)
 
 }
 
-void Decimator::process(double *src, double *dst)
+void Decimator::process(const double *src, double *dst)
 {
     if( m_decFactor != 1 )
     {

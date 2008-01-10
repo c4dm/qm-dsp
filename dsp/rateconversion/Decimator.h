@@ -13,11 +13,14 @@
 class Decimator  
 {
 public:
-    void process( double* src, double* dst );
-    void doAntiAlias( double* src, double* dst, unsigned int length );
+    void process( const double* src, double* dst );
+    void doAntiAlias( const double* src, double* dst, unsigned int length );
 
     Decimator( unsigned int inLength, unsigned int decFactor );
     virtual ~Decimator();
+
+    int getFactor() const { return m_decFactor; }
+    static int getHighestSupportedFactor() { return 8; }
 
 private:
     void resetFilter();
