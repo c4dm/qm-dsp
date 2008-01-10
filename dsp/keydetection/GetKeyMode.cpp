@@ -68,7 +68,7 @@ m_SortedBuffer(0)
 	m_ChromaConfig.max = m_ChromaConfig.max * 2;
 	m_ChromaConfig.max = m_ChromaConfig.max * 2;
 */
-	std::cerr << "Chromagram range: " << m_ChromaConfig.min << " -> " << m_ChromaConfig.max << std::endl;
+//	std::cerr << "Chromagram range: " << m_ChromaConfig.min << " -> " << m_ChromaConfig.max << std::endl;
 
 	m_ChromaConfig.BPO = 36;
 	m_ChromaConfig.CQThresh = 0.0054;
@@ -176,12 +176,13 @@ int GetKeyMode::process(double *PCMData)
 	// Added 21.11.07 by Chris Sutton based on debugging with Katy Noland + comparison with Matlab equivalent.
 	MathUtilities::circShift( m_ChrPointer, m_BPO, 1);
 
+/*
 	std::cout << "raw chroma: ";
 	for (int ii = 0; ii < m_BPO; ++ii) {
 		std::cout << m_ChrPointer[ii] << " ";
 	}
 	std::cout << std::endl;
-
+*/
 	// populate hpcp values;
 	int cbidx;
 	for( j = 0; j < m_BPO; j++ )
@@ -227,17 +228,18 @@ int GetKeyMode::process(double *PCMData)
 	}
 
 
+/*
 	std::cout << "raw keys: ";
 	for (int ii = 0; ii < 2*m_BPO; ++ii) {
 		std::cout << m_Keys[ii] << " ";
 	}
 	std::cout << std::endl;
-
+*/
 	double dummy;
 	// '1 +' because we number keys 1-24, not 0-23.
 	key = 1 + (int)ceil( (double)MathUtilities::getMax( m_Keys, 2* m_BPO, &dummy )/3 );
 
-	std::cout << "key pre-sorting: " << key << std::endl;
+//	std::cout << "key pre-sorting: " << key << std::endl;
 
 
 	//Median filtering
@@ -267,13 +269,13 @@ int GetKeyMode::process(double *PCMData)
 
 	//quicksort 
 	qsort(m_SortedBuffer, m_MedianBufferFilling, sizeof(unsigned int), MathUtilities::compareInt);
-
+/*
 	std::cout << "sorted: ";
 	for (int ii = 0; ii < m_MedianBufferFilling; ++ii) {
 		std::cout << m_SortedBuffer[ii] << " ";
 	}
 	std::cout << std::endl;
-
+*/
 	int sortlength = m_MedianBufferFilling;
 	int midpoint = (int)ceil((double)sortlength/2);
 
