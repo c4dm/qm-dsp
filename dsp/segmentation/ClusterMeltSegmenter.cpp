@@ -18,10 +18,12 @@
 #include "dsp/transforms/FFT.h"
 #include "dsp/chromagram/ConstantQ.h"
 #include "dsp/rateconversion/Decimator.h"
+#include "dsp/mfcc/MFCC.h"
 
 ClusterMeltSegmenter::ClusterMeltSegmenter(ClusterMeltSegmenterParams params) :
     window(NULL),
     constq(NULL),
+    mfcc(NULL),
     featureType(params.featureType),
     hopSize(params.hopSize),
     windowSize(params.windowSize),
@@ -33,7 +35,7 @@ ClusterMeltSegmenter::ClusterMeltSegmenter(ClusterMeltSegmenterParams params) :
     nclusters(params.nclusters),
     histogramLength(params.histogramLength),
     neighbourhoodLimit(params.neighbourhoodLimit),
-    decimator(0)
+    decimator(NULL)
 {
 }
 
@@ -41,9 +43,10 @@ void ClusterMeltSegmenter::initialise(int fs)
 {
     samplerate = fs;
 
-    if (featureType != FEATURE_TYPE_UNKNOWN)
-    {
-        // always run internal processing at 11025 or thereabouts
+    if (featureType == FEATURE_TYPE_CONSTQ ||
+        featureType == FEATURE_TYPE_CHROMA) {
+        
+        // run internal processing at 11025 or thereabouts
         int internalRate = 11025;
         int decimationFactor = samplerate / internalRate;
         if (decimationFactor < 1) decimationFactor = 1;
@@ -68,8 +71,19 @@ void ClusterMeltSegmenter::initialise(int fs)
 
         constq = new ConstantQ(config);
         constq->sparsekernel();
-
+        
         ncoeff = constq->getK();
+        
+    } else if (featureType == FEATURE_TYPE_MFCC) {
+
+        MFCCConfig config;
+        config.FS = samplerate;
+        config.fftsize = 1024;
+        config.nceps = 20;
+        config.want_c0 = false;
+
+        mfcc = new MFCC(config);
+        ncoeff = config.nceps;
     }
 }
 
@@ -83,24 +97,6 @@ ClusterMeltSegmenter::~ClusterMeltSegmenter()
 int
 ClusterMeltSegmenter::getWindowsize()
 {
-    if (featureType != FEATURE_TYPE_UNKNOWN) {
-
-        if (constq) {
-/*
-            std::cerr << "ClusterMeltSegmenter::getWindowsize: "
-                      << "rate = " << samplerate
-                      << ", dec factor = " << (decimator ? decimator->getFactor() : 1)
-                      << ", fft length = " << constq->getfftlength()
-                      << ", fmin = " << fmin
-                      << ", fmax = " << fmax
-                      << ", nbins = " << nbins
-                      << ", K = " << constq->getK()
-                      << ", Q = " << constq->getQ()
-                      << std::endl;
-*/
-        }
-    }
-
     return static_cast<int>(windowSize * samplerate);
 }
 
@@ -112,9 +108,19 @@ ClusterMeltSegmenter::getHopsize()
 
 void ClusterMeltSegmenter::extractFeatures(const double* samples, int nsamples)
 {
+    if (featureType == FEATURE_TYPE_CONSTQ ||
+        featureType == FEATURE_TYPE_CHROMA) {
+        extractFeaturesConstQ(samples, nsamples);
+    } else if (featureType == FEATURE_TYPE_MFCC) {
+        extractFeaturesMFCC(samples, nsamples);
+    }
+}
+
+void ClusterMeltSegmenter::extractFeaturesConstQ(const double* samples, int nsamples)
+{
     if (!constq) {
-        std::cerr << "ERROR: ClusterMeltSegmenter::extractFeatures: "
-                  << "Cannot run unknown feature type (or initialise not called)"
+        std::cerr << "ERROR: ClusterMeltSegmenter::extractFeaturesConstQ: "
+                  << "No const-q: initialise not called?"
                   << std::endl;
         return;
     }
@@ -198,14 +204,75 @@ void ClusterMeltSegmenter::extractFeatures(const double* samples, int nsamples)
     delete [] frame;
 
     for (int i = 0; i < ncoeff; ++i) {
-//        std::cerr << cq[i] << " ";
         cq[i] /= frames;
     }
-//    std::cerr << std::endl;
 
     if (decimator) delete[] psource;
 
     features.push_back(cq);
+}
+
+void ClusterMeltSegmenter::extractFeaturesMFCC(const double* samples, int nsamples)
+{
+    if (!mfcc) {
+        std::cerr << "ERROR: ClusterMeltSegmenter::extractFeaturesMFCC: "
+                  << "No mfcc: initialise not called?"
+                  << std::endl;
+        return;
+    }
+
+    if (nsamples < getWindowsize()) {
+        std::cerr << "ERROR: ClusterMeltSegmenter::extractFeatures: nsamples < windowsize (" << nsamples << " < " << getWindowsize() << ")" << std::endl;
+        return;
+    }
+
+    int fftsize = mfcc->getfftlength();
+
+    vector<double> cc(ncoeff);
+
+    for (int i = 0; i < ncoeff; ++i) cc[i] = 0.0;
+    
+    const double *psource = samples;
+    int pcount = nsamples;
+
+    int origin = 0;
+    int frames = 0;
+
+    double *frame = new double[fftsize];
+    double *ccout = new double[ncoeff];
+
+    while (origin <= pcount) {
+
+        // always need at least one fft window per block, but after
+        // that we want to avoid having any incomplete ones
+        if (origin > 0 && origin + fftsize >= pcount) break;
+
+        for (int i = 0; i < fftsize; ++i) {
+            if (origin + i < pcount) {
+                frame[i] = psource[origin + i];
+            } else {
+                frame[i] = 0.0;
+            }
+        }
+
+        mfcc->process(fftsize, frame, ccout);
+	
+        for (int i = 0; i < ncoeff; ++i) {
+            cc[i] += ccout[i];
+        }
+        ++frames;
+
+        origin += fftsize/2;
+    }
+
+    delete [] ccout;
+    delete [] frame;
+
+    for (int i = 0; i < ncoeff; ++i) {
+        cc[i] /= frames;
+    }
+
+    features.push_back(cc);
 }
 
 void ClusterMeltSegmenter::segment(int m)
@@ -222,13 +289,12 @@ void ClusterMeltSegmenter::setFeatures(const vector<vector<double> >& f)
 
 void ClusterMeltSegmenter::segment()
 {
-    if (constq)
-    {
-        delete constq;
-        constq = 0;
-        delete decimator;
-        decimator = 0;
-    }
+    delete constq;
+    constq = 0;
+    delete mfcc;
+    mfcc = 0;
+    delete decimator;
+    decimator = 0;
 	
     std::cerr << "ClusterMeltSegmenter::segment: have " << features.size()
               << " features with " << features[0].size() << " coefficients (ncoeff = " << ncoeff << ", ncomponents = " << ncomponents << ")" << std::endl;
@@ -250,7 +316,8 @@ void ClusterMeltSegmenter::segment()
 	
     q = new int[features.size()];
 	
-    if (featureType == FEATURE_TYPE_UNKNOWN)
+    if (featureType == FEATURE_TYPE_UNKNOWN ||
+        featureType == FEATURE_TYPE_MFCC)
         cluster_segment(q, arrFeatures, features.size(), features[0].size(), nHMMStates, histogramLength, 
                         nclusters, neighbourhoodLimit);
     else

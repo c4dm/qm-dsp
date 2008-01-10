@@ -24,6 +24,7 @@ HEADERS += base/Pitch.h \
            dsp/chromagram/ChromaProcess.h \
            dsp/chromagram/ConstantQ.h \
            dsp/keydetection/GetKeyMode.h \
+           dsp/mfcc/MFCC.h \
            dsp/onsets/DetectionFunction.h \
            dsp/onsets/PeakPicking.h \
            dsp/phasevocoder/PhaseVocoder.h \
@@ -55,6 +56,7 @@ SOURCES += base/Pitch.cpp \
            dsp/chromagram/ChromaProcess.cpp \
            dsp/chromagram/ConstantQ.cpp \
            dsp/keydetection/GetKeyMode.cpp \
+           dsp/mfcc/MFCC.cpp \
            dsp/onsets/DetectionFunction.cpp \
            dsp/onsets/PeakPicking.cpp \
            dsp/phasevocoder/PhaseVocoder.cpp \

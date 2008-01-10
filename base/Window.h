@@ -40,7 +40,7 @@ public:
 	encache();
 	return *this;
     }
-    virtual ~Window() { delete m_cache; }
+    virtual ~Window() { delete[] m_cache; }
     
     void cut(T *src) const { cut(src, src); }
     void cut(T *src, T *dst) const {

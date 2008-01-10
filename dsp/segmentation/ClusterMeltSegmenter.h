@@ -19,6 +19,7 @@ using std::vector;
 
 class Decimator;
 class ConstantQ;
+class MFCC;
 
 class ClusterMeltSegmenterParams
 // defaults are sensible for 11025Hz with 0.2 second hopsize
@@ -66,8 +67,12 @@ public:
 protected:
     void makeSegmentation(int* q, int len);
 	
+    void extractFeaturesConstQ(const double *, int);
+    void extractFeaturesMFCC(const double *, int);
+
     Window<double> *window;
-    ConstantQ* constq;	
+    ConstantQ* constq; 
+    MFCC* mfcc;
     model_t* model;				// the HMM
     int* q;					// the decoded HMM state sequence
     vector<vector<double> > histograms;	
