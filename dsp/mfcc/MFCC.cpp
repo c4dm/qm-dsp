@@ -124,11 +124,13 @@ MFCC::MFCC(MFCCConfig config)
      * We calculate now mfccDCT matrix 
      * NB: +1 because of the DC component
      */
+
+    const double pi = 3.14159265358979323846264338327950288;
   
     for (i=0; i<nceps+1; i++) {
         for (j=0; j<totalFilters; j++) {
             mfccDCTMatrix[i][j] = (1./sqrt((double) totalFilters / 2.))  
-                * cos((double) i * ((double) j + 0.5) / (double) totalFilters * M_PI);
+                * cos((double) i * ((double) j + 0.5) / (double) totalFilters * pi);
         }
     }
 
@@ -205,7 +207,7 @@ int MFCC::process(int length, double *inframe, double *outceps)
     /* Zero-pad if needed */
     memcpy(inputData, inframe, length*sizeof(double));
 
-    window->cut(inputData);
+//!!!    window->cut(inputData);
   
     /* Calculate the fft on the input frame */
     FFT::process(fftSize, 0, inputData, imagIn, realOut, imagOut);
