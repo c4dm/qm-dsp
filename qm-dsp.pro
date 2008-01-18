@@ -31,6 +31,7 @@ HEADERS += base/Pitch.h \
            dsp/onsets/PeakPicking.h \
            dsp/phasevocoder/PhaseVocoder.h \
            dsp/rateconversion/Decimator.h \
+           dsp/rhythm/BeatSpectrum.h \
            dsp/segmentation/cluster_melt.h \
            dsp/segmentation/ClusterMeltSegmenter.h \
            dsp/segmentation/cluster_segmenter.h \
@@ -48,7 +49,9 @@ HEADERS += base/Pitch.h \
            dsp/transforms/FFT.h \
            hmm/hmm.h \
            maths/Correlation.h \
+           maths/CosineDistance.h \
            maths/Histogram.h \
+           maths/KLDivergence.h \
            maths/MathAliases.h \
            maths/MathUtilities.h \
            maths/Polyfit.h \
@@ -63,6 +66,7 @@ SOURCES += base/Pitch.cpp \
            dsp/onsets/PeakPicking.cpp \
            dsp/phasevocoder/PhaseVocoder.cpp \
            dsp/rateconversion/Decimator.cpp \
+           dsp/rhythm/BeatSpectrum.cpp \
            dsp/segmentation/cluster_melt.c \
            dsp/segmentation/ClusterMeltSegmenter.cpp \
            dsp/segmentation/cluster_segmenter.c \
@@ -79,5 +83,7 @@ SOURCES += base/Pitch.cpp \
            dsp/transforms/FFT.cpp \
            hmm/hmm.c \
            maths/Correlation.cpp \
+           maths/CosineDistance.cpp \
+           maths/KLDivergence.cpp \
            maths/MathUtilities.cpp \
            maths/pca/pca.c
