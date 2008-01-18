@@ -141,7 +141,7 @@ MFCC::MFCC(MFCCConfig config)
     }
    
     /* The analysis window */
-    window = new Window<double>(HammingWindow, fftSize);
+    window      = new Window<double>(config.window, fftSize);
 
     /* Allocate memory for the FFT */
     imagIn      = (double*)calloc(fftSize, sizeof(double));

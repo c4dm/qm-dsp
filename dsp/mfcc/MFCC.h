@@ -19,8 +19,10 @@ struct MFCCConfig {
     int nceps;
     double logpower;
     bool want_c0;
+    WindowType window;
     MFCCConfig(int _FS) :
-        FS(_FS), fftsize(2048), nceps(19), logpower(1.0), want_c0(true) { }
+        FS(_FS), fftsize(2048), nceps(19),
+        logpower(1.0), want_c0(true), window(HammingWindow) { }
 };
 
 class MFCC

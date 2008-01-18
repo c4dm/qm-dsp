@@ -23,8 +23,8 @@
 class BeatSpectrum
 {
 public:
-    BeatSpectrum();
-    ~BeatSpectrum();
+    BeatSpectrum() { }
+    ~BeatSpectrum() { }
 
     std::vector<double> process(const std::vector<std::vector<double> > &inmatrix);
 

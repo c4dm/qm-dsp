@@ -12,6 +12,7 @@
 #define CHROMAGRAM_H
 
 #include "dsp/transforms/FFT.h"
+#include "base/Window.h"
 #include "ConstantQ.h"
 
 struct ChromaConfig{
@@ -30,8 +31,8 @@ public:
     Chromagram( ChromaConfig Config );
     ~Chromagram();
 	
-    double* process( double *data ); // time domain
-    double* process( double *real, double *imag ); // frequency domain
+    double* process( const double *data ); // time domain
+    double* process( const double *real, const double *imag ); // frequency domain
     void unityNormalise( double* src );
 
     // Complex arithmetic
@@ -45,6 +46,9 @@ public:
 private:
     int initialise( ChromaConfig Config );
     int deInitialise();
+
+    Window<double> *m_window;
+    double *m_windowbuf;
 	
     double* m_chromadata;
     double m_FMin;

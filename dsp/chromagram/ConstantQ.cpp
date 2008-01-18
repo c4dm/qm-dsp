@@ -129,7 +129,7 @@ void ConstantQ::sparsekernel()
 }
 
 //-----------------------------------------------------------------------------
-double* ConstantQ::process( double* fftdata )
+double* ConstantQ::process( const double* fftdata )
 {
     for (unsigned row=0; row<2*m_uK; row++) 
     {
@@ -188,7 +188,8 @@ void ConstantQ::deInitialise()
     delete [] m_CQdata;
 }
 
-void ConstantQ::process(double *FFTRe, double* FFTIm, double *CQRe, double *CQIm)
+void ConstantQ::process(const double *FFTRe, const double* FFTIm,
+                        double *CQRe, double *CQIm)
 {
     for (unsigned row=0; row<m_uK; row++) 
     {

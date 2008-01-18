@@ -27,12 +27,13 @@ class ConstantQ {
 	
 //public functions incl. sparsekernel so can keep out of loop in main
 public:
-    void process( double* FFTRe, double* FFTIm, double* CQRe, double* CQIm );
+    void process( const double* FFTRe, const double* FFTIm,
+                  double* CQRe, double* CQIm );
 
     ConstantQ( CQConfig Config );
     ~ConstantQ();
 
-    double* process( double* FFTData );
+    double* process( const double* FFTData );
 
     void sparsekernel();
 

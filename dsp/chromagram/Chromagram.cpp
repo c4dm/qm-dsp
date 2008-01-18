@@ -59,6 +59,9 @@ int Chromagram::initialise( ChromaConfig Config )
     m_CQRe  = new double[ m_uK ];
     m_CQIm  = new double[ m_uK ];
 
+    m_window = 0;
+    m_windowbuf = 0;
+
     // Generate CQ Kernel 
     m_ConstantQ->sparsekernel();
     return 1;
@@ -71,6 +74,9 @@ Chromagram::~Chromagram()
 
 int Chromagram::deInitialise()
 {
+    delete[] m_windowbuf;
+    delete m_window;
+
     delete [] m_chromadata;
 
     delete m_FFT;
@@ -111,15 +117,25 @@ void Chromagram::unityNormalise(double *src)
 }
 
 
-double* Chromagram::process( double *data )
+double* Chromagram::process( const double *data )
 {
+    if (!m_window) {
+        m_window = new Window<double>(HammingWindow, m_frameSize);
+        m_windowbuf = new double[m_frameSize];
+    }
+
+    for (int i = 0; i < m_frameSize; ++i) {
+        m_windowbuf[i] = data[i];
+    }
+    m_window->cut(m_windowbuf);
+
     // FFT of current frame
-    m_FFT->process( m_frameSize, 0, data, NULL, m_FFTRe, m_FFTIm ); 
+    m_FFT->process(m_frameSize, 0, m_windowbuf, NULL, m_FFTRe, m_FFTIm);
 
     return process(m_FFTRe, m_FFTIm);
 }
 
-double* Chromagram::process( double *real, double *imag )
+double* Chromagram::process( const double *real, const double *imag )
 {
     // initialise chromadata to 0
     for (unsigned i = 0; i < m_BPO; i++) m_chromadata[i] = 0;
