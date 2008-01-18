@@ -17,7 +17,10 @@ struct MFCCConfig {
     int FS;
     int fftsize;
     int nceps;
+    double logpower;
     bool want_c0;
+    MFCCConfig(int _FS) :
+        FS(_FS), fftsize(2048), nceps(19), logpower(1.0), want_c0(true) { }
 };
 
 class MFCC
@@ -26,7 +29,20 @@ public:
     MFCC(MFCCConfig config);
     virtual ~MFCC();
 
-    int process(int length, double *inframe, double *outceps);
+    /**
+     * Process time-domain input data.  inframe must contain
+     * getfftlength() samples.  outceps must contain space for nceps
+     * values, plus one if want_c0 is specified.
+     */
+    int process(const double *inframe, double *outceps);
+
+    /**
+     * Process time-domain input data.  real and imag must contain
+     * getfftlength()/2+1 elements (i.e. the conjugate half of the FFT
+     * is not expected).  outceps must contain space for nceps values,
+     * plus one if want_c0 is specified.
+     */
+    int process(const double *real, const double *imag, double *outceps);
 
     int getfftlength() const { return fftSize; }
 
@@ -42,6 +58,7 @@ private:
     int     fftSize;
     
     int     totalFilters;
+    double  logPower;
     
     /* Misc. */
     int     samplingRate;
@@ -57,10 +74,12 @@ private:
     Window<double> *window;
     
     /* For the FFT */
-    double* imagIn;		// always zero
-    double* realOut;
-    double* imagOut;
-    
+    double *imagIn;		// always zero
+    double *realOut;
+    double *imagOut;
+    double *fftMag;
+    double *earMag;
+
     /* Set if user want C0 */
     int WANT_C0;
 };

@@ -24,7 +24,9 @@ FFT::~FFT()
 
 }
 
-void FFT::process(unsigned int p_nSamples, bool p_bInverseTransform, double *p_lpRealIn, double *p_lpImagIn, double *p_lpRealOut, double *p_lpImagOut)
+void FFT::process(unsigned int p_nSamples, bool p_bInverseTransform,
+                  const double *p_lpRealIn, const double *p_lpImagIn,
+                  double *p_lpRealOut, double *p_lpImagOut)
 {
 
     if(!p_lpRealIn || !p_lpRealOut || !p_lpImagOut) return;

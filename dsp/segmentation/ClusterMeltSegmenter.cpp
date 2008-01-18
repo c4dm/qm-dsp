@@ -92,8 +92,7 @@ void ClusterMeltSegmenter::initialise(int fs)
             decimator = new Decimator(getWindowsize(), decimationFactor);
         }
 
-        MFCCConfig config;
-        config.FS = samplerate / decimationFactor;
+        MFCCConfig config(samplerate / decimationFactor);
         config.fftsize = 2048;
         config.nceps = 19;
         config.want_c0 = true;
@@ -278,7 +277,7 @@ void ClusterMeltSegmenter::extractFeaturesMFCC(const double* samples, int nsampl
             }
         }
 
-        mfcc->process(fftsize, frame, ccout);
+        mfcc->process(frame, ccout);
 	
         for (int i = 0; i < ncoeff; ++i) {
             cc[i] += ccout[i];

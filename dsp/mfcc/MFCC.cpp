@@ -32,6 +32,7 @@ MFCC::MFCC(MFCCConfig config)
     fftSize           = config.fftsize;
 
     totalFilters      = linearFilters + logFilters;
+    logPower          = config.logpower;
   
     samplingRate      = config.FS;
   
@@ -50,12 +51,12 @@ MFCC::MFCC(MFCCConfig config)
  
     /* Allocate space for local vectors */
     mfccDCTMatrix     = (double**)calloc(nceps+1, sizeof(double*));
-    for (i=0;i<nceps+1; i++) {
+    for (i = 0; i < nceps+1; i++) {
         mfccDCTMatrix[i]= (double*)calloc(totalFilters, sizeof(double)); 
     }
 
     mfccFilterWeights = (double**)calloc(totalFilters, sizeof(double*));
-    for (i=0;i<totalFilters; i++) {
+    for (i = 0; i < totalFilters; i++) {
         mfccFilterWeights[i] = (double*)calloc(fftSize, sizeof(double)); 
     }
     
@@ -68,11 +69,11 @@ MFCC::MFCC(MFCCConfig config)
     triangleHeight = (double*)calloc(totalFilters,sizeof(double));
     fftFreqs       = (double*)calloc(fftSize,sizeof(double));
   
-    for (i=0;i<linearFilters;i++) {
+    for (i = 0; i < linearFilters; i++) {
         freqs[i] = lowestFrequency + ((double)i) * linearSpacing;
     }
   
-    for (i=linearFilters; i<totalFilters+2; i++) {
+    for (i = linearFilters; i < totalFilters+2; i++) {
         freqs[i] = freqs[linearFilters-1] * 
             pow(logSpacing, (double)(i-linearFilters+1));
     }
@@ -109,7 +110,8 @@ MFCC::MFCC(MFCCConfig config)
 
             if ((fftFreqs[j]>center[i]) && (fftFreqs[j]<upper[i])) {
 
-                mfccFilterWeights[i][j] = mfccFilterWeights[i][j] + triangleHeight[i] * (upper[i]-fftFreqs[j]) 
+                mfccFilterWeights[i][j] = mfccFilterWeights[i][j]
+                    + triangleHeight[i] * (upper[i]-fftFreqs[j]) 
                     / (upper[i]-center[i]);
             }
             else
@@ -127,24 +129,27 @@ MFCC::MFCC(MFCCConfig config)
 
     const double pi = 3.14159265358979323846264338327950288;
   
-    for (i=0; i<nceps+1; i++) {
-        for (j=0; j<totalFilters; j++) {
+    for (i = 0; i < nceps+1; i++) {
+        for (j = 0; j < totalFilters; j++) {
             mfccDCTMatrix[i][j] = (1./sqrt((double) totalFilters / 2.))  
                 * cos((double) i * ((double) j + 0.5) / (double) totalFilters * pi);
         }
     }
 
-    for (j=0;j<totalFilters;j++){
-        mfccDCTMatrix[0][j]     =  (sqrt(2.)/2.) * mfccDCTMatrix[0][j];
+    for (j = 0; j < totalFilters; j++){
+        mfccDCTMatrix[0][j] = (sqrt(2.)/2.) * mfccDCTMatrix[0][j];
     }
    
     /* The analysis window */
     window = new Window<double>(HammingWindow, fftSize);
 
     /* Allocate memory for the FFT */
-    imagIn      = (double*)calloc(fftSize,sizeof(double));
-    realOut     = (double*)calloc(fftSize,sizeof(double));
-    imagOut     = (double*)calloc(fftSize,sizeof(double));
+    imagIn      = (double*)calloc(fftSize, sizeof(double));
+    realOut     = (double*)calloc(fftSize, sizeof(double));
+    imagOut     = (double*)calloc(fftSize, sizeof(double));
+
+    earMag      = (double*)calloc(totalFilters, sizeof(double));
+    fftMag      = (double*)calloc(fftSize/2, sizeof(double));
   
     free(freqs);
     free(lower);
@@ -159,12 +164,12 @@ MFCC::~MFCC()
     int i;
   
     /* Free the structure */
-    for (i=0;i<nceps+1;i++) {
+    for (i = 0; i < nceps+1; i++) {
         free(mfccDCTMatrix[i]);
     }
     free(mfccDCTMatrix);
     
-    for (i=0;i<totalFilters; i++) {
+    for (i = 0; i < totalFilters; i++) {
         free(mfccFilterWeights[i]);
     }
     free(mfccFilterWeights);
@@ -174,6 +179,9 @@ MFCC::~MFCC()
     
     /* The analysis window */
     delete window;
+
+    free(earMag);
+    free(fftMag);
     
     /* Free the FFT */
     free(imagIn);
@@ -185,48 +193,47 @@ MFCC::~MFCC()
 /*
  * 
  * Extract the MFCC on the input frame 
- *
- * looks like we have to have length = fftSize ??????
  * 
  */ 
-int MFCC::process(int length, double *inframe, double *outceps)
+int MFCC::process(const double *inframe, double *outceps)
 {
-    int i,j;
-  
-    double *fftMag;
-    double *earMag;
+    double *inputData = (double *)malloc(fftSize * sizeof(double));
+    for (int i = 0; i < fftSize; ++i) inputData[i] = inframe[i];
 
-    double *inputData;
-  
-    double tmp;
-
-    earMag    = (double*)calloc(totalFilters, sizeof(double));
-    inputData = (double*)calloc(fftSize, sizeof(double)); 
-    fftMag    = (double*)calloc(fftSize, sizeof(double)); 
-    
-    /* Zero-pad if needed */
-    memcpy(inputData, inframe, length*sizeof(double));
-
-//!!!    window->cut(inputData);
+    window->cut(inputData);
   
     /* Calculate the fft on the input frame */
     FFT::process(fftSize, 0, inputData, imagIn, realOut, imagOut);
 
-    for (i = 0; i < fftSize; ++i) {
-        fftMag[i] = sqrt(realOut[i] * realOut[i] +
-                         imagOut[i] * imagOut[i]);
+    free(inputData);
+
+    return process(realOut, imagOut, outceps);
+}
+
+int MFCC::process(const double *real, const double *imag, double *outceps)
+{
+    int i, j;
+
+    for (i = 0; i < fftSize/2; ++i) {
+        fftMag[i] = sqrt(real[i] * real[i] + imag[i] * imag[i]);
+    }
+
+    for (i = 0; i < totalFilters; ++i) {
+        earMag[i] = 0.0;
     }
 
     /* Multiply by mfccFilterWeights */
-    for (i=0;i<totalFilters;i++) {
-        tmp = 0.;
-        for(j=0;j<fftSize/2; j++) {
-            tmp = tmp + (mfccFilterWeights[i][j]*fftMag[j]);
+    for (i = 0; i < totalFilters; i++) {
+        double tmp = 0.0;
+        for (j = 0; j < fftSize/2; j++) {
+            tmp = tmp + (mfccFilterWeights[i][j] * fftMag[j]);
         }
-        if (tmp>0)
-            earMag[i] = log10(tmp);
-	else
-            earMag[i] = 0.0;
+        if (tmp > 0) earMag[i] = log10(tmp);
+	else earMag[i] = 0.0;
+
+        if (logPower != 1.0) {
+            earMag[i] = pow(earMag[i], logPower);
+        }
     }
 
     /*
@@ -236,31 +243,27 @@ int MFCC::process(int length, double *inframe, double *outceps)
      *
      */
   
-    if (WANT_C0==1) {
+    if (WANT_C0 == 1) {
      
-        for (i=0;i<nceps+1;i++) {
-            tmp = 0.;
-            for (j=0;j<totalFilters;j++){
-                tmp = tmp + mfccDCTMatrix[i][j]*earMag[j];
+        for (i = 0; i < nceps+1; i++) {
+            double tmp = 0.;
+            for (j = 0; j < totalFilters; j++){
+                tmp = tmp + mfccDCTMatrix[i][j] * earMag[j];
             }
             outceps[i] = tmp;
         }
     }
     else 
     {  
-        for (i=1;i<nceps+1;i++) {
-            tmp = 0.;
-            for (j=0;j<totalFilters;j++){
-                tmp = tmp + mfccDCTMatrix[i][j]*earMag[j];
+        for (i = 1; i < nceps+1; i++) {
+            double tmp = 0.;
+            for (j = 0; j < totalFilters; j++){
+                tmp = tmp + mfccDCTMatrix[i][j] * earMag[j];
             }
             outceps[i-1] = tmp;
         }
     }
     
-    free(fftMag);
-    free(earMag);
-    free(inputData);
-
     return nceps;
 }
 

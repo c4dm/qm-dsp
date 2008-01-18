@@ -159,7 +159,9 @@ void hmm_train(double** x, int T, model_t* model)
 	int niter = 50;	
 	int iter = 0;
 	double loglik1, loglik2;
-	while(iter < niter && !(iter > 1 && (loglik - loglik1) < thresh * (loglik1 - loglik2)))	
+	int foundnan = 0;
+
+	while (iter < niter && !foundnan && !(iter > 1 && (loglik - loglik1) < thresh * (loglik1 - loglik2)))	
 	{
 		++iter;
 		
@@ -199,6 +201,11 @@ void hmm_train(double** x, int T, model_t* model)
 		fprintf(stderr, "iteration %d: loglik = %f\n", iter, loglik);		
 		fprintf(stderr, "re-estimation...\n");
 		fflush(stderr);
+
+		if (isnan(loglik)) {
+		    foundnan = 1;
+		    continue;
+		}
 		
 		baum_welch(p0, a, mu, cov, N, T, L, x, xi, gamma);
 			
@@ -278,6 +285,7 @@ void baum_welch(double* p0, double** a, double** mu, double** cov, int N, int T,
 		for (j = 0; j < N; j++)
 		{
 			a[i][j] = 0;
+			if (sum_gamma[i] == 0.) continue;
 			for (t = 0; t < T-1; t++)
 				a[i][j] += xi[t][i][j];
 			//s += a[i][j];

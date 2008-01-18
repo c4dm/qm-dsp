@@ -13,16 +13,16 @@
 class FFT  
 {
 public:
-    static void process(unsigned int p_nSamples, bool p_bInverseTransform,
-                        double *p_lpRealIn, double *p_lpImagIn,
-                        double *p_lpRealOut, double *p_lpImagOut);
+    static void process(unsigned int nSamples, bool bInverseTransform,
+                        const double *lpRealIn, const double *lpImagIn,
+                        double *lpRealOut, double *lpImagOut);
     FFT();
     virtual ~FFT();
 
 protected:
-    static unsigned int reverseBits(unsigned int p_nIndex, unsigned int p_nBits);
-    static unsigned int numberOfBitsNeeded( unsigned int p_nSamples );
-    static bool isPowerOfTwo( unsigned int p_nX );
+    static unsigned int reverseBits(unsigned int nIndex, unsigned int nBits);
+    static unsigned int numberOfBitsNeeded( unsigned int nSamples );
+    static bool isPowerOfTwo( unsigned int nX );
 };
 
 #endif
