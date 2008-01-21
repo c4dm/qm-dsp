@@ -4,7 +4,7 @@
     QM DSP Library
 
     Centre for Digital Music, Queen Mary, University of London.
-    This file copyright 2008 QMUL
+    This file copyright 2008 QMUL.
     All rights reserved.
 */
 
@@ -16,21 +16,33 @@
 using std::vector;
 
 /**
- * Calculate a symmetrised Kullback-Leibler divergence of Gaussian
- * models based on mean and variance vectors.  All input vectors must
- * be of equal size.
+ * Helper methods for calculating Kullback-Leibler divergences.
  */
-
 class KLDivergence
 {
 public:
     KLDivergence() { }
     ~KLDivergence() { }
 
-    double distance(const vector<double> &means1,
-		    const vector<double> &variances1,
-		    const vector<double> &means2,
-		    const vector<double> &variances2);
+    /**
+     * Calculate a symmetrised Kullback-Leibler divergence of Gaussian
+     * models based on mean and variance vectors.  All input vectors
+     * must be of equal size.
+     */
+    double distanceGaussian(const vector<double> &means1,
+                            const vector<double> &variances1,
+                            const vector<double> &means2,
+                            const vector<double> &variances2);
+
+    /**
+     * Calculate a Kullback-Leibler divergence of two probability
+     * distributions.  Input vectors must be of equal size.  If
+     * symmetrised is true, the result will be the symmetrised
+     * distance (equal to KL(d1, d2) + KL(d2, d1)).
+     */
+    double distanceDistribution(const vector<double> &d1,
+                                const vector<double> &d2,
+                                bool symmetrised);
 };
 
 #endif
