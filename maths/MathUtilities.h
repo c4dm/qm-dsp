@@ -17,17 +17,35 @@ class MathUtilities
 {
 public:	
     static double round( double x );
+
     static void	  getFrameMinMax( const double* data, unsigned int len,  double* min, double* max );
+
     static double mean( const double* src, unsigned int len );
     static double sum( const double* src, unsigned int len );
-    static double princarg( double ang );
     static double median( const double* src, unsigned int len );
+
+    static double princarg( double ang );
     static double mod( double x, double y);
+
     static void	  getAlphaNorm(const double *data, unsigned int len, unsigned int alpha, double* ANorm);
     static double getAlphaNorm(const std::vector <double> &data, unsigned int alpha );
+
     static void   circShift( double* data, int length, int shift);
+
     static int	  getMax( double* data, unsigned int length, double* max );
     static int    compareInt(const void * a, const void * b);
+
+    enum NormaliseType {
+        NormaliseNone,
+        NormaliseUnitSum,
+        NormaliseUnitMax
+    };
+
+    static void   normalise(double *data, int length,
+                            NormaliseType n = NormaliseUnitMax);
+
+    static void   normalise(std::vector<double> &data,
+                            NormaliseType n = NormaliseUnitMax);
 };
 
 #endif

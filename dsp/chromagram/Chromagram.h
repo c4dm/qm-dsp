@@ -21,7 +21,7 @@ struct ChromaConfig{
     double max;
     unsigned int BPO;
     double CQThresh;
-    bool isNormalised;
+    MathUtilities::NormaliseType normalise;
 };
 
 class Chromagram 
@@ -56,7 +56,7 @@ private:
     unsigned int m_BPO;
     unsigned int m_uK;
 
-    bool isNormalised;
+    MathUtilities::NormaliseType m_normalise;
 
     unsigned int m_frameSize;
     unsigned int m_hopSize;

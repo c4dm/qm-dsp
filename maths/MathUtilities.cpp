@@ -219,3 +219,75 @@ int MathUtilities::compareInt (const void * a, const void * b)
   return ( *(int*)a - *(int*)b );
 }
 
+void MathUtilities::normalise(double *data, int length, NormaliseType type)
+{
+    switch (type) {
+
+    case NormaliseNone: return;
+
+    case NormaliseUnitSum:
+    {
+        double sum = 0.0;
+        for (int i = 0; i < length; ++i) {
+            sum += data[i];
+        }
+        if (sum != 0.0) {
+            for (int i = 0; i < length; ++i) {
+                data[i] /= sum;
+            }
+        }
+    }
+    break;
+
+    case NormaliseUnitMax:
+    {
+        double max = 0.0;
+        for (int i = 0; i < length; ++i) {
+            if (fabs(data[i]) > max) {
+                max = fabs(data[i]);
+            }
+        }
+        if (max != 0.0) {
+            for (int i = 0; i < length; ++i) {
+                data[i] /= max;
+            }
+        }
+    }
+    break;
+
+    }
+}
+
+void MathUtilities::normalise(std::vector<double> &data, NormaliseType type)
+{
+    switch (type) {
+
+    case NormaliseNone: return;
+
+    case NormaliseUnitSum:
+    {
+        double sum = 0.0;
+        for (int i = 0; i < data.size(); ++i) sum += data[i];
+        if (sum != 0.0) {
+            for (int i = 0; i < data.size(); ++i) data[i] /= sum;
+        }
+    }
+    break;
+
+    case NormaliseUnitMax:
+    {
+        double max = 0.0;
+        for (int i = 0; i < data.size(); ++i) {
+            if (fabs(data[i]) > max) max = fabs(data[i]);
+        }
+        if (max != 0.0) {
+            for (int i = 0; i < data.size(); ++i) data[i] /= max;
+        }
+    }
+    break;
+
+    }
+}
+
+
+        

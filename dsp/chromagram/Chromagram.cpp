@@ -25,7 +25,7 @@ int Chromagram::initialise( ChromaConfig Config )
     m_FMin = Config.min;		// min freq
     m_FMax = Config.max;		// max freq
     m_BPO  = Config.BPO;		// bins per octave
-    isNormalised = Config.isNormalised; // true if frame normalisation is required
+    m_normalise = Config.normalise;     // if frame normalisation is required
 
     // No. of constant Q bins
     m_uK = ( unsigned int ) ceil( m_BPO * log(m_FMax/m_FMin)/log(2.0));	
@@ -157,8 +157,7 @@ double* Chromagram::process( const double *real, const double *imag )
 	}
     }
 
-    if( isNormalised )
-	unityNormalise( m_chromadata );
+    MathUtilities::normalise(m_chromadata, m_BPO, m_normalise);
 
     return m_chromadata;
 }
