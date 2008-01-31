@@ -148,8 +148,8 @@ double* ConstantQ::process( const double* fftdata )
 	const unsigned col = fftbin[i];
 	const double & r1  = real[i];
 	const double & i1  = imag[i];
-	const double & r2  = fftdata[ (2*m_FFTLength) - 2*col];
-	const double & i2  = fftdata[ (2*m_FFTLength) - 2*col+1];
+	const double & r2  = fftdata[ (2*m_FFTLength) - 2*col - 2 ];
+	const double & i2  = fftdata[ (2*m_FFTLength) - 2*col - 2 + 1 ];
 	// add the multiplication
 	m_CQdata[ 2*row  ] += (r1*r2 - i1*i2);
 	m_CQdata[ 2*row+1] += (r1*i2 + i1*r2);
@@ -209,8 +209,8 @@ void ConstantQ::process(const double *FFTRe, const double* FFTIm,
 	const unsigned col = fftbin[i];
 	const double & r1  = real[i];
 	const double & i1  = imag[i];
-	const double & r2  = FFTRe[ m_FFTLength - col];
-	const double & i2  = FFTIm[ m_FFTLength - col];
+	const double & r2  = FFTRe[ m_FFTLength - col - 1 ];
+	const double & i2  = FFTIm[ m_FFTLength - col - 1 ];
 	// add the multiplication
 	CQRe[ row ] += (r1*r2 - i1*i2);
 	CQIm[ row ] += (r1*i2 + i1*r2);
