@@ -77,6 +77,7 @@ private:
     double m_lockedTempo;
 
     double* m_tempoScratch;
+    double* m_smoothRCF; // Smoothed Output of Comb Filterbank (m_tempoScratch)
 	
     // Processing Buffers 
     double* m_rawDFFrame; // Original Detection Function Analysis Frame
@@ -91,9 +92,16 @@ private:
     Framer m_DFFramer;
     DFProcess* m_DFConditioning;
     Correlation m_correlator;
-
     // Config structure for DFProcess
     DFProcConfig m_DFPParams;
+
+	// also want to smooth m_tempoScratch 
+    DFProcess* m_RCFConditioning;
+    // Config structure for RCFProcess
+    DFProcConfig m_RCFPParams;
+
+
+
 };
 
 #endif

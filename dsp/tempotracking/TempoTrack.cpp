@@ -16,6 +16,8 @@
 #include <iostream>
 
 
+#define RAY43VAL
+
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
@@ -26,6 +28,7 @@ TempoTrack::TempoTrack( TTParams Params )
     m_rawDFFrame = NULL;
     m_smoothDFFrame = NULL;
     m_frameACF = NULL;
+	m_smoothRCF = NULL;
 
     m_dataLength = 0;
     m_winLength = 0;
@@ -56,6 +59,8 @@ void TempoTrack::initialise( TTParams Params )
     m_smoothDFFrame = new double[ m_winLength ];
     m_frameACF = new double[ m_winLength ];
     m_tempoScratch = new double[ m_lagLength ];
+	m_smoothRCF = new double[ m_lagLength ];
+
 
     unsigned int winPre = Params.WinT.pre;
     unsigned int winPost = Params.WinT.post;
@@ -73,6 +78,19 @@ void TempoTrack::initialise( TTParams Params )
 	
     m_DFConditioning = new DFProcess( m_DFPParams );
 
+
+	// these are parameters for smoothing m_tempoScratch
+    m_RCFPParams.length = m_lagLength;
+    m_RCFPParams.AlphaNormParam = Params.alpha;
+    m_RCFPParams.LPOrd = Params.LPOrd;
+    m_RCFPParams.LPACoeffs = Params.LPACoeffs;
+    m_RCFPParams.LPBCoeffs = Params.LPBCoeffs;
+    m_RCFPParams.winPre = Params.WinT.pre;
+    m_RCFPParams.winPost = Params.WinT.post;
+    m_RCFPParams.isMedianPositive = true;
+
+    m_RCFConditioning = new DFProcess( m_RCFPParams );
+
 }
 
 void TempoTrack::deInitialise()
@@ -80,12 +98,17 @@ void TempoTrack::deInitialise()
     delete [] m_rawDFFrame;
 	
     delete [] m_smoothDFFrame;
+
+	delete [] m_smoothRCF;	
 	
     delete [] m_frameACF;
 
     delete [] m_tempoScratch;
 
     delete m_DFConditioning;
+	
+	delete m_RCFConditioning;
+
 }
 
 void TempoTrack::createCombFilter(double* Filter, unsigned int winLength, unsigned int TSig, double beatLag)
@@ -101,7 +124,7 @@ void TempoTrack::createCombFilter(double* Filter, unsigned int winLength, unsign
     }
     else
     {	
-	m_sigma = beatLag/8;
+	m_sigma = beatLag/4;
 	for( i = 0; i < winLength; i++ )
 	{
 	    double dlag = (double)(i+1) - beatLag;
@@ -123,8 +146,8 @@ double TempoTrack::tempoMM(double* ACF, double* weight, int tsig)
     double	maxValTemp;
     unsigned int count; 
 	
-    unsigned int numelem;
-    int i, a, b;
+    unsigned int numelem,i,j;
+    int a, b;
 
     for( i = 0; i < m_lagLength; i++ )
 	m_tempoScratch[ i ] = 0.0;
@@ -159,15 +182,127 @@ double TempoTrack::tempoMM(double* ACF, double* weight, int tsig)
     }
 
 
-    //NOW FIND MAX INDEX OF ACFOUT
-    for( i = 0; i < m_lagLength; i++)
-    {
-	if( m_tempoScratch[ i ] > maxValRCF)
-	{
-	    maxValRCF = m_tempoScratch[ i ];
-	    maxIndexRCF = i;
+	//////////////////////////////////////////////////
+	// MODIFIED BEAT PERIOD EXTRACTION //////////////
+	/////////////////////////////////////////////////
+
+	// find smoothed version of RCF ( as applied to Detection Function)
+	m_RCFConditioning->process( m_tempoScratch, m_smoothRCF);
+
+	if (tsig != 0) // i.e. in context dependent state
+	{	
+//     NOW FIND MAX INDEX OF ACFOUT
+    	for( i = 0; i < m_lagLength; i++)
+    	{
+			if( m_tempoScratch[ i ] > maxValRCF)
+			{
+	    		maxValRCF = m_tempoScratch[ i ];
+	    		maxIndexRCF = i;
+			}
+ 	   }
 	}
-    }
+	else // using rayleigh weighting
+	{
+		vector <vector<double> > rcfMat;
+	
+		double sumRcf = 0.;
+	
+		double maxVal = 0.;
+		// now find the two values which minimise rcfMat
+		double minVal = 0.;
+		int p_i = 1; // periodicity for row i;
+		int p_j = 1; //periodicity for column j;
+	
+	
+		for ( i=0; i<m_lagLength; i++)
+		{
+			m_tempoScratch[i] =m_smoothRCF[i];
+		}	
+
+		// normalise m_tempoScratch so that it sums to zero.
+		for ( i=0; i<m_lagLength; i++)
+		{
+			sumRcf += m_tempoScratch[i];
+		}	
+	
+		for( i=0; i<m_lagLength; i++)
+		{
+			m_tempoScratch[i] /= sumRcf;
+		}	
+	
+		// create a matrix to store m_tempoScratchValues modified by log2 ratio
+		for ( i=0; i<m_lagLength; i++)
+		{
+			rcfMat.push_back  ( vector<double>() ); // adds a new row...
+		}
+	
+		for (i=0; i<m_lagLength; i++)
+		{
+			for (j=0; j<m_lagLength; j++)
+			{
+				rcfMat[i].push_back (0.);
+			}
+		}
+	
+		// the 'i' and 'j' indices deliberately start from '1' and not '0'
+		for ( i=1; i<m_lagLength; i++)
+		{
+			for (j=1; j<m_lagLength; j++)
+			{
+				double log2PeriodRatio = log( static_cast<double>(i)/static_cast<double>(j) ) / log(2.0);
+				rcfMat[i][j] = ( abs(1.0-abs(log2PeriodRatio)) );
+				rcfMat[i][j] += ( 0.01*( 1./(m_tempoScratch[i]+m_tempoScratch[j]) ) );
+			}
+		}
+		
+		// set diagonal equal to maximum value in rcfMat 
+		// we don't want to pick one strong middle peak - we need a combination of two peaks.
+	
+		for ( i=1; i<m_lagLength; i++)
+		{
+			for (j=1; j<m_lagLength; j++)
+			{
+				if (rcfMat[i][j] > maxVal)
+				{	
+					maxVal = rcfMat[i][j];
+				}
+			}
+		}
+	
+		for ( i=1; i<m_lagLength; i++)
+		{
+			rcfMat[i][i] = maxVal;
+		}
+	
+		// now find the row and column number which minimise rcfMat
+		minVal = maxVal;
+		
+		for ( i=1; i<m_lagLength; i++)
+		{
+			for ( j=1; j<m_lagLength; j++)
+			{
+				if (rcfMat[i][j] < minVal)
+				{	
+					minVal = rcfMat[i][j];
+					p_i = i;
+					p_j = j;
+				}
+			}
+		}
+	
+	
+		// initially choose p_j (arbitrary) - saves on an else statement
+		int beatPeriod = p_j;
+		if (m_tempoScratch[p_i] > m_tempoScratch[p_j])
+		{
+			beatPeriod = p_i;
+		}
+		
+		// now write the output
+		maxIndexRCF = static_cast<int>(beatPeriod);
+
+	}
+
 
     double locked = 5168.f / maxIndexRCF;
     if (locked >= 30 && locked <= 180) {
@@ -408,7 +543,7 @@ void TempoTrack::createPhaseExtractor(double *Filter, unsigned int winLength, do
     if( lastBeat != 0 )
     {
 	int mu = p;
-	double sigma = (double)p/4;
+	double sigma = (double)p/8;
 	double PhaseMin = 0.0;
 	double PhaseMax = 0.0;
 	unsigned int scratchLength = p*2;
@@ -457,6 +592,7 @@ int TempoTrack::phaseMM(double *DF, double *weighting, unsigned int winLength, d
     for( int i = 0; i < winLength; i++ )
     {	
 	y[ i ] = (double)( -i + winLength  )/(double)winLength;
+	y[ i ] = pow(y [i ],2.0); // raise to power 2.
     }
 
     for( int o = 0; o < p; o++ )
@@ -596,7 +732,8 @@ vector<int> TempoTrack::process(double *DF, unsigned int length)
 
 	    period = periodG[ TTLoopIndex ];
 
-	    createPhaseExtractor( PW, m_winLength, period, FSP, 0 ); 
+		// am temporarily changing the last input parameter to lastBeat instead of '0'
+	    createPhaseExtractor( PW, m_winLength, period, FSP, lastBeat ); 
 
 	    constFlag = 0;
 
