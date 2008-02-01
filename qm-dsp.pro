@@ -4,7 +4,7 @@ CONFIG -= qt
 OBJECTS_DIR = tmp_obj
 MOC_DIR = tmp_moc
 
-linux-g++:QMAKE_CXXFLAGS_RELEASE += -DNDEBUG -O3 -march=pentium3 -msse 
+linux-g++:QMAKE_CXXFLAGS_RELEASE += -DNDEBUG -O3 -march=pentium3 -mfpmath=sse -msse -ffast-math
 
 #DEPENDPATH += base \
 #              dsp/chromagram \
