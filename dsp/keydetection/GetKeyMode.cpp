@@ -23,6 +23,7 @@ static double MinProfile[36] =
   0.0137, 0.0176, 0.0104, 0.0352, 0.0670, 0.0302, 0.0222, 0.0349, 0.0164,
   0.0174, 0.0297, 0.0166, 0.0222, 0.0401, 0.0202, 0.0175, 0.0270, 0.0146};
 //
+    
 
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
@@ -40,7 +41,8 @@ GetKeyMode::GetKeyMode( int sampleRate, float tuningFrequency,
     m_MinCorr(0),
     m_Keys(0),
     m_MedianFilterBuffer(0),
-    m_SortedBuffer(0)
+    m_SortedBuffer(0),
+    m_keyStrengths(0)
 {
     m_DecimationFactor = 8;
         
@@ -51,7 +53,7 @@ GetKeyMode::GetKeyMode( int sampleRate, float tuningFrequency,
     // Set C (= MIDI #12) as our base :
     // This implies that key = 1 => Cmaj, key = 12 => Bmaj, key = 13 => Cmin, etc.
     m_ChromaConfig.min = Pitch::getFrequencyForPitch
-        (12, 0, tuningFrequency);
+        (48, 0, tuningFrequency);
     m_ChromaConfig.max = Pitch::getFrequencyForPitch
         (96, 0, tuningFrequency);
 
@@ -66,6 +68,8 @@ GetKeyMode::GetKeyMode( int sampleRate, float tuningFrequency,
     // override hopsize for this application
     m_ChromaHopSize = m_ChromaFrameSize;
     m_BPO = m_ChromaConfig.BPO;
+
+//    std::cerr << "chroma frame size = " << m_ChromaFrameSize << ", decimation factor = " << m_DecimationFactor << " therefore block size = " << getBlockSize() << std::endl;
 
     // Chromagram average and estimated key median filter lengths
     m_ChromaBuffersize = (int)ceil( m_hpcpAverage * m_ChromaConfig.FS/m_ChromaFrameSize );
@@ -96,6 +100,8 @@ GetKeyMode::GetKeyMode( int sampleRate, float tuningFrequency,
     
     m_Decimator = new Decimator
         ( m_ChromaFrameSize*m_DecimationFactor, m_DecimationFactor );
+
+    m_keyStrengths = new double[24];
 }
 
 GetKeyMode::~GetKeyMode()
@@ -112,6 +118,8 @@ GetKeyMode::~GetKeyMode()
     delete [] m_Keys;
     delete [] m_MedianFilterBuffer;
     delete [] m_SortedBuffer;
+
+    delete[] m_keyStrengths;
 }
 
 double GetKeyMode::krumCorr(double *pData1, double *pData2, unsigned int length)
@@ -214,6 +222,14 @@ int GetKeyMode::process(double *PCMData)
         m_Keys[k+m_BPO] = m_MinCorr[k];
     }
 
+    for (k = 0; k < 24; ++k) {
+        m_keyStrengths[k] = 0;
+    }
+
+    for( k = 0; k < m_BPO*2; k++ )
+    {
+        m_keyStrengths[k/(m_BPO/12)] += m_Keys[k];
+    }
 
 /*
   std::cout << "raw keys: ";

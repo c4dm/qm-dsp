@@ -14,7 +14,7 @@
  *
  */
 
-#if !defined GETKEYMODE_H
+#ifndef GETKEYMODE_H
 #define GETKEYMODE_H
 
 
@@ -41,6 +41,8 @@ public:
 	unsigned int getChromaSize() { return m_BPO; }
 
 	double* getMeanHPCP() { return m_MeanHPCP; }
+
+	double *getKeyStrengths() { return m_keyStrengths; }
 
 	int isModeMinor( int key ); 
 
@@ -87,6 +89,8 @@ protected:
 	double* m_Keys;
 	int* m_MedianFilterBuffer;
 	int* m_SortedBuffer;
+
+	double *m_keyStrengths;
 };
 
 #endif // !defined GETKEYMODE_H
