@@ -87,6 +87,10 @@ void create_histograms(int* x, int nx, int m, int hlen, double* h)
 {
 	int i, j, t;
 	double norm;
+
+	for (i = 0; i < nx*m; i++) 
+	        h[i] = 0;
+
 	for (i = hlen/2; i < nx-hlen/2; i++)
 	{
 		for (j = 0; j < m; j++)
