@@ -40,9 +40,9 @@ E-mail:    davidtaylor@writeme.com
  // Modified by CLandone for VC6 Aug 2004
  ///////////////////////////////////////////////////////////////////////////////
 
+#include <iostream>
 
 using std::vector;
-
 
 class TPolyFit
 {
@@ -116,12 +116,18 @@ double TPolyFit::PolyFit2 (const vector<double> &x,
     zeroise(g, nterms);
     zeroise(a, nterms, nterms);
     zeroise(xmatr, npoints, nterms);
-    if(nterms < 1)
-	throw "PolyFit called with less than one term";
-    if(npoints < 2)
-	throw "PolyFit called with less than two points";
-    if(npoints != y.size())
-	throw "PolyFit called with x and y of unequal size";
+    if (nterms < 1) {
+        std::cerr << "ERROR: PolyFit called with less than one term" << std::endl;
+        return 0;
+    }
+    if(npoints < 2) {
+        std::cerr << "ERROR: PolyFit called with less than two points" << std::endl;
+        return 0;
+    }
+    if(npoints != y.size()) {
+        std::cerr << "ERROR: PolyFit called with x and y of unequal size" << std::endl;
+        return 0;
+    }
     for(i = 0; i < npoints; ++i)
     {
 	//      { setup x matrix }
@@ -247,7 +253,8 @@ bool TPolyFit::GaussJordan (Matrix &b,
     {
 	if(index [k][2] != 0)
 	{
-	    throw "Error in GaussJordan: matrix is singular";
+            std::cerr << "ERROR: Error in PolyFit::GaussJordan: matrix is singular" << std::endl;
+            return false;
 	}
     }
 
@@ -290,8 +297,10 @@ bool TPolyFit::GaussJordan2(Matrix &b,
 	    {
 		for(int k = 0; k < ncol; ++k)
 		{
-		    if(index[k][2] > 0)
-			throw "Error in GaussJordan2: matrix is singular";
+		    if(index[k][2] > 0) {
+                        std::cerr << "ERROR: Error in PolyFit::GaussJordan2: matrix is singular" << std::endl;
+                        return false;
+                    }
 
 		    if(index[k][2] < 0 && fabs(b[j][k]) > big)
 		    {

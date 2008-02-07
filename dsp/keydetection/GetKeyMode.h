@@ -44,7 +44,7 @@ public:
 
 	double *getKeyStrengths() { return m_keyStrengths; }
 
-	int isModeMinor( int key ); 
+	bool isModeMinor( int key ); 
 
 protected:
 

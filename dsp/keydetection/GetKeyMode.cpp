@@ -290,7 +290,7 @@ int GetKeyMode::process(double *PCMData)
 }
 
 
-int GetKeyMode::isModeMinor( int key )
+bool GetKeyMode::isModeMinor( int key )
 { 
     return (key > 12);
 }
