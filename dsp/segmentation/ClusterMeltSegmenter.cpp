@@ -112,13 +112,13 @@ ClusterMeltSegmenter::~ClusterMeltSegmenter()
 int
 ClusterMeltSegmenter::getWindowsize()
 {
-    return static_cast<int>(windowSize * samplerate);
+    return static_cast<int>(windowSize * samplerate + 0.001);
 }
 
 int
 ClusterMeltSegmenter::getHopsize()
 {
-    return static_cast<int>(hopSize * samplerate);
+    return static_cast<int>(hopSize * samplerate + 0.001);
 }
 
 void ClusterMeltSegmenter::extractFeatures(const double* samples, int nsamples)

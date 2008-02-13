@@ -17,7 +17,9 @@ linux-g++:QMAKE_CXXFLAGS_RELEASE += -DNDEBUG -O3 -fno-exceptions -fPIC -march=pe
 #              dsp/tempotracking \
 #              dsp/tonal \
 #              dsp/transforms
-INCLUDEPATH += . include
+
+#INCLUDEPATH += . include
+INCLUDEPATH += . 
 
 # Input
 HEADERS += base/Pitch.h \

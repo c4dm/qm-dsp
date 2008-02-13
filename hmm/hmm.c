@@ -12,7 +12,21 @@
 #include <stdlib.h>
 #include <float.h>
 #include <time.h>				/* to seed random number generator */
+
 #include <clapack.h>		/* LAPACK for matrix inversion */
+
+#ifdef ATLAS_ORDER
+#define HAVE_ATLAS 1
+#endif
+
+#ifdef HAVE_ATLAS
+// Using ATLAS C interface to LAPACK
+#define dgetrf_(m, n, a, lda, ipiv, info) \
+        clapack_dgetrf(CblasColMajor, *m, *n, a, *lda, ipiv)
+#define dgetri_(n, a, lda, ipiv, work, lwork, info) \
+        clapack_dgetri(CblasColMajor, *n, a, *lda, ipiv)
+#endif
+
 #ifdef _MAC_OS_X
 #include <vecLib/cblas.h>
 #else
@@ -671,9 +685,9 @@ void invert(double** cov, int L, double** icov, double* detcov)
 		for (i=0; i < L; i++) 
 			a[j*L+i] = cov[i][j];
 	
-	long M = (long) L;	
-	long* ipiv = (long*) malloc(L*L*sizeof(int));
-	long ret;
+	int M = (int) L;	
+	int* ipiv = (int *) malloc(L*L*sizeof(int));
+	int ret;
 	
 	/* LU decomposition */
 	ret = dgetrf_(&M, &M, a, &M, ipiv, &ret);	/* ret should be zero, negative if cov is singular */
@@ -700,20 +714,24 @@ void invert(double** cov, int L, double** icov, double* detcov)
 	*detcov = det;
 	
 	/* allocate required working storage */
-	long lwork = -1;
-	double lwbest;
+#ifndef HAVE_ATLAS
+	int lwork = -1;
+	double lwbest = 0.0;
 	dgetri_(&M, a, &M, ipiv, &lwbest, &lwork, &ret);
-	lwork = (long) lwbest;	
+	lwork = (int) lwbest;	
 	double* work  = (double*) malloc(lwork*sizeof(double));
+#endif
 	
 	/* find inverse */
 	dgetri_(&M, a, &M, ipiv, work, &lwork, &ret);
-	
+
 	for(j=0; j < L; j++)
 		for (i=0; i < L; i++) 
 			icov[i][j] = a[j*L+i];	
 	
+#ifndef HAVE_ATLAS	
 	free(work);
+#endif
 	free(a);	
 }
 
