@@ -15,6 +15,8 @@
 
 #include <iostream>
 
+#include <cassert>
+
 
 #define RAY43VAL
 
@@ -162,6 +164,8 @@ double TempoTrack::tempoMM(double* ACF, double* weight, int tsig)
 	numelem = tsig;
     }
 
+    std::cerr << "tempoMM: m_winLength = " << m_winLength << ", m_lagLength = " << m_lagLength << ", numelem = " << numelem << std::endl;
+
     for(i=1;i<m_lagLength-1;i++)
     {
 	//first and last output values are left intentionally as zero
@@ -192,14 +196,14 @@ double TempoTrack::tempoMM(double* ACF, double* weight, int tsig)
 	if (tsig != 0) // i.e. in context dependent state
 	{	
 //     NOW FIND MAX INDEX OF ACFOUT
-    	for( i = 0; i < m_lagLength; i++)
-    	{
-			if( m_tempoScratch[ i ] > maxValRCF)
-			{
-	    		maxValRCF = m_tempoScratch[ i ];
-	    		maxIndexRCF = i;
-			}
- 	   }
+            for( i = 0; i < m_lagLength; i++)
+            {
+                if( m_tempoScratch[ i ] > maxValRCF)
+                {
+                    maxValRCF = m_tempoScratch[ i ];
+                    maxIndexRCF = i;
+                }
+            }
 	}
 	else // using rayleigh weighting
 	{
@@ -300,7 +304,6 @@ double TempoTrack::tempoMM(double* ACF, double* weight, int tsig)
 		
 		// now write the output
 		maxIndexRCF = static_cast<int>(beatPeriod);
-
 	}
 
 
@@ -312,6 +315,8 @@ double TempoTrack::tempoMM(double* ACF, double* weight, int tsig)
     if( tsig == 0 )
 	tsig = 4;
 
+
+std::cerr << "tempoMM: maxIndexRCF = " << maxIndexRCF << std::endl;
 	
     if( tsig == 4 )
     {
@@ -525,6 +530,10 @@ void TempoTrack::createPhaseExtractor(double *Filter, unsigned int winLength, do
     int p = (int)MathUtilities::round( period );
     int predictedOffset = 0;
 
+    std::cerr << "TempoTrack::createPhaseExtractor: period = " << period << ", p = " << p << std::endl;
+
+    assert(p < 10000);
+
     double* phaseScratch = new double[ p*2 ];
 
 	
@@ -562,9 +571,12 @@ void TempoTrack::createPhaseExtractor(double *Filter, unsigned int winLength, do
 	    phaseScratch[ i ] = (temp - PhaseMin)/PhaseMax;
 	}
 
+        std::cerr << "predictedOffset = " << predictedOffset << std::endl;
+
 	unsigned int index = 0;
 	for(int i = p - ( predictedOffset - 1); i < p + ( p - predictedOffset) + 1; i++)
 	{
+            std::cerr << "assigning to filter index " << index << " (size = " << p*2 << ")" << std::endl;
 	    Filter[ index++ ] = phaseScratch[ i ];
 	}
     }
@@ -879,6 +891,8 @@ vector<int> TempoTrack::process( vector <double> DF,
 
 	    period = periodG[ TTLoopIndex ];
 
+            std::cerr << "TempoTrack::process(2): constFlag == " << constFlag << ", TTLoopIndex = " << TTLoopIndex << ", period from periodG = " << period << std::endl;
+
 	    createPhaseExtractor( PW, m_winLength, period, FSP, 0 ); 
 
 	    constFlag = 0;
@@ -889,12 +903,30 @@ vector<int> TempoTrack::process( vector <double> DF,
 	    if( GW[ 0 ] != 0 )
 	    {
 		period = periodG[ TTLoopIndex ];
+
+                std::cerr << "TempoTrack::process(2): GW[0] == " << GW[0] << ", TTLoopIndex = " << TTLoopIndex << ", period from periodG = " << period << std::endl;
+
+                if (period > 10000) {
+                    std::cerr << "WARNING!  Highly implausible period value!" << std::endl;
+                    std::cerr << "periodG contains (of " << TTFrames << " frames): " << std::endl;
+                    for (int i = 0; i < TTLoopIndex + 3 && i < TTFrames; ++i) {
+                        std::cerr << i << " -> " << periodG[i] << std::endl;
+                    }
+                    std::cerr << "periodP contains (of " << TTFrames << " frames): " << std::endl;
+                    for (int i = 0; i < TTLoopIndex + 3 && i < TTFrames; ++i) {
+                        std::cerr << i << " -> " << periodP[i] << std::endl;
+                    }
+                }
+
 		createPhaseExtractor( PW, m_winLength, period, FSP, lastBeat ); 
 
 	    }
 	    else
 	    {
 		period = periodP[ TTLoopIndex ];
+
+                std::cerr << "TempoTrack::process(2): GW[0] == " << GW[0] << ", TTLoopIndex = " << TTLoopIndex << ", period from periodP = " << period << std::endl;
+
 		createPhaseExtractor( PW, m_winLength, period, FSP, 0 ); 
 	    }
 	}
