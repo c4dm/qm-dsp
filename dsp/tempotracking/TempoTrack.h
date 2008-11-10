@@ -48,7 +48,6 @@ public:
     virtual ~TempoTrack();
 
     vector<int> process( vector <double> DF, vector <double> *tempoReturn = 0);
-    vector<int> process( double* DF, unsigned int length );
 
 	
 private:

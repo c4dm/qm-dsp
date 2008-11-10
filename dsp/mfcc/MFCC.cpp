@@ -10,6 +10,7 @@
 
 #include <cmath>
 #include <cstdlib>
+#include <cstring>
 
 #include "MFCC.h"
 #include "dsp/transforms/FFT.h"

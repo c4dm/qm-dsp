@@ -12,6 +12,8 @@
 #include "maths/Polyfit.h"
 
 #include <iostream>
+#include <cstring>
+
 
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction

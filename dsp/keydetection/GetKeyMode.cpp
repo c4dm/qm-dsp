@@ -10,6 +10,9 @@
 
 #include <iostream>
 
+#include <cstring>
+#include <cstdlib>
+
 // Chords profile
 static double MajProfile[36] = 
 { 0.0384, 0.0629, 0.0258, 0.0121, 0.0146, 0.0106, 0.0364, 0.0610, 0.0267,

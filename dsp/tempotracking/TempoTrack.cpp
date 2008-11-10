@@ -17,6 +17,8 @@
 
 #include <cassert>
 
+//#define DEBUG_TEMPO_TRACK 1
+
 
 #define RAY43VAL
 
@@ -164,7 +166,9 @@ double TempoTrack::tempoMM(double* ACF, double* weight, int tsig)
 	numelem = tsig;
     }
 
+#ifdef DEBUG_TEMPO_TRACK
     std::cerr << "tempoMM: m_winLength = " << m_winLength << ", m_lagLength = " << m_lagLength << ", numelem = " << numelem << std::endl;
+#endif
 
     for(i=1;i<m_lagLength-1;i++)
     {
@@ -312,14 +316,24 @@ double TempoTrack::tempoMM(double* ACF, double* weight, int tsig)
         m_lockedTempo = locked;
     }
 
+#ifdef DEBUG_TEMPO_TRACK
+    std::cerr << "tempoMM: locked tempo = " << m_lockedTempo << std::endl;
+#endif
+
     if( tsig == 0 )
 	tsig = 4;
 
 
+#ifdef DEBUG_TEMPO_TRACK
 std::cerr << "tempoMM: maxIndexRCF = " << maxIndexRCF << std::endl;
+#endif
 	
     if( tsig == 4 )
     {
+#ifdef DEBUG_TEMPO_TRACK
+        std::cerr << "tsig == 4" << std::endl;
+#endif
+
 	pdPeaks = new double[ 4 ];
 	for( i = 0; i < 4; i++ ){ pdPeaks[ i ] = 0.0;}
 
@@ -374,7 +388,11 @@ std::cerr << "tempoMM: maxIndexRCF = " << maxIndexRCF << std::endl;
 	period = MathUtilities::mean( pdPeaks, 4 );
     }
     else
-    {
+    { 
+#ifdef DEBUG_TEMPO_TRACK
+       std::cerr << "tsig != 4" << std::endl;
+#endif
+
 	pdPeaks = new double[ 3 ];
 	for( i = 0; i < 3; i++ ){ pdPeaks[ i ] = 0.0;}
 
@@ -530,23 +548,29 @@ void TempoTrack::createPhaseExtractor(double *Filter, unsigned int winLength, do
     int p = (int)MathUtilities::round( period );
     int predictedOffset = 0;
 
+#ifdef DEBUG_TEMPO_TRACK
     std::cerr << "TempoTrack::createPhaseExtractor: period = " << period << ", p = " << p << std::endl;
+#endif
 
-    assert(p < 10000);
+    if (p > 10000) {
+        std::cerr << "TempoTrack::createPhaseExtractor: WARNING! Highly implausible period value " << p << "!" << std::endl;
+        period = 5168 / 120;
+    }
 
-    double* phaseScratch = new double[ p*2 ];
+    double* phaseScratch = new double[ p*2 + 2 ];
+    for (int i = 0; i < p*2 + 2; ++i) phaseScratch[i] = 0.0;
 
 	
     if( lastBeat != 0 )
     {
 	lastBeat = (int)MathUtilities::round((double)lastBeat );///(double)winLength);
 
-	    predictedOffset = lastBeat + p - fsp;
+        predictedOffset = lastBeat + p - fsp;
 
-	    if (predictedOffset < 0) 
-	    {
-		lastBeat = 0;
-	    }
+        if (predictedOffset < 0) 
+        {
+            lastBeat = 0;
+        }
     }
 
     if( lastBeat != 0 )
@@ -571,12 +595,16 @@ void TempoTrack::createPhaseExtractor(double *Filter, unsigned int winLength, do
 	    phaseScratch[ i ] = (temp - PhaseMin)/PhaseMax;
 	}
 
+#ifdef DEBUG_TEMPO_TRACK
         std::cerr << "predictedOffset = " << predictedOffset << std::endl;
+#endif
 
 	unsigned int index = 0;
-	for(int i = p - ( predictedOffset - 1); i < p + ( p - predictedOffset) + 1; i++)
+	for (int i = p - ( predictedOffset - 1); i < p + ( p - predictedOffset) + 1; i++)
 	{
-            std::cerr << "assigning to filter index " << index << " (size = " << p*2 << ")" << std::endl;
+#ifdef DEBUG_TEMPO_TRACK
+            std::cerr << "assigning to filter index " << index << " (size = " << p*2 << ")" << " value " << phaseScratch[i] << " from scratch index " << i << std::endl;
+#endif
 	    Filter[ index++ ] = phaseScratch[ i ];
 	}
     }
@@ -658,136 +686,6 @@ int TempoTrack::beatPredict(unsigned int FSP0, double alignment, double period, 
     return beat;
 }
 
-vector<int> TempoTrack::process(double *DF, unsigned int length)
-{
-    m_dataLength = length;
-	
-    double	period = 0.0;
-    int stepFlag = 0;
-    int constFlag = 0;
-    int FSP = 0;
-    int tsig = 0;
-    int lastBeat = 0;
-
-	
-    double* RW = new double[ m_lagLength ];
-    for( unsigned int clear = 0; clear < m_lagLength; clear++){ RW[ clear ] = 0.0;}
-
-    double* GW = new double[ m_lagLength ];
-    for(unsigned int clear = 0; clear < m_lagLength; clear++){ GW[ clear ] = 0.0;}
-
-    double* PW = new double[ m_lagLength ];
-    for(unsigned int clear = 0; clear < m_lagLength; clear++){ PW[ clear ] = 0.0;}
-
-    m_DFFramer.setSource( DF, m_dataLength );
-
-    unsigned int TTFrames = m_DFFramer.getMaxNoFrames();
-	
-    double* periodP = new double[ TTFrames ];
-    for(unsigned int  clear = 0; clear < TTFrames; clear++){ periodP[ clear ] = 0.0;}
-	
-    double* periodG = new double[ TTFrames ];
-    for(unsigned int  clear = 0; clear < TTFrames; clear++){ periodG[ clear ] = 0.0;}
-	
-    double* alignment = new double[ TTFrames ];
-    for(unsigned int  clear = 0; clear < TTFrames; clear++){ alignment[ clear ] = 0.0;}
-
-    m_beats.clear();
-
-    createCombFilter( RW, m_lagLength, 0, 0 );
-
-    int TTLoopIndex = 0;
-
-    for( unsigned int i = 0; i < TTFrames; i++ )
-    {
-	m_DFFramer.getFrame( m_rawDFFrame );
-
-	m_DFConditioning->process( m_rawDFFrame, m_smoothDFFrame );
-
-	m_correlator.doAutoUnBiased( m_smoothDFFrame, m_frameACF, m_winLength );
-		
-	periodP[ TTLoopIndex ] = tempoMM( m_frameACF, RW, 0 );
-
-	if( GW[ 0 ] != 0 )
-	{
-	    periodG[ TTLoopIndex ] = tempoMM( m_frameACF, GW, tsig );
-	}
-	else
-	{
-	    periodG[ TTLoopIndex ] = 0.0;
-	}
-
-	stepDetect( periodP, periodG, TTLoopIndex, &stepFlag );
-
-	if( stepFlag == 1)
-	{
-	    constDetect( periodP, TTLoopIndex, &constFlag );
-	    stepFlag = 0;
-	}
-	else
-	{
-	    stepFlag -= 1;
-	}
-
-	if( stepFlag < 0 )
-	{
-	    stepFlag = 0;
-	}
-
-	if( constFlag != 0)
-	{
-	    tsig = findMeter( m_frameACF, m_winLength, periodP[ TTLoopIndex ] );
-	
-	    createCombFilter( GW, m_lagLength, tsig, periodP[ TTLoopIndex ] );
-			
-	    periodG[ TTLoopIndex ] = tempoMM( m_frameACF, GW, tsig ); 
-
-	    period = periodG[ TTLoopIndex ];
-
-		// am temporarily changing the last input parameter to lastBeat instead of '0'
-	    createPhaseExtractor( PW, m_winLength, period, FSP, lastBeat ); 
-
-	    constFlag = 0;
-
-	}
-	else
-	{
-	    if( GW[ 0 ] != 0 )
-	    {
-		period = periodG[ TTLoopIndex ];
-		createPhaseExtractor( PW, m_winLength, period, FSP, lastBeat ); 
-
-	    }
-	    else
-	    {
-		period = periodP[ TTLoopIndex ];
-		createPhaseExtractor( PW, m_winLength, period, FSP, 0 ); 
-	    }
-	}
-
-	alignment[ TTLoopIndex ] = phaseMM( m_rawDFFrame, PW, m_winLength, period ); 
-
-	lastBeat = beatPredict(FSP, alignment[ TTLoopIndex ], period, m_lagLength );
-
-	FSP += (m_lagLength);
-
-	TTLoopIndex++;
-    }
-
-
-    delete [] periodP;
-    delete [] periodG;
-    delete [] alignment;
-
-    delete [] RW;
-    delete [] GW;
-    delete [] PW;
-
-    return m_beats;
-}
-
-
-
 
 
 vector<int> TempoTrack::process( vector <double> DF,
@@ -829,6 +727,10 @@ vector<int> TempoTrack::process( vector <double> DF,
     m_DFFramer.setSource( &causalDF[0], m_dataLength );
 
     unsigned int TTFrames = m_DFFramer.getMaxNoFrames();
+
+#ifdef DEBUG_TEMPO_TRACK
+    std::cerr << "TTFrames = " << TTFrames << std::endl;
+#endif
 	
     double* periodP = new double[ TTFrames ];
     for(unsigned clear = 0; clear < TTFrames; clear++){ periodP[ clear ] = 0.0;}
@@ -891,7 +793,9 @@ vector<int> TempoTrack::process( vector <double> DF,
 
 	    period = periodG[ TTLoopIndex ];
 
-            std::cerr << "TempoTrack::process(2): constFlag == " << constFlag << ", TTLoopIndex = " << TTLoopIndex << ", period from periodG = " << period << std::endl;
+#ifdef DEBUG_TEMPO_TRACK
+            std::cerr << "TempoTrack::process: constFlag == " << constFlag << ", TTLoopIndex = " << TTLoopIndex << ", period from periodG = " << period << std::endl;
+#endif
 
 	    createPhaseExtractor( PW, m_winLength, period, FSP, 0 ); 
 
@@ -904,10 +808,12 @@ vector<int> TempoTrack::process( vector <double> DF,
 	    {
 		period = periodG[ TTLoopIndex ];
 
-                std::cerr << "TempoTrack::process(2): GW[0] == " << GW[0] << ", TTLoopIndex = " << TTLoopIndex << ", period from periodG = " << period << std::endl;
+#ifdef DEBUG_TEMPO_TRACK
+                std::cerr << "TempoTrack::process: GW[0] == " << GW[0] << ", TTLoopIndex = " << TTLoopIndex << ", period from periodG = " << period << std::endl;
+#endif
 
                 if (period > 10000) {
-                    std::cerr << "WARNING!  Highly implausible period value!" << std::endl;
+                    std::cerr << "TempoTrack::process: WARNING!  Highly implausible period value " << period << "!" << std::endl;
                     std::cerr << "periodG contains (of " << TTFrames << " frames): " << std::endl;
                     for (int i = 0; i < TTLoopIndex + 3 && i < TTFrames; ++i) {
                         std::cerr << i << " -> " << periodG[i] << std::endl;
@@ -916,6 +822,7 @@ vector<int> TempoTrack::process( vector <double> DF,
                     for (int i = 0; i < TTLoopIndex + 3 && i < TTFrames; ++i) {
                         std::cerr << i << " -> " << periodP[i] << std::endl;
                     }
+                    period = 5168 / 120;
                 }
 
 		createPhaseExtractor( PW, m_winLength, period, FSP, lastBeat ); 
@@ -925,7 +832,9 @@ vector<int> TempoTrack::process( vector <double> DF,
 	    {
 		period = periodP[ TTLoopIndex ];
 
-                std::cerr << "TempoTrack::process(2): GW[0] == " << GW[0] << ", TTLoopIndex = " << TTLoopIndex << ", period from periodP = " << period << std::endl;
+#ifdef DEBUG_TEMPO_TRACK
+                std::cerr << "TempoTrack::process: GW[0] == " << GW[0] << ", TTLoopIndex = " << TTLoopIndex << ", period from periodP = " << period << std::endl;
+#endif
 
 		createPhaseExtractor( PW, m_winLength, period, FSP, 0 ); 
 	    }
