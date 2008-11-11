@@ -577,6 +577,7 @@ void viterbi_decode(double** x, int T, model_t* model, int* q)
 {
 	int i, j, t;
 	double max;
+	int havemax;
 	
 	int N = model->N;
 	int L = model->L;
@@ -622,15 +623,18 @@ void viterbi_decode(double** x, int T, model_t* model, int* q)
 	{
 		for (j = 0; j < N; j++)
 		{
-			max = -1000000;		// TODO: what should this be??  = smallest possible sumlogprob
+			max = -1000000;
+			havemax = 0;
+
 			psi[t][j] = 0;
 			for (i = 0; i < N; i++)
 			{
-				if (phi[t-1][i] + log(a[i][j]) > max)
+				if (phi[t-1][i] + log(a[i][j]) > max || !havemax)
 				{
 					max = phi[t-1][i] + log(a[i][j]);
 					phi[t][j] = max + logb[t][j];
 					psi[t][j] = i;
+					havemax = 1;
 				}
 			}
 		}
