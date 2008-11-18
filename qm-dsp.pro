@@ -1,5 +1,5 @@
 TEMPLATE = lib
-CONFIG += warn_on staticlib debug
+CONFIG += warn_on staticlib release
 CONFIG -= qt
 OBJECTS_DIR = tmp_obj
 MOC_DIR = tmp_moc
