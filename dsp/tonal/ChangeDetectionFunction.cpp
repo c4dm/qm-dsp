@@ -44,8 +44,8 @@ void ChangeDetectionFunction::setFilterWidth(const int iWidth)
 	}
 	
 #ifdef DEBUG_CHANGE_DETECTION_FUNCTION
-	std::cout << "Filter sigma: " << m_dFilterSigma << std::endl;
-	std::cout << "Filter width: " << m_iFilterWidth << std::endl;
+	std::cerr << "Filter sigma: " << m_dFilterSigma << std::endl;
+	std::cerr << "Filter width: " << m_iFilterWidth << std::endl;
 #endif
 }
 
