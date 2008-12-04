@@ -69,6 +69,7 @@ private:
     double* m_CQRe;
     double* m_CQIm;
 
+    bool m_skGenerated;
 };
 
 #endif

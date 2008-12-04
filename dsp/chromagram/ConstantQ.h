@@ -63,10 +63,15 @@ private:
     unsigned int m_BPO;
     unsigned int m_FFTLength;
     unsigned int m_uK;
-    std::vector<unsigned> m_sparseKernelIs;
-    std::vector<unsigned> m_sparseKernelJs;
-    std::vector<double> m_sparseKernelImagValues;
-    std::vector<double> m_sparseKernelRealValues;
+
+    struct SparseKernel {
+        std::vector<unsigned> is;
+        std::vector<unsigned> js;
+        std::vector<double> imag;
+        std::vector<double> real;
+    };
+
+    SparseKernel *m_sparseKernel;
 };
 
 

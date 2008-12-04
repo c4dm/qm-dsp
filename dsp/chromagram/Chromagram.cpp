@@ -15,7 +15,8 @@
 
 //----------------------------------------------------------------------------
 
-Chromagram::Chromagram( ChromaConfig Config ) 
+Chromagram::Chromagram( ChromaConfig Config ) :
+    m_skGenerated(false)
 {
     initialise( Config );
 }
@@ -62,8 +63,6 @@ int Chromagram::initialise( ChromaConfig Config )
     m_window = 0;
     m_windowbuf = 0;
 
-    // Generate CQ Kernel 
-    m_ConstantQ->sparsekernel();
     return 1;
 }
 
@@ -119,6 +118,12 @@ void Chromagram::unityNormalise(double *src)
 
 double* Chromagram::process( const double *data )
 {
+    if (!m_skGenerated) {
+        // Generate CQ Kernel 
+        m_ConstantQ->sparsekernel();
+        m_skGenerated = true;
+    }
+
     if (!m_window) {
         m_window = new Window<double>(HammingWindow, m_frameSize);
         m_windowbuf = new double[m_frameSize];
@@ -137,6 +142,12 @@ double* Chromagram::process( const double *data )
 
 double* Chromagram::process( const double *real, const double *imag )
 {
+    if (!m_skGenerated) {
+        // Generate CQ Kernel 
+        m_ConstantQ->sparsekernel();
+        m_skGenerated = true;
+    }
+
     // initialise chromadata to 0
     for (unsigned i = 0; i < m_BPO; i++) m_chromadata[i] = 0;
 
