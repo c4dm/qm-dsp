@@ -4,7 +4,9 @@ CONFIG -= qt
 OBJECTS_DIR = tmp_obj
 MOC_DIR = tmp_moc
 
-linux-g++:QMAKE_CXXFLAGS_RELEASE += -DNDEBUG -O3 -fno-exceptions -fPIC -march=pentium3 -mfpmath=sse -msse -ffast-math
+linux-g++-64:QMAKE_CXXFLAGS_RELEASE += -DNDEBUG -O3 -fno-exceptions -fPIC -ffast-math
+
+linux-g++-64:INCLUDEPATH += ../qm-vamp-plugins/build/linux/amd64
 
 macx-g++:QMAKE_CXXFLAGS_RELEASE += -fvisibility=hidden
 
@@ -47,6 +49,7 @@ HEADERS += base/Pitch.h \
            dsp/signalconditioning/FiltFilt.h \
            dsp/signalconditioning/Framer.h \
            dsp/tempotracking/TempoTrack.h \
+           dsp/tempotracking/TempoTrackV2.h \
            dsp/tonal/ChangeDetectionFunction.h \
            dsp/tonal/TCSgram.h \
            dsp/tonal/TonalEstimator.h \
@@ -81,6 +84,7 @@ SOURCES += base/Pitch.cpp \
            dsp/signalconditioning/FiltFilt.cpp \
            dsp/signalconditioning/Framer.cpp \
            dsp/tempotracking/TempoTrack.cpp \
+           dsp/tempotracking/TempoTrackV2.cpp \
            dsp/tonal/ChangeDetectionFunction.cpp \
            dsp/tonal/TCSgram.cpp \
            dsp/tonal/TonalEstimator.cpp \
