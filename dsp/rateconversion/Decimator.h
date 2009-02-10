@@ -14,7 +14,7 @@ class Decimator
 {
 public:
     void process( const double* src, double* dst );
-    void doAntiAlias( const double* src, double* dst, unsigned int length );
+    void process( const float* src, float* dst );
 
     /**
      * Construct a Decimator to operate on input blocks of length
@@ -36,6 +36,8 @@ private:
     void resetFilter();
     void deInitialise();
     void initialise( unsigned int inLength, unsigned int decFactor );
+    void doAntiAlias( const double* src, double* dst, unsigned int length );
+    void doAntiAlias( const float* src, double* dst, unsigned int length );
 
     unsigned int m_inputLength;
     unsigned int m_outputLength;

@@ -326,6 +326,7 @@ TempoTrackV2::viterbi_decode(const d_mat_t &rcfmat, const d_vec_t &wv, d_vec_t &
             lastind = i*step+j;
             beat_period[lastind] = bestpath[i];
         }
+        std::cerr << "bestpath[" << i << "] = " << bestpath[i] << " (used for beat_periods " << i*step << " to " << i*step+step-1 << ")" << std::endl;
     }
 
     //fill in the last values...
@@ -435,6 +436,8 @@ TempoTrackV2::calculateBeats(const d_vec_t &df, const d_vec_t &beat_period,
 
         cumscore[i] = alpha*vv + (1.-alpha)*localscore[i];
         backlink[i] = i+prange_min+xx;
+
+        std::cerr << "backlink[" << i << "] <= " << backlink[i] << std::endl;
     }
 
     // STARTING POINT, I.E. LAST BEAT.. PICK A STRONG POINT IN cumscore VECTOR
@@ -450,8 +453,10 @@ TempoTrackV2::calculateBeats(const d_vec_t &df, const d_vec_t &beat_period,
     //  BACKTRACKING FROM THE END TO THE BEGINNING.. MAKING SURE NOT TO GO BEFORE SAMPLE 0
     i_vec_t ibeats;
     ibeats.push_back(startpoint);
+    std::cerr << "startpoint = " << startpoint << std::endl;
     while (backlink[ibeats.back()] > 0)
     {
+        std::cerr << "backlink[" << ibeats.back() << "] = " << backlink[ibeats.back()] << std::endl;
         ibeats.push_back(backlink[ibeats.back()]);
     }
   

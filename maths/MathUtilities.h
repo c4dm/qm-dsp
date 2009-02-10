@@ -52,6 +52,11 @@ public:
 
     // moving mean threshholding:
     static void adaptiveThreshold(std::vector<double> &data);
+
+    static bool isPowerOfTwo(int x);
+    static int nextPowerOfTwo(int x); // e.g. 1300 -> 2048, 2048 -> 2048
+    static int previousPowerOfTwo(int x); // e.g. 1300 -> 1024, 2048 -> 2048
+    static int nearestPowerOfTwo(int x); // e.g. 1300 -> 1024, 1700 -> 2048
 };
 
 #endif

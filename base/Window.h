@@ -43,7 +43,7 @@ public:
     virtual ~Window() { delete[] m_cache; }
     
     void cut(T *src) const { cut(src, src); }
-    void cut(T *src, T *dst) const {
+    void cut(const T *src, T *dst) const {
 	for (size_t i = 0; i < m_size; ++i) dst[i] = src[i] * m_cache[i];
     }
 

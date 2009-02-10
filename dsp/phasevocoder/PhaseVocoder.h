@@ -19,14 +19,13 @@ public:
     virtual ~PhaseVocoder();
 
     void process( unsigned int size, double* src, double* mag, double* theta);
-    void FFTShift( unsigned int size, double* src);
 
 protected:
     void getPhase(unsigned int size, double *theta, double *real, double *imag);
     void coreFFT( unsigned int NumSamples, double *RealIn, double* ImagIn, double *RealOut, double *ImagOut);
     void getMagnitude( unsigned int size, double* mag, double* real, double* imag);
+    void FFTShift( unsigned int size, double* src);
 
-    double* shiftBuffer;
     double* imagOut;
     double* realOut;
 

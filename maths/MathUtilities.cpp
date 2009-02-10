@@ -353,4 +353,39 @@ void MathUtilities::adaptiveThreshold(std::vector<double> &data)
     }
 }
 
-        
+bool
+MathUtilities::isPowerOfTwo(int x)
+{
+    if (x < 2) return false;
+    if (x & (x-1)) return false;
+    return true;
+}
+
+int
+MathUtilities::nextPowerOfTwo(int x)
+{
+    if (isPowerOfTwo(x)) return x;
+    int n = 1;
+    while (x) { x >>= 1; n <<= 1; }
+    return n;
+}
+
+int
+MathUtilities::previousPowerOfTwo(int x)
+{
+    if (isPowerOfTwo(x)) return x;
+    int n = 1;
+    x >>= 1;
+    while (x) { x >>= 1; n <<= 1; }
+    return n;
+}
+
+int
+MathUtilities::nearestPowerOfTwo(int x)
+{
+    if (isPowerOfTwo(x)) return x;
+    int n0 = previousPowerOfTwo(x), n1 = nearestPowerOfTwo(x);
+    if (x - n0 < n1 - x) return n0;
+    else return n1;
+}
+

@@ -8,7 +8,12 @@
 */
 
 #include "FFT.h"
+
+#include "maths/MathUtilities.h"
+
 #include <cmath>
+
+#include <iostream>
 
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
@@ -39,8 +44,11 @@ void FFT::process(unsigned int p_nSamples, bool p_bInverseTransform,
     double angle_numerator = 2.0 * M_PI;
     double tr, ti;
 
-    if( !isPowerOfTwo(p_nSamples) )
+    if( !MathUtilities::isPowerOfTwo(p_nSamples) )
     {
+        std::cerr << "ERROR: FFT::process: Non-power-of-two FFT size "
+                  << p_nSamples << " not supported in this implementation"
+                  << std::endl;
 	return;
     }
 
@@ -116,15 +124,6 @@ void FFT::process(unsigned int p_nSamples, bool p_bInverseTransform,
 	    p_lpImagOut[i] /= denom;
 	}
     }
-}
-
-bool FFT::isPowerOfTwo(unsigned int p_nX)
-{
-    if( p_nX < 2 ) return false;
-
-    if( p_nX & (p_nX-1) ) return false;
-
-    return true;
 }
 
 unsigned int FFT::numberOfBitsNeeded(unsigned int p_nSamples)

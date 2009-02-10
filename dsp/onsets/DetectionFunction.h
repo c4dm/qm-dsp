@@ -38,8 +38,8 @@ public:
     double* getSpectrumMagnitude();
     DetectionFunction( DFConfig Config );
     virtual ~DetectionFunction();
-    double process( double* TDomain );
-    double process( double* magnitudes, double* phases );
+    double process( const double* TDomain );
+    double process( const double* magnitudes, const double* phases );
 
 private:
     void whiten();

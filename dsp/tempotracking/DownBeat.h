@@ -45,6 +45,8 @@ public:
              size_t dfIncrement);
     ~DownBeat();
 
+    void setBeatsPerBar(int bpb);
+
     /**
      * Estimate which beats are down-beats.
      * 
@@ -59,7 +61,7 @@ public:
      * The returned downbeat array contains a series of indices to the
      * beats array.
      */
-    void findDownBeats(const double *audio, // downsampled
+    void findDownBeats(const float *audio, // downsampled
                        size_t audioLength, // after downsampling
                        const vector<double> &beats,
                        vector<int> &downbeats);
@@ -73,12 +75,17 @@ public:
      * Call getBufferedAudio() to retrieve the results after all
      * blocks have been processed.
      */
-    void pushAudioBlock(const double *audio);
+    void pushAudioBlock(const float *audio);
     
     /**
      * Retrieve the accumulated audio produced by pushAudioBlock calls.
      */
-    const double *getBufferedAudio(size_t &length) const;
+    const float *getBufferedAudio(size_t &length) const;
+
+    /**
+     * Clear any buffered downsampled audio data.
+     */
+    void resetAudioBuffer();
 
 private:
     typedef vector<int> i_vec_t;
@@ -89,13 +96,14 @@ private:
     void makeDecimators();
     double measureSpecDiff(d_vec_t oldspec, d_vec_t newspec);
 
+    int m_bpb;
     float m_rate;
     size_t m_factor;
     size_t m_increment;
     Decimator *m_decimator1;
     Decimator *m_decimator2;
-    double *m_buffer;
-    double *m_decbuf;
+    float *m_buffer;
+    float *m_decbuf;
     size_t m_bufsiz;
     size_t m_buffill;
     size_t m_beatframesize;

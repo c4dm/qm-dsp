@@ -83,18 +83,35 @@ void DetectionFunction::deInitialise()
     delete m_window;
 }
 
-double DetectionFunction::process( double *TDomain )
+double DetectionFunction::process( const double *TDomain )
 {
     m_window->cut( TDomain, m_DFWindowedFrame );
-	
-    m_phaseVoc->process( m_dataLength, m_DFWindowedFrame, m_magnitude, m_thetaAngle );
+
+    // Our own FFT implementation supports power-of-two sizes only.
+    // If we have to use this implementation (as opposed to the
+    // version of process() below that operates on frequency domain
+    // data directly), we will have to use the next smallest power of
+    // two from the block size.  Results may vary accordingly!
+
+    int actualLength = MathUtilities::previousPowerOfTwo(m_dataLength);
+
+    if (actualLength != m_dataLength) {
+        // Pre-fill mag and phase vectors with zero, as the FFT output
+        // will not fill the arrays
+        for (int i = actualLength/2; i < m_dataLength/2; ++i) {
+            m_magnitude[i] = 0;
+            m_thetaAngle[0] = 0;
+        }
+    }
+
+    m_phaseVoc->process(actualLength, m_DFWindowedFrame, m_magnitude, m_thetaAngle);
 
     if (m_whiten) whiten();
 
     return runDF();
 }
 
-double DetectionFunction::process( double *magnitudes, double *phases )
+double DetectionFunction::process( const double *magnitudes, const double *phases )
 {
     for (size_t i = 0; i < m_halfLength; ++i) {
         m_magnitude[i] = magnitudes[i];

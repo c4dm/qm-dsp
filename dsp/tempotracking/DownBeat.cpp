@@ -12,6 +12,7 @@
 
 #include "maths/MathAliases.h"
 #include "maths/MathUtilities.h"
+#include "maths/KLDivergence.h"
 #include "dsp/transforms/FFT.h"
 
 #include <iostream>
@@ -20,6 +21,7 @@
 DownBeat::DownBeat(float originalSampleRate,
                    size_t decimationFactor,
                    size_t dfIncrement) :
+    m_bpb(0),
     m_rate(originalSampleRate),
     m_factor(decimationFactor),
     m_increment(dfIncrement),
@@ -34,9 +36,8 @@ DownBeat::DownBeat(float originalSampleRate,
     // beat frame size is next power of two up from 1.3 seconds at the
     // downsampled rate (happens to produce 4096 for 44100 or 48000 at
     // 16x decimation, which is our expected normal situation)
-    int bfs = int((m_rate / decimationFactor) * 1.3);
-    m_beatframesize = 1;
-    while (bfs) { bfs >>= 1; m_beatframesize <<= 1; }
+    m_beatframesize = MathUtilities::nextPowerOfTwo
+        (int((m_rate / decimationFactor) * 1.3));
     std::cerr << "rate = " << m_rate << ", bfs = " << m_beatframesize << std::endl;
     m_beatframe = new double[m_beatframesize];
     m_fftRealOut = new double[m_beatframesize];
@@ -55,43 +56,60 @@ DownBeat::~DownBeat()
 }
 
 void
+DownBeat::setBeatsPerBar(int bpb)
+{
+    m_bpb = bpb;
+}
+
+void
 DownBeat::makeDecimators()
 {
     if (m_factor < 2) return;
     int highest = Decimator::getHighestSupportedFactor();
     if (m_factor <= highest) {
         m_decimator1 = new Decimator(m_increment, m_factor);
+        std::cerr << "DownBeat: decimator 1 factor " << m_factor << ", size " << m_increment << std::endl;
         return;
     }
     m_decimator1 = new Decimator(m_increment, highest);
+    std::cerr << "DownBeat: decimator 1 factor " << highest << ", size " << m_increment << std::endl;
     m_decimator2 = new Decimator(m_increment / highest, m_factor / highest);
-    m_decbuf = new double[m_factor / highest];
+    std::cerr << "DownBeat: decimator 2 factor " << m_factor / highest << ", size " << m_increment / highest << std::endl;
+    m_decbuf = new float[m_increment / highest];
 }
 
 void
-DownBeat::pushAudioBlock(const double *audio)
+DownBeat::pushAudioBlock(const float *audio)
 {
     if (m_buffill + (m_increment / m_factor) > m_bufsiz) {
         if (m_bufsiz == 0) m_bufsiz = m_increment * 16;
         else m_bufsiz = m_bufsiz * 2;
         if (!m_buffer) {
-            m_buffer = (double *)malloc(m_bufsiz * sizeof(double));
+            m_buffer = (float *)malloc(m_bufsiz * sizeof(float));
         } else {
             std::cerr << "DownBeat::pushAudioBlock: realloc m_buffer to " << m_bufsiz << std::endl;
-            m_buffer = (double *)realloc(m_buffer, m_bufsiz * sizeof(double));
+            m_buffer = (float *)realloc(m_buffer, m_bufsiz * sizeof(float));
         }
     }
     if (!m_decimator1) makeDecimators();
+    float rmsin = 0, rmsout = 0;
+    for (int i = 0; i < m_increment; ++i) {
+        rmsin += audio[i] * audio[i];
+    }
     if (m_decimator2) {
         m_decimator1->process(audio, m_decbuf);
         m_decimator2->process(m_decbuf, m_buffer + m_buffill);
     } else {
         m_decimator1->process(audio, m_buffer + m_buffill);
     }
+    for (int i = 0; i < m_increment / m_factor; ++i) {
+        rmsout += m_buffer[m_buffill + i] * m_buffer[m_buffill + i];
+    }
+    std::cerr << "pushAudioBlock: rms in " << sqrt(rmsin) << ", out " << sqrt(rmsout) << std::endl;
     m_buffill += m_increment / m_factor;
 }
     
-const double *
+const float *
 DownBeat::getBufferedAudio(size_t &length) const
 {
     length = m_buffill;
@@ -99,7 +117,15 @@ DownBeat::getBufferedAudio(size_t &length) const
 }
 
 void
-DownBeat::findDownBeats(const double *audio,
+DownBeat::resetAudioBuffer()
+{
+    if (m_buffer) free(m_buffer);
+    m_buffill = 0;
+    m_bufsiz = 0;
+}
+
+void
+DownBeat::findDownBeats(const float *audio,
                         size_t audioLength,
                         const d_vec_t &beats,
                         i_vec_t &downbeats)
@@ -124,7 +150,7 @@ DownBeat::findDownBeats(const double *audio,
         // into beat frame buffer
 
         size_t beatstart = (beats[i] * m_increment) / m_factor;
-        size_t beatend = (beats[i] * m_increment) / m_factor;
+        size_t beatend = (beats[i+1] * m_increment) / m_factor;
         if (beatend >= audioLength) beatend = audioLength - 1;
         if (beatend < beatstart) beatend = beatstart;
         size_t beatlen = beatend - beatstart;
@@ -134,10 +160,14 @@ DownBeat::findDownBeats(const double *audio,
         // the size varies, it's easier to do this by hand than use
         // our Window abstraction.)
 
+        float rms = 0;
         for (size_t j = 0; j < beatlen; ++j) {
             double mul = 0.5 * (1.0 - cos(TWO_PI * (double(j) / double(beatlen))));
             m_beatframe[j] = audio[beatstart + j] * mul;
+            rms += m_beatframe[j] * m_beatframe[j];
         }
+        rms = sqrt(rms);
+        std::cerr << "beat " << i << ": audio rms " << rms << std::endl;
 
         for (size_t j = beatlen; j < m_beatframesize; ++j) {
             m_beatframe[j] = 0.0;
@@ -162,6 +192,9 @@ DownBeat::findDownBeats(const double *audio,
         // Calculate JS divergence between new and old spectral frames
 
         specdiff.push_back(measureSpecDiff(oldspec, newspec));
+//        specdiff.push_back(KLDivergence().distanceDistribution(oldspec, newspec, false));
+
+        std::cerr << "specdiff: " << specdiff[specdiff.size()-1] << std::endl;
 
         // Copy newspec across to old
 
@@ -172,15 +205,23 @@ DownBeat::findDownBeats(const double *audio,
 
     // We now have all spectral difference measures in specdiff
 
-    uint timesig = 4;   // SHOULD REPLACE THIS WITH A FIND_METER FUNCTION - OR USER PARAMETER
+    uint timesig = m_bpb;
+    if (timesig == 0) timesig = 4;
+
     d_vec_t dbcand(timesig); // downbeat candidates
+
+    for (int beat = 0; beat < timesig; ++beat) {
+        dbcand[beat] = 0;
+    }
 
     // look for beat transition which leads to greatest spectral change
     for (int beat = 0; beat < timesig; ++beat) {
-        for (int example = beat; example < specdiff.size(); ++example) {
+        for (int example = beat; example < specdiff.size(); example += timesig) {
             dbcand[beat] += (specdiff[example]) / timesig;
         }
+        std::cerr << "dbcand[" << beat << "] = " << dbcand[beat] << std::endl;
     }
+
 
     // first downbeat is beat at index of maximum value of dbcand
     int dbind = MathUtilities::getMax(dbcand);

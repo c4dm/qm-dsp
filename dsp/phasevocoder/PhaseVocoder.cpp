@@ -28,24 +28,12 @@ PhaseVocoder::~PhaseVocoder()
 
 void PhaseVocoder::FFTShift(unsigned int size, double *src)
 {
-    // IN-place Rotation of FFT arrays
-    unsigned int i;
-
-    shiftBuffer = new double[size/2];
-
-    for( i = 0; i < size/2; i++)
-    {
-	shiftBuffer[ i ] = src[ i ];
-	src[ i ] = src[ i + size/2];
+    const int hs = size/2;
+    for (int i = 0; i < hs; ++i) {
+        double tmp = src[i];
+        src[i] = src[i + hs];
+        src[i + hs] = tmp;
     }
-	
-    for( i =size/2; i < size;  i++)
-    {
-	src[ i ] = shiftBuffer[ i -(size/2)];
-    }
-
-    delete [] shiftBuffer;
-
 }
 
 void PhaseVocoder::process(unsigned int size, double *src, double *mag, double *theta)
