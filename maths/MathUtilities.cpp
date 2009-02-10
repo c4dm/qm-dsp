@@ -144,6 +144,20 @@ double MathUtilities::mean(const double *src, unsigned int len)
     return retVal;
 }
 
+double MathUtilities::mean(const std::vector<double> &src,
+                           unsigned int start,
+                           unsigned int count)
+{
+    double sum = 0.;
+	
+    for (int i = 0; i < count; ++i)
+    {
+        sum += src[start + i];
+    }
+
+    return sum / count;
+}
+
 void MathUtilities::getFrameMinMax(const double *data, unsigned int len, double *min, double *max)
 {
     unsigned int i;
@@ -189,7 +203,33 @@ int MathUtilities::getMax( double* pData, unsigned int Length, double* pMax )
 		
    	}
 
-	*pMax = max;
+	if (pMax) *pMax = max;
+
+
+	return index;
+}
+
+int MathUtilities::getMax( const std::vector<double> & data, double* pMax )
+{
+	unsigned int index = 0;
+	unsigned int i;
+	double temp = 0.0;
+	
+	double max = data[0];
+
+	for( i = 0; i < data.size(); i++)
+	{
+		temp = data[ i ];
+
+		if( temp > max )
+		{
+			max =  temp ;
+			index = i;
+		}
+		
+   	}
+
+	if (pMax) *pMax = max;
 
 
 	return index;
@@ -289,5 +329,28 @@ void MathUtilities::normalise(std::vector<double> &data, NormaliseType type)
     }
 }
 
+void MathUtilities::adaptiveThreshold(std::vector<double> &data)
+{
+    int sz = int(data.size());
+    if (sz == 0) return;
+
+    std::vector<double> smoothed(sz);
+	
+    int p_pre = 8;
+    int p_post = 7;
+
+    for (int i = 0; i < sz; ++i) {
+
+        int first = std::max(0,      i - p_pre);
+        int last  = std::min(sz - 1, i + p_post);
+
+        smoothed[i] = mean(data, first, last - first + 1);
+    }
+
+    for (int i = 0; i < sz; i++) {
+        data[i] -= smoothed[i];
+        if (data[i] < 0.0) data[i] = 0.0;
+    }
+}
 
         

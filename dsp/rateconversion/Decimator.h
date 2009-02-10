@@ -16,6 +16,16 @@ public:
     void process( const double* src, double* dst );
     void doAntiAlias( const double* src, double* dst, unsigned int length );
 
+    /**
+     * Construct a Decimator to operate on input blocks of length
+     * inLength, with decimation factor decFactor.  inLength should be
+     * a multiple of decFactor.  Output blocks will be of length
+     * inLength / decFactor.
+     *
+     * decFactor must be a power of two.  The highest supported factor
+     * is obtained through getHighestSupportedFactor(); for higher
+     * factors, you will need to chain more than one decimator.
+     */
     Decimator( unsigned int inLength, unsigned int decFactor );
     virtual ~Decimator();
 

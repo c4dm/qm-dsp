@@ -14,67 +14,13 @@
 #include <cstdlib>
 #include <iostream>
 
+#include "maths/MathUtilities.h"
 
-//#define		FRAMESIZE	512
-//#define		BIGFRAMESIZE	1024
-#define   TWOPI 6.283185307179586232
 #define   EPS 0.0000008 // just some arbitrary small number
 
-TempoTrackV2::TempoTrackV2() { }
+TempoTrackV2::TempoTrackV2(float rate, size_t increment) :
+    m_rate(rate), m_increment(increment) { }
 TempoTrackV2::~TempoTrackV2() { }
-
-void
-TempoTrackV2::adapt_thresh(d_vec_t &df)
-{
-    d_vec_t smoothed(df.size());
-	
-    int p_post = 7;
-    int p_pre = 8;
-
-    int t = std::min(static_cast<int>(df.size()),p_post);	// what is smaller, p_post of df size. This is to avoid accessing outside of arrays
-
-    // find threshold for first 't' samples, where a full average cannot be computed yet 
-    for (int i = 0;i <= t;i++)
-    {	
-        int k = std::min((i+p_pre),static_cast<int>(df.size()));
-        smoothed[i] = mean_array(df,1,k);
-    }
-    // find threshold for bulk of samples across a moving average from [i-p_pre,i+p_post]
-    for (uint i = t+1;i < df.size()-p_post;i++)
-    {
-        smoothed[i] = mean_array(df,i-p_pre,i+p_post);
-    }
-    // for last few samples calculate threshold, again, not enough samples to do as above
-    for (uint i = df.size()-p_post;i < df.size();i++)
-    {
-        int k = std::max((static_cast<int> (i) -p_post),1);
-        smoothed[i] = mean_array(df,k,df.size());
-    }
-
-    // subtract the threshold from the detection function and check that it is not less than 0
-    for (uint i = 0;i < df.size();i++)
-    {
-        df[i] -= smoothed[i];
-        if (df[i] < 0)
-        {
-            df[i] = 0;
-        }
-    }
-}
-
-double
-TempoTrackV2::mean_array(const d_vec_t &dfin,int start,int end)
-{
-    double sum = 0.;
-	
-    // find sum
-    for (int i = start;i < end;i++)
-    {
-        sum += dfin[i];
-    }
-
-    return static_cast<double> (sum / (end - start + 1) );	// average and return
-}
 
 void
 TempoTrackV2::filter_df(d_vec_t &df)
@@ -205,7 +151,7 @@ TempoTrackV2::get_rcf(const d_vec_t &dfframe_in, const d_vec_t &wv, d_vec_t &rcf
 
     d_vec_t dfframe(dfframe_in);
 
-    adapt_thresh(dfframe);
+    MathUtilities::adaptiveThreshold(dfframe);
 
     d_vec_t acf(dfframe.size());
 
@@ -238,7 +184,7 @@ TempoTrackV2::get_rcf(const d_vec_t &dfframe_in, const d_vec_t &wv, d_vec_t &rcf
     }
   
     // apply adaptive threshold to rcf
-    adapt_thresh(rcf);
+    MathUtilities::adaptiveThreshold(rcf);
   
     double rcfsum =0.;
     for (uint i=0; i<rcf.size(); i++)
@@ -390,7 +336,7 @@ TempoTrackV2::viterbi_decode(const d_mat_t &rcfmat, const d_vec_t &wv, d_vec_t &
 
     for (uint i = 0; i < beat_period.size(); i++)
     {
-        tempi.push_back((60.*44100./512.)/beat_period[i]);
+        tempi.push_back((60. * m_rate / m_increment)/beat_period[i]);
     }
 }
 

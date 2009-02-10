@@ -16,16 +16,31 @@
 
 using std::vector;
 
+//!!! Question: how far is this actually sample rate dependent?  I
+// think it does produce plausible results for e.g. 48000 as well as
+// 44100, but surely the fixed window sizes and comb filtering will
+// make it prefer double or half time when run at e.g. 96000?
+
 class TempoTrackV2  
 {
 public:
-    TempoTrackV2();
+    /**
+     * Construct a tempo tracker that will operate on beat detection
+     * function data calculated from audio at the given sample rate
+     * with the given frame increment.
+     *
+     * Currently the sample rate and increment are used only for the
+     * conversion from beat frame location to bpm in the tempo array.
+     */
+    TempoTrackV2(float sampleRate, size_t dfIncrement);
     ~TempoTrackV2();
 
+    // Returned beat periods are given in df increment units; tempi in bpm
     void calculateBeatPeriod(const vector<double> &df,
                              vector<double> &beatPeriod,
                              vector<double> &tempi);
 
+    // Returned beat positions are given in df increment units
     void calculateBeats(const vector<double> &df,
                         const vector<double> &beatPeriod,
                         vector<double> &beats);
@@ -35,6 +50,9 @@ private:
     typedef vector<vector<int> > i_mat_t;
     typedef vector<double> d_vec_t;
     typedef vector<vector<double> > d_mat_t;
+
+    float m_rate;
+    size_t m_increment;
 
     void adapt_thresh(d_vec_t &df);
     double mean_array(const d_vec_t &dfin, int start, int end);

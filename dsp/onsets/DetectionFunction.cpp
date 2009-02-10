@@ -38,7 +38,6 @@ void DetectionFunction::initialise( DFConfig Config )
     m_halfLength = m_dataLength/2;
 
     m_DFType = Config.DFType;
-    m_stepSecs = Config.stepSecs;
     m_stepSize = Config.stepSize;
 
     m_whiten = Config.adaptiveWhitening;

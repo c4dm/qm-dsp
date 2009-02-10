@@ -23,7 +23,6 @@
 #define DF_BROADBAND (5)
 
 struct DFConfig{
-    double stepSecs; // DF step in seconds
     unsigned int stepSize; // DF step in samples
     unsigned int frameLength; // DF analysis window - usually 2*step
     int DFType; // type of detection function ( see defines )
@@ -59,7 +58,6 @@ private:
     int m_DFType;
     unsigned int m_dataLength;
     unsigned int m_halfLength;
-    double m_stepSecs;
     unsigned int m_stepSize;
     double m_dbRise;
     bool m_whiten;

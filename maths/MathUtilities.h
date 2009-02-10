@@ -21,6 +21,8 @@ public:
     static void	  getFrameMinMax( const double* data, unsigned int len,  double* min, double* max );
 
     static double mean( const double* src, unsigned int len );
+    static double mean( const std::vector<double> &data,
+                        unsigned int start, unsigned int count );
     static double sum( const double* src, unsigned int len );
     static double median( const double* src, unsigned int len );
 
@@ -32,7 +34,8 @@ public:
 
     static void   circShift( double* data, int length, int shift);
 
-    static int	  getMax( double* data, unsigned int length, double* max );
+    static int	  getMax( double* data, unsigned int length, double* max = 0 );
+    static int	  getMax( const std::vector<double> &data, double* max = 0 );
     static int    compareInt(const void * a, const void * b);
 
     enum NormaliseType {
@@ -46,6 +49,9 @@ public:
 
     static void   normalise(std::vector<double> &data,
                             NormaliseType n = NormaliseUnitMax);
+
+    // moving mean threshholding:
+    static void adaptiveThreshold(std::vector<double> &data);
 };
 
 #endif

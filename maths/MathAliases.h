@@ -22,7 +22,7 @@ typedef complex<double> ComplexData;
 #define PI (3.14159265358979232846)
 #endif
 
-#define TWO_PI 		(*2.PI)
+#define TWO_PI 		(2. * PI)
 
 #define EPS 2.2204e-016
 

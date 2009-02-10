@@ -48,6 +48,7 @@ HEADERS += base/Pitch.h \
            dsp/signalconditioning/Filter.h \
            dsp/signalconditioning/FiltFilt.h \
            dsp/signalconditioning/Framer.h \
+           dsp/tempotracking/DownBeat.h \
            dsp/tempotracking/TempoTrack.h \
            dsp/tempotracking/TempoTrackV2.h \
            dsp/tonal/ChangeDetectionFunction.h \
@@ -83,6 +84,7 @@ SOURCES += base/Pitch.cpp \
            dsp/signalconditioning/Filter.cpp \
            dsp/signalconditioning/FiltFilt.cpp \
            dsp/signalconditioning/Framer.cpp \
+           dsp/tempotracking/DownBeat.cpp \
            dsp/tempotracking/TempoTrack.cpp \
            dsp/tempotracking/TempoTrackV2.cpp \
            dsp/tonal/ChangeDetectionFunction.cpp \
