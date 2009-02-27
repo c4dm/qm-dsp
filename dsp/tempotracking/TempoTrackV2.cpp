@@ -115,7 +115,7 @@ TempoTrackV2::calculateBeatPeriod(const d_vec_t &df, d_vec_t &beat_period,
     int col_counter = -1;
 
     // main loop for beat period calculation
-    for (uint i=0; i<(df.size()-winlen); i+=step)
+    for (uint i=0; i+winlen<df.size(); i+=step)
     {
         // get dfframe
         d_vec_t dfframe(winlen);
@@ -248,6 +248,9 @@ TempoTrackV2::viterbi_decode(const d_mat_t &rcfmat, const d_vec_t &wv, d_vec_t &
 
 
     uint T = delta.size();
+
+    if (T < 2) return; // can't do anything at all meaningful
+
     uint Q = delta[0].size();
 
     // initialize first column of delta
@@ -392,6 +395,8 @@ void
 TempoTrackV2::calculateBeats(const d_vec_t &df, const d_vec_t &beat_period,
                              d_vec_t &beats)
 {
+    if (df.empty() || beat_period.empty()) return;
+
     d_vec_t cumscore(df.size()); // store cumulative score
     i_vec_t backlink(df.size()); // backlink (stores best beat locations at each time instant)
     d_vec_t localscore(df.size()); // localscore, for now this is the same as the detection function
@@ -449,6 +454,9 @@ TempoTrackV2::calculateBeats(const d_vec_t &df, const d_vec_t &beat_period,
 
     int startpoint = get_max_ind(tmp_vec) + cumscore.size() - beat_period[beat_period.size()-1] ;
 
+    // can happen if no results obtained earlier (e.g. input too short)
+    if (startpoint >= backlink.size()) startpoint = backlink.size()-1;
+
     // USE BACKLINK TO GET EACH NEW BEAT (TOWARDS THE BEGINNING OF THE FILE)
     //  BACKTRACKING FROM THE END TO THE BEGINNING.. MAKING SURE NOT TO GO BEFORE SAMPLE 0
     i_vec_t ibeats;
@@ -457,7 +465,9 @@ TempoTrackV2::calculateBeats(const d_vec_t &df, const d_vec_t &beat_period,
     while (backlink[ibeats.back()] > 0)
     {
         std::cerr << "backlink[" << ibeats.back() << "] = " << backlink[ibeats.back()] << std::endl;
-        ibeats.push_back(backlink[ibeats.back()]);
+        int b = ibeats.back();
+        if (backlink[b] == b) break; // shouldn't happen... haha
+        ibeats.push_back(backlink[b]);
     }
   
     // REVERSE SEQUENCE OF IBEATS AND STORE AS BEATS

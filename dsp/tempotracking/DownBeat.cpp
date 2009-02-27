@@ -140,7 +140,8 @@ DownBeat::findDownBeats(const float *audio,
 
     d_vec_t newspec(m_beatframesize / 2); // magnitude spectrum of current beat
     d_vec_t oldspec(m_beatframesize / 2); // magnitude spectrum of previous beat
-    d_vec_t specdiff;
+
+    m_beatsd.clear();
 
     if (audioLength == 0) return;
 
@@ -191,10 +192,10 @@ DownBeat::findDownBeats(const float *audio,
 
         // Calculate JS divergence between new and old spectral frames
 
-        specdiff.push_back(measureSpecDiff(oldspec, newspec));
-//        specdiff.push_back(KLDivergence().distanceDistribution(oldspec, newspec, false));
-
-        std::cerr << "specdiff: " << specdiff[specdiff.size()-1] << std::endl;
+        if (i > 0) { // otherwise we have no previous frame
+            m_beatsd.push_back(measureSpecDiff(oldspec, newspec));
+            std::cerr << "specdiff: " << m_beatsd[m_beatsd.size()-1] << std::endl;
+        }
 
         // Copy newspec across to old
 
@@ -216,9 +217,13 @@ DownBeat::findDownBeats(const float *audio,
 
     // look for beat transition which leads to greatest spectral change
     for (int beat = 0; beat < timesig; ++beat) {
-        for (int example = beat; example < specdiff.size(); example += timesig) {
-            dbcand[beat] += (specdiff[example]) / timesig;
+        int count = 0;
+        for (int example = beat - 1; example < m_beatsd.size(); example += timesig) {
+            if (example < 0) continue;
+            dbcand[beat] += (m_beatsd[example]) / timesig;
+            ++count;
         }
+        if (count > 0) m_beatsd[beat] /= count;
         std::cerr << "dbcand[" << beat << "] = " << dbcand[beat] << std::endl;
     }
 
@@ -278,5 +283,11 @@ DownBeat::measureSpecDiff(d_vec_t oldspec, d_vec_t newspec)
     }
     
     return SD;
+}
+
+void
+DownBeat::getBeatSD(vector<double> &beatsd) const
+{
+    for (int i = 0; i < m_beatsd.size(); ++i) beatsd.push_back(m_beatsd[i]);
 }
 

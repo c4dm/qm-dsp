@@ -65,6 +65,17 @@ public:
                        size_t audioLength, // after downsampling
                        const vector<double> &beats,
                        vector<int> &downbeats);
+
+    /**
+     * Return the beat spectral difference function.  This is
+     * calculated during findDownBeats, so this function can only be
+     * meaningfully called after that has completed.  The returned
+     * vector contains one value for each of the beat times passed in
+     * to findDownBeats, less one.  Each value contains the spectral
+     * difference between region prior to the beat's nominal position
+     * and the region following it.
+     */
+    void getBeatSD(vector<double> &beatsd) const;
     
     /**
      * For your downsampling convenience: call this function
@@ -110,6 +121,7 @@ private:
     double *m_beatframe;
     double *m_fftRealOut;
     double *m_fftImagOut;
+    d_vec_t m_beatsd;
 };
 
 #endif
