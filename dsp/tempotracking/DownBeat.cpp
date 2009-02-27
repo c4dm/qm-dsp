@@ -38,7 +38,7 @@ DownBeat::DownBeat(float originalSampleRate,
     // 16x decimation, which is our expected normal situation)
     m_beatframesize = MathUtilities::nextPowerOfTwo
         (int((m_rate / decimationFactor) * 1.3));
-    std::cerr << "rate = " << m_rate << ", bfs = " << m_beatframesize << std::endl;
+//    std::cerr << "rate = " << m_rate << ", bfs = " << m_beatframesize << std::endl;
     m_beatframe = new double[m_beatframesize];
     m_fftRealOut = new double[m_beatframesize];
     m_fftImagOut = new double[m_beatframesize];
@@ -68,13 +68,13 @@ DownBeat::makeDecimators()
     int highest = Decimator::getHighestSupportedFactor();
     if (m_factor <= highest) {
         m_decimator1 = new Decimator(m_increment, m_factor);
-        std::cerr << "DownBeat: decimator 1 factor " << m_factor << ", size " << m_increment << std::endl;
+//        std::cerr << "DownBeat: decimator 1 factor " << m_factor << ", size " << m_increment << std::endl;
         return;
     }
     m_decimator1 = new Decimator(m_increment, highest);
-    std::cerr << "DownBeat: decimator 1 factor " << highest << ", size " << m_increment << std::endl;
+//    std::cerr << "DownBeat: decimator 1 factor " << highest << ", size " << m_increment << std::endl;
     m_decimator2 = new Decimator(m_increment / highest, m_factor / highest);
-    std::cerr << "DownBeat: decimator 2 factor " << m_factor / highest << ", size " << m_increment / highest << std::endl;
+//    std::cerr << "DownBeat: decimator 2 factor " << m_factor / highest << ", size " << m_increment / highest << std::endl;
     m_decbuf = new float[m_increment / highest];
 }
 
@@ -87,7 +87,7 @@ DownBeat::pushAudioBlock(const float *audio)
         if (!m_buffer) {
             m_buffer = (float *)malloc(m_bufsiz * sizeof(float));
         } else {
-            std::cerr << "DownBeat::pushAudioBlock: realloc m_buffer to " << m_bufsiz << std::endl;
+//            std::cerr << "DownBeat::pushAudioBlock: realloc m_buffer to " << m_bufsiz << std::endl;
             m_buffer = (float *)realloc(m_buffer, m_bufsiz * sizeof(float));
         }
     }
@@ -105,7 +105,7 @@ DownBeat::pushAudioBlock(const float *audio)
     for (int i = 0; i < m_increment / m_factor; ++i) {
         rmsout += m_buffer[m_buffill + i] * m_buffer[m_buffill + i];
     }
-    std::cerr << "pushAudioBlock: rms in " << sqrt(rmsin) << ", out " << sqrt(rmsout) << std::endl;
+//    std::cerr << "pushAudioBlock: rms in " << sqrt(rmsin) << ", out " << sqrt(rmsout) << std::endl;
     m_buffill += m_increment / m_factor;
 }
     
@@ -168,7 +168,7 @@ DownBeat::findDownBeats(const float *audio,
             rms += m_beatframe[j] * m_beatframe[j];
         }
         rms = sqrt(rms);
-        std::cerr << "beat " << i << ": audio rms " << rms << std::endl;
+//        std::cerr << "beat " << i << ": audio rms " << rms << std::endl;
 
         for (size_t j = beatlen; j < m_beatframesize; ++j) {
             m_beatframe[j] = 0.0;
@@ -194,7 +194,7 @@ DownBeat::findDownBeats(const float *audio,
 
         if (i > 0) { // otherwise we have no previous frame
             m_beatsd.push_back(measureSpecDiff(oldspec, newspec));
-            std::cerr << "specdiff: " << m_beatsd[m_beatsd.size()-1] << std::endl;
+//            std::cerr << "specdiff: " << m_beatsd[m_beatsd.size()-1] << std::endl;
         }
 
         // Copy newspec across to old
@@ -224,7 +224,7 @@ DownBeat::findDownBeats(const float *audio,
             ++count;
         }
         if (count > 0) m_beatsd[beat] /= count;
-        std::cerr << "dbcand[" << beat << "] = " << dbcand[beat] << std::endl;
+//        std::cerr << "dbcand[" << beat << "] = " << dbcand[beat] << std::endl;
     }
 
 
