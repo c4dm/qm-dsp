@@ -28,6 +28,7 @@ DownBeat::DownBeat(float originalSampleRate,
     m_decimator1(0),
     m_decimator2(0),
     m_buffer(0),
+    m_decbuf(0),
     m_bufsiz(0),
     m_buffill(0),
     m_beatframesize(0),
@@ -64,6 +65,7 @@ DownBeat::setBeatsPerBar(int bpb)
 void
 DownBeat::makeDecimators()
 {
+//    std::cerr << "m_factor = " << m_factor << std::endl;
     if (m_factor < 2) return;
     int highest = Decimator::getHighestSupportedFactor();
     if (m_factor <= highest) {
@@ -91,20 +93,25 @@ DownBeat::pushAudioBlock(const float *audio)
             m_buffer = (float *)realloc(m_buffer, m_bufsiz * sizeof(float));
         }
     }
-    if (!m_decimator1) makeDecimators();
-    float rmsin = 0, rmsout = 0;
-    for (int i = 0; i < m_increment; ++i) {
-        rmsin += audio[i] * audio[i];
-    }
+    if (!m_decimator1 && m_factor > 1) makeDecimators();
+//    float rmsin = 0, rmsout = 0;
+//    for (int i = 0; i < m_increment; ++i) {
+//        rmsin += audio[i] * audio[i];
+//    }
     if (m_decimator2) {
         m_decimator1->process(audio, m_decbuf);
         m_decimator2->process(m_decbuf, m_buffer + m_buffill);
-    } else {
+    } else if (m_decimator1) {
         m_decimator1->process(audio, m_buffer + m_buffill);
+    } else {
+        // just copy across (m_factor is presumably 1)
+        for (int i = 0; i < m_increment; ++i) {
+            (m_buffer + m_buffill)[i] = audio[i];
+        }
     }
-    for (int i = 0; i < m_increment / m_factor; ++i) {
-        rmsout += m_buffer[m_buffill + i] * m_buffer[m_buffill + i];
-    }
+//    for (int i = 0; i < m_increment / m_factor; ++i) {
+//        rmsout += m_buffer[m_buffill + i] * m_buffer[m_buffill + i];
+//    }
 //    std::cerr << "pushAudioBlock: rms in " << sqrt(rmsin) << ", out " << sqrt(rmsout) << std::endl;
     m_buffill += m_increment / m_factor;
 }
@@ -120,6 +127,7 @@ void
 DownBeat::resetAudioBuffer()
 {
     if (m_buffer) free(m_buffer);
+    m_buffer = 0;
     m_buffill = 0;
     m_bufsiz = 0;
 }
@@ -161,13 +169,15 @@ DownBeat::findDownBeats(const float *audio,
         // the size varies, it's easier to do this by hand than use
         // our Window abstraction.)
 
-        float rms = 0;
-        for (size_t j = 0; j < beatlen; ++j) {
+//        std::cerr << "beatlen = " << beatlen << std::endl;
+
+//        float rms = 0;
+        for (size_t j = 0; j < beatlen && j < m_beatframesize; ++j) {
             double mul = 0.5 * (1.0 - cos(TWO_PI * (double(j) / double(beatlen))));
             m_beatframe[j] = audio[beatstart + j] * mul;
-            rms += m_beatframe[j] * m_beatframe[j];
+//            rms += m_beatframe[j] * m_beatframe[j];
         }
-        rms = sqrt(rms);
+//        rms = sqrt(rms);
 //        std::cerr << "beat " << i << ": audio rms " << rms << std::endl;
 
         for (size_t j = beatlen; j < m_beatframesize; ++j) {

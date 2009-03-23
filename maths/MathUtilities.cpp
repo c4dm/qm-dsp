@@ -163,6 +163,11 @@ void MathUtilities::getFrameMinMax(const double *data, unsigned int len, double 
     unsigned int i;
     double temp = 0.0;
     double a=0.0;
+
+    if (len == 0) {
+        *min = *max = 0;
+        return;
+    }
 	
     *min = data[0];
     *max = data[0];

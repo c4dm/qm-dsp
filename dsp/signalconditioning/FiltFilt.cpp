@@ -48,10 +48,11 @@ void FiltFilt::process(double *src, double *dst, unsigned int length)
 {	
     unsigned int i;
 
+    if (length == 0) return;
+
     unsigned int nFilt = m_ord + 1;
     unsigned int nFact = 3 * ( nFilt - 1);
     unsigned int nExt	= length + 2 * nFact;
-
 
     m_filtScratchIn = new double[ nExt ];
     m_filtScratchOut = new double[ nExt ];

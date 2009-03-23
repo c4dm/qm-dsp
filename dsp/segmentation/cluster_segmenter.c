@@ -161,10 +161,10 @@ void cluster_segment(int* q, double** features, int frames_read, int feature_len
 	
 	/* train the model */
 	hmm_train(features, frames_read, model);
-	
+/*	
 	printf("\n\nafter training:\n");
 	hmm_print(model);
-	
+*/	
 	/* decode the hidden state sequence */
 	viterbi_decode(features, frames_read, model, q);  
 	hmm_close(model);
@@ -174,10 +174,12 @@ void cluster_segment(int* q, double** features, int frames_read, int feature_len
 	/*****************************/
 	
     
+/*
 	fprintf(stderr, "HMM state sequence:\n");
 	for (i = 0; i < frames_read; i++)
 		fprintf(stderr, "%d ", q[i]);
 	fprintf(stderr, "\n\n");
+*/
 	
 	/* create histograms of states */
 	double* h = (double*) malloc(frames_read*nHMM_states*sizeof(double));	/* vector in row major order */
@@ -209,12 +211,12 @@ void constq_segment(int* q, double** features, int frames_read, int bins, int nc
 	
 	if (feature_type == FEATURE_TYPE_CONSTQ)
 	{
-		fprintf(stderr, "Converting to dB and normalising...\n");
-		
+/*		fprintf(stderr, "Converting to dB and normalising...\n");
+ */		
 		mpeg7_constq(features, frames_read, ncoeff);
-		
+/*		
 		fprintf(stderr, "Running PCA...\n");
-		
+*/		
 		/* do PCA on the features (but not the envelope) */
 		int ncomponents = 20;
 		pca_project(features, frames_read, ncoeff, ncomponents);
@@ -255,8 +257,9 @@ void constq_segment(int* q, double** features, int frames_read, int bins, int nc
 	
 	if (feature_type == FEATURE_TYPE_CHROMA)
 	{
+/*
 		fprintf(stderr, "Converting to chroma features...\n");
-		
+*/		
 		/* convert constant-Q to normalised chroma features */
 		chroma = (double**) malloc(frames_read*sizeof(double*));
 		for (i = 0; i < frames_read; i++)

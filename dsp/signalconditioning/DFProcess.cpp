@@ -70,6 +70,8 @@ void DFProcess::deInitialise()
 
 void DFProcess::process(double *src, double* dst)
 {
+    if (m_length == 0) return;
+
     removeDCNormalize( src, filtSrc );
 
     m_FiltFilt->process( filtSrc, filtDst, m_length );

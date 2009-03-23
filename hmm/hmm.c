@@ -178,10 +178,10 @@ void hmm_train(double** x, int T, model_t* model)
 	while (iter < niter && !foundnan && !(iter > 1 && (loglik - loglik1) < thresh * (loglik1 - loglik2)))	
 	{
 		++iter;
-		
+/*		
 		fprintf(stderr, "calculating obsprobs...\n");
 		fflush(stderr);
-		
+*/		
 		/* precalculate obs probs */
 		invert(cov, L, icov, &detcov);
 		
@@ -206,16 +206,16 @@ void hmm_train(double** x, int T, model_t* model)
 			}
 			*/
 		}
-		
+/*		
 		fprintf(stderr, "forwards-backwards...\n");
 		fflush(stderr);
-		
+*/		
 		forward_backwards(xi, gamma, &loglik, &loglik1, &loglik2, iter, N, T, p0, a, b);
-		
+/*		
 		fprintf(stderr, "iteration %d: loglik = %f\n", iter, loglik);		
 		fprintf(stderr, "re-estimation...\n");
 		fflush(stderr);
-
+*/
 		if (isnan(loglik)) {
 		    foundnan = 1;
 		    continue;
@@ -293,7 +293,7 @@ void baum_welch(double* p0, double** a, double** mu, double** cov, int N, int T,
 	{
 		if (sum_gamma[i] == 0)
 		{
-			fprintf(stderr, "sum_gamma[%d] was zero...\n", i);
+/*			fprintf(stderr, "sum_gamma[%d] was zero...\n", i); */
 		}
 		//double s = 0;
 		for (j = 0; j < N; j++)

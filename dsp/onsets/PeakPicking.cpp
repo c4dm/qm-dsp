@@ -61,6 +61,8 @@ void PeakPicking::deInitialise()
 
 void PeakPicking::process( double* src, unsigned int len, vector<int> &onsets )
 {
+    if (len < 4) return;
+
     vector <double> m_maxima;	
 
     // Signal conditioning 

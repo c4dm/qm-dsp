@@ -319,10 +319,12 @@ void ClusterMeltSegmenter::segment()
     mfcc = 0;
     delete decimator;
     decimator = 0;
-	
+
+    if (features.size() < histogramLength) return;
+/*    
     std::cerr << "ClusterMeltSegmenter::segment: have " << features.size()
               << " features with " << features[0].size() << " coefficients (ncoeff = " << ncoeff << ", ncomponents = " << ncomponents << ")" << std::endl;
-
+*/
     // copy the features to a native array and use the existing C segmenter...
     double** arrFeatures = new double*[features.size()];	
     for (int i = 0; i < features.size(); i++)
