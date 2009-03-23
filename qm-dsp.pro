@@ -1,11 +1,10 @@
 TEMPLATE = lib
-#CONFIG += warn_on staticlib release
-CONFIG += warn_on staticlib debug
+CONFIG += warn_on staticlib release
 CONFIG -= qt
 OBJECTS_DIR = tmp_obj
 MOC_DIR = tmp_moc
 
-linux-g++-64:QMAKE_CXXFLAGS_RELEASE += -DNDEBUG -O3 -fno-exceptions -fPIC -ffast-math
+linux-g++*:QMAKE_CXXFLAGS_RELEASE += -DNDEBUG -O3 -fno-exceptions -fPIC -ffast-math -msse -msse2 -ftree-vectorize -fomit-frame-pointer
 
 linux-g++-64:INCLUDEPATH += ../qm-vamp-plugins/build/linux/amd64
 
