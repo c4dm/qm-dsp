@@ -55,6 +55,7 @@ HEADERS += base/Pitch.h \
            dsp/tonal/TCSgram.h \
            dsp/tonal/TonalEstimator.h \
            dsp/transforms/FFT.h \
+           dsp/wavelet/Wavelet.h \
            hmm/hmm.h \
            maths/Correlation.h \
            maths/CosineDistance.h \
@@ -91,6 +92,7 @@ SOURCES += base/Pitch.cpp \
            dsp/tonal/TCSgram.cpp \
            dsp/tonal/TonalEstimator.cpp \
            dsp/transforms/FFT.cpp \
+           dsp/wavelet/Wavelet.cpp \
            hmm/hmm.c \
            maths/Correlation.cpp \
            maths/CosineDistance.cpp \

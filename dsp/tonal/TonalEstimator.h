@@ -40,8 +40,8 @@ public:
 		// normalize the chroma vector (L1 norm)
 		double dSum = 0.0;
 	
-		for (size_t i = 0; i < 12; (dSum += std::abs((*this)[i++])));
-		for (size_t i = 0; i < 12; dSum > 0.0000001?((*this)[i] /= dSum):(*this)[i]=0.0, i++);
+		for (size_t i = 0; i < 12; (dSum += std::abs((*this)[i++]))) ;
+		for (size_t i = 0; i < 12; dSum > 0.0000001?((*this)[i] /= dSum):(*this)[i]=0.0, i++) ;
 
 	}
 	
