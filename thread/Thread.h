@@ -105,18 +105,23 @@ public:
     Condition(std::string name);
     ~Condition();
 
-    //!!! NO -- reproducing more conventional lock/wait
-    
-    // To wait on a condition, either simply call wait(), or call
-    // lock() and then wait() (perhaps testing some state in between).
-    // To signal a condition, call signal().
+    // Condition bundles a pthread-style condition variable and mutex
+    // into one class.
 
-    // Although any thread may signal on a given condition, only one
-    // thread should ever wait on any given condition object --
-    // otherwise there will be a race conditions in the logic that
-    // avoids the thread code having to track whether the condition's
-    // mutex is locked or not.  If that is your requirement, this
-    // Condition wrapper is not for you.
+    // To wait on a condition, call lock(), test termination variables
+    // as appropriate, and then wait().  The condition will be
+    // unlocked for the duration of the wait() call, which will end
+    // when the condition is signalled.  The condition will be locked
+    // again when wait() returns.
+    //
+    // To signal a condition, call signal().  If the waiting thread
+    // will be performing tests between its own lock() and wait(),
+    // then the signalling thread should also lock() before it signals
+    // (and then unlock afterwards).  If the signalling thread always
+    // locks the mutex during signalling, then the waiting thread
+    // knows that signals will only happen during wait() and not be
+    // missed at other times.
+
     void lock();
     void unlock();
     void wait(int us = 0);
@@ -139,6 +144,63 @@ private:
 #ifdef DEBUG_CONDITION
     std::string m_name;
 #endif
+};
+
+class AsynchronousTask : public Thread
+{
+public:
+    AsynchronousTask() :
+        m_todo("AsynchronousTask: task to perform"),
+        m_done("AsynchronousTask: task complete"),
+        m_inTask(false),
+        m_finishing(false)
+    {
+        start();
+    }
+    virtual ~AsynchronousTask()
+    {
+        m_finishing = true;
+        m_todo.signal();
+        wait();
+    }
+
+    // subclass must provide methods to request task and obtain
+    // results
+
+protected:
+    void startTask() {
+        m_todo.lock();
+        m_inTask = true;
+        m_todo.signal();
+        m_done.lock();
+        m_todo.unlock();
+    }
+    void awaitTask() {
+        while (m_inTask) m_done.wait();
+        m_done.unlock();
+    }
+
+    virtual void performTask() = 0;
+    
+private:
+    virtual void run() {
+        m_todo.lock();
+        while (!m_finishing) {
+            while (!m_inTask && !m_finishing) m_todo.wait();
+            if (m_finishing) break;
+            if (m_inTask) {
+                performTask();
+                m_inTask = false;
+                m_done.signal();
+            }
+        }
+        m_todo.unlock();
+    }
+
+    Condition m_todo;
+    Condition m_done;
+    bool m_inTask;
+    bool m_finishing;
 };
 
 #endif
