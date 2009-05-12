@@ -6,6 +6,9 @@ MOC_DIR = tmp_moc
 
 linux-g++*:QMAKE_CXXFLAGS_RELEASE += -DNDEBUG -O3 -fno-exceptions -fPIC -ffast-math -msse -msse2 -ftree-vectorize -fomit-frame-pointer
 
+linux-g++*:DEFINES += USE_PTHREADS
+macx-g++*:DEFINES += USE_PTHREADS
+
 linux-g++-64:INCLUDEPATH += ../qm-vamp-plugins/build/linux/amd64
 
 macx-g++:QMAKE_CXXFLAGS_RELEASE += -fvisibility=hidden
@@ -64,7 +67,8 @@ HEADERS += base/Pitch.h \
            maths/MathAliases.h \
            maths/MathUtilities.h \
            maths/Polyfit.h \
-           maths/pca/pca.h
+           maths/pca/pca.h \
+           thread/Thread.h
 SOURCES += base/Pitch.cpp \
            dsp/chromagram/Chromagram.cpp \
            dsp/chromagram/ChromaProcess.cpp \
@@ -98,4 +102,5 @@ SOURCES += base/Pitch.cpp \
            maths/CosineDistance.cpp \
            maths/KLDivergence.cpp \
            maths/MathUtilities.cpp \
-           maths/pca/pca.c
+           maths/pca/pca.c \
+           thread/Thread.cpp
