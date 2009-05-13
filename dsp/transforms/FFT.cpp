@@ -15,7 +15,7 @@
 
 #include <iostream>
 
-#define USE_BUILTIN_FFT 1
+//#define USE_BUILTIN_FFT 1
 
 #ifdef USE_BUILTIN_FFT
 
@@ -185,5 +185,104 @@ FFT::process(bool p_bInverseTransform,
 
 #include "kissfft/kiss_fft.h"
 #include "kissfft/kiss_fftr.h"
+
+struct KissFFTRec {
+    kiss_fft_cfg forward;
+    kiss_fft_cfg inverse;
+    kiss_fft_cpx *in;
+    kiss_fft_cpx *out;
+};
+
+FFT::FFT(unsigned int n) :
+    m_n(n),
+    m_private(0)
+{
+    KissFFTRec *rec = new KissFFTRec;
+    rec->forward = kiss_fft_alloc(m_n, 0, 0, 0);
+    rec->inverse = kiss_fft_alloc(m_n, 1, 0, 0);
+    rec->in = new kiss_fft_cpx[m_n];
+    rec->out = new kiss_fft_cpx[m_n];
+    m_private = rec;
+}
+
+FFT::~FFT()
+{
+    KissFFTRec *rec = (KissFFTRec *)m_private;
+    kiss_fft_free(rec->forward);
+    kiss_fft_free(rec->inverse);
+    delete[] rec->in;
+    delete[] rec->out;
+}
+
+void
+FFT::process(bool inverse,
+             const double *rin, const double *iin,
+             double *rout, double *iout)
+{
+    KissFFTRec *rec = (KissFFTRec *)m_private;
+    for (int i = 0; i < m_n; ++i) {
+        rec->in[i].r = rin[i];
+    }
+    if (iin) {
+        for (int i = 0; i < m_n; ++i) {
+            rec->in[i].i = iin[i];
+        }
+    } else {
+        for (int i = 0; i < m_n; ++i) {
+            rec->in[i].i = 0.0;
+        }
+    }
+    if (inverse) {
+        kiss_fft(rec->inverse, rec->in, rec->out);
+    } else {
+        kiss_fft(rec->forward, rec->in, rec->out);
+    }
+    for (int i = 0; i < m_n; ++i) {
+        rout[i] = rec->out[i].r;
+        iout[i] = rec->out[i].i;
+    }
+}
+
+struct KissFFTRealRec {
+    kiss_fftr_cfg forward;
+    kiss_fftr_cfg inverse;
+    kiss_fft_cpx *out;
+};
+
+FFTReal::FFTReal(unsigned int n) :
+    m_n(n),
+    m_private(0)
+{
+    KissFFTRealRec *rec = new KissFFTRealRec;
+    rec->forward = kiss_fftr_alloc(m_n, 0, 0, 0);
+    rec->inverse = kiss_fftr_alloc(m_n, 1, 0, 0);
+    rec->out = new kiss_fft_cpx[m_n];
+    m_private = rec;
+}
+
+FFTReal::~FFTReal()
+{
+    KissFFTRealRec *rec = (KissFFTRealRec *)m_private;
+    kiss_fftr_free(rec->forward);
+    kiss_fftr_free(rec->inverse);
+    delete[] rec->out;
+}
+
+void
+FFTReal::process(bool inverse,
+                 const double *rin,
+                 double *rout, double *iout)
+{
+    KissFFTRealRec *rec = (KissFFTRealRec *)m_private;
+    if (inverse) {
+        kiss_fftr(rec->inverse, rin, rec->out);
+    } else {
+        kiss_fftr(rec->forward, rin, rec->out);
+    }
+    for (int i = 0; i < m_n; ++i) {
+        rout[i] = rec->out[i].r;
+        iout[i] = rec->out[i].i;
+    }
+}
 
 #endif
