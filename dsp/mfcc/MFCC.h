@@ -13,6 +13,8 @@
 
 #include "base/Window.h"
 
+class FFTReal;
+
 struct MFCCConfig {
     int FS;
     int fftsize;
@@ -76,11 +78,11 @@ private:
     Window<double> *window;
     
     /* For the FFT */
-    double *imagIn;		// always zero
     double *realOut;
     double *imagOut;
     double *fftMag;
     double *earMag;
+    FFTReal *fft;
 
     /* Set if user want C0 */
     int WANT_C0;

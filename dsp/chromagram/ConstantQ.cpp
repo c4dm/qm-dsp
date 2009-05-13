@@ -103,7 +103,7 @@ void ConstantQ::sparsekernel()
     //add it to the sparse kernels matrix
     double squareThreshold = m_CQThresh * m_CQThresh;
 
-    FFT m_FFT;
+    FFT m_FFT(m_FFTLength);
 	
     for (unsigned k = m_uK; k--; ) 
     {
@@ -138,7 +138,7 @@ void ConstantQ::sparsekernel()
         }
     
 	//do fft of hammingWindow
-	m_FFT.process( m_FFTLength, 0, hammingWindowRe, hammingWindowIm, transfHammingWindowRe, transfHammingWindowIm );
+	m_FFT.process( 0, hammingWindowRe, hammingWindowIm, transfHammingWindowRe, transfHammingWindowIm );
 
 		
 	for (unsigned j=0; j<( m_FFTLength ); j++) 

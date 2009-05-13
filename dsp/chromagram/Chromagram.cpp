@@ -34,9 +34,6 @@ int Chromagram::initialise( ChromaConfig Config )
     // Create array for chroma result
     m_chromadata = new double[ m_BPO ];
 
-    // Initialise FFT object	
-    m_FFT = new FFT;
-
     // Create Config Structure for ConstantQ operator
     CQConfig ConstantQConfig;
 
@@ -54,6 +51,9 @@ int Chromagram::initialise( ChromaConfig Config )
     // Initialise working arrays
     m_frameSize = m_ConstantQ->getfftlength();
     m_hopSize = m_ConstantQ->gethop();
+
+    // Initialise FFT object	
+    m_FFT = new FFTReal(m_frameSize);
 
     m_FFTRe = new double[ m_frameSize ];
     m_FFTIm = new double[ m_frameSize ];
@@ -135,7 +135,7 @@ double* Chromagram::process( const double *data )
     m_window->cut(m_windowbuf);
 
     // FFT of current frame
-    m_FFT->process(m_frameSize, 0, m_windowbuf, NULL, m_FFTRe, m_FFTIm);
+    m_FFT->process(0, m_windowbuf, m_FFTRe, m_FFTIm);
 
     return process(m_FFTRe, m_FFTIm);
 }

@@ -61,7 +61,7 @@ private:
     unsigned int m_frameSize;
     unsigned int m_hopSize;
 
-    FFT* m_FFT;
+    FFTReal* m_FFT;
     ConstantQ* m_ConstantQ;
 
     double* m_FFTRe;

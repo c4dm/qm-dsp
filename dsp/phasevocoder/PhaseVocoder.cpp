@@ -16,14 +16,19 @@
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
 
-PhaseVocoder::PhaseVocoder()
+PhaseVocoder::PhaseVocoder(unsigned int n) :
+    m_n(n)
 {
-
+    m_fft = new FFTReal(m_n);
+    m_realOut = new double[m_n];
+    m_imagOut = new double[m_n];
 }
 
 PhaseVocoder::~PhaseVocoder()
 {
-
+    delete [] m_realOut;
+    delete [] m_imagOut;
+    delete m_fft;
 }
 
 void PhaseVocoder::FFTShift(unsigned int size, double *src)
@@ -36,30 +41,14 @@ void PhaseVocoder::FFTShift(unsigned int size, double *src)
     }
 }
 
-void PhaseVocoder::process(unsigned int size, double *src, double *mag, double *theta)
+void PhaseVocoder::process(double *src, double *mag, double *theta)
 {
-
-    // Primary Interface to Phase Vocoder
-    realOut = new double[ size ];
-    imagOut = new double[ size ];
-
-    FFTShift( size, src);
+    FFTShift( m_n, src);
 	
-    coreFFT( size, src, 0, realOut, imagOut);
+    m_fft->process(0, src, m_realOut, m_imagOut);
 
-    getMagnitude( size/2, mag, realOut, imagOut);
-    getPhase( size/2, theta, realOut, imagOut);
-
-    delete [] realOut;
-    delete [] imagOut;
-}
-
-
-void PhaseVocoder::coreFFT( unsigned int NumSamples, double *RealIn, double* ImagIn, double *RealOut, double *ImagOut)
-{
-    // This function is taken from a standard freeware implementation defined in FFT.h
-    // TODO: Use  FFTW
-    FFT::process( NumSamples,0, RealIn, ImagIn, RealOut, ImagOut );
+    getMagnitude( m_n/2, mag, m_realOut, m_imagOut);
+    getPhase( m_n/2, theta, m_realOut, m_imagOut);
 }
 
 void PhaseVocoder::getMagnitude(unsigned int size, double *mag, double *real, double *imag)

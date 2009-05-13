@@ -17,6 +17,8 @@
 
 using std::vector;
 
+class FFTReal;
+
 /**
  * This class takes an input audio signal and a sequence of beat
  * locations (calculated e.g. by TempoTrackV2) and estimates which of
@@ -119,6 +121,7 @@ private:
     size_t m_buffill;
     size_t m_beatframesize;
     double *m_beatframe;
+    FFTReal *m_fft;
     double *m_fftRealOut;
     double *m_fftImagOut;
     d_vec_t m_beatsd;

@@ -22,6 +22,7 @@
 
 ClusterMeltSegmenter::ClusterMeltSegmenter(ClusterMeltSegmenterParams params) :
     window(NULL),
+    fft(NULL),
     constq(NULL),
     mfcc(NULL),
     featureType(params.featureType),
@@ -73,6 +74,8 @@ void ClusterMeltSegmenter::initialise(int fs)
         constq->sparsekernel();
         
         ncoeff = constq->getK();
+
+        fft = new FFTReal(constq->getfftlength());
         
     } else if (featureType == FEATURE_TYPE_MFCC) {
 
@@ -107,6 +110,7 @@ ClusterMeltSegmenter::~ClusterMeltSegmenter()
     delete window;
     delete constq;
     delete decimator;
+    delete fft;
 }
 
 int
@@ -200,7 +204,7 @@ void ClusterMeltSegmenter::extractFeaturesConstQ(const double* samples, int nsam
 
         window->cut(frame);
         
-        FFT::process(fftsize, false, frame, 0, real, imag);
+        fft->process(false, frame, real, imag);
         
         constq->process(real, imag, cqre, cqim);
 	

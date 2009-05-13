@@ -31,6 +31,7 @@ MFCC::MFCC(MFCCConfig config)
   
     /* FFT and analysis window sizes */
     fftSize           = config.fftsize;
+    fft               = new FFTReal(fftSize);
 
     totalFilters      = linearFilters + logFilters;
     logPower          = config.logpower;
@@ -145,7 +146,6 @@ MFCC::MFCC(MFCCConfig config)
     window      = new Window<double>(config.window, fftSize);
 
     /* Allocate memory for the FFT */
-    imagIn      = (double*)calloc(fftSize, sizeof(double));
     realOut     = (double*)calloc(fftSize, sizeof(double));
     imagOut     = (double*)calloc(fftSize, sizeof(double));
 
@@ -185,9 +185,10 @@ MFCC::~MFCC()
     free(fftMag);
     
     /* Free the FFT */
-    free(imagIn);
     free(realOut);
     free(imagOut);
+
+    delete fft;
 }
 
 
@@ -204,7 +205,7 @@ int MFCC::process(const double *inframe, double *outceps)
     window->cut(inputData);
   
     /* Calculate the fft on the input frame */
-    FFT::process(fftSize, 0, inputData, imagIn, realOut, imagOut);
+    fft->process(0, inputData, realOut, imagOut);
 
     free(inputData);
 

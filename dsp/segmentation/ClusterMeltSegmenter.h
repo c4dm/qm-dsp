@@ -20,6 +20,7 @@ using std::vector;
 class Decimator;
 class ConstantQ;
 class MFCC;
+class FFTReal;
 
 class ClusterMeltSegmenterParams
 // defaults are sensible for 11025Hz with 0.2 second hopsize
@@ -71,6 +72,7 @@ protected:
     void extractFeaturesMFCC(const double *, int);
 
     Window<double> *window;
+    FFTReal *fft;
     ConstantQ* constq; 
     MFCC* mfcc;
     model_t* model;				// the HMM

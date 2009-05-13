@@ -43,6 +43,7 @@ DownBeat::DownBeat(float originalSampleRate,
     m_beatframe = new double[m_beatframesize];
     m_fftRealOut = new double[m_beatframesize];
     m_fftImagOut = new double[m_beatframesize];
+    m_fft = new FFTReal(m_beatframesize);
 }
 
 DownBeat::~DownBeat()
@@ -54,6 +55,7 @@ DownBeat::~DownBeat()
     delete[] m_beatframe;
     delete[] m_fftRealOut;
     delete[] m_fftImagOut;
+    delete m_fft;
 }
 
 void
@@ -186,8 +188,7 @@ DownBeat::findDownBeats(const float *audio,
 
         // Now FFT beat frame
         
-        FFT::process(m_beatframesize, false,
-                     m_beatframe, 0, m_fftRealOut, m_fftImagOut);
+        m_fft->process(false, m_beatframe, m_fftRealOut, m_fftImagOut);
         
         // Calculate magnitudes
 

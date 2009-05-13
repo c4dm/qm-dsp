@@ -4,7 +4,6 @@
     QM DSP Library
 
     Centre for Digital Music, Queen Mary, University of London.
-    This file is based on Don Cross's public domain FFT implementation.
 */
 
 #ifndef FFT_H
@@ -13,16 +12,31 @@
 class FFT  
 {
 public:
-    static void process(unsigned int nSamples, bool bInverseTransform,
-                        const double *lpRealIn, const double *lpImagIn,
-                        double *lpRealOut, double *lpImagOut);
-    FFT();
-    virtual ~FFT();
+    FFT(unsigned int nsamples);
+    ~FFT();
 
-protected:
-    static unsigned int reverseBits(unsigned int nIndex, unsigned int nBits);
-    static unsigned int numberOfBitsNeeded( unsigned int nSamples );
-    static bool isPowerOfTwo( unsigned int nX );
+    void process(bool inverse,
+                 const double *realIn, const double *imagIn,
+                 double *realOut, double *imagOut);
+    
+private:
+    unsigned int m_n;
+    void *m_private;
 };
+
+class FFTReal
+{
+public:
+    FFTReal(unsigned int nsamples);
+    ~FFTReal();
+
+    void process(bool inverse,
+                 const double *realIn,
+                 double *realOut, double *imagOut);
+
+private:
+    unsigned int m_n;
+    void *m_private;
+};    
 
 #endif

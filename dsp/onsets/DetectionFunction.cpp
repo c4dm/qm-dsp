@@ -58,7 +58,9 @@ void DetectionFunction::initialise( DFConfig Config )
     m_magPeaks = new double[ m_halfLength ];
     memset(m_magPeaks,0, m_halfLength*sizeof(double));
 
-    m_phaseVoc = new PhaseVocoder;
+    // See note in process(const double *) below
+    int actualLength = MathUtilities::previousPowerOfTwo(m_dataLength);
+    m_phaseVoc = new PhaseVocoder(actualLength);
 
     m_DFWindowedFrame = new double[ m_dataLength ];
     m_magnitude = new double[ m_halfLength ];
@@ -104,7 +106,7 @@ double DetectionFunction::process( const double *TDomain )
         }
     }
 
-    m_phaseVoc->process(actualLength, m_DFWindowedFrame, m_magnitude, m_thetaAngle);
+    m_phaseVoc->process(m_DFWindowedFrame, m_magnitude, m_thetaAngle);
 
     if (m_whiten) whiten();
 

@@ -15,13 +15,21 @@
 
 #include <iostream>
 
-//////////////////////////////////////////////////////////////////////
-// Construction/Destruction
-//////////////////////////////////////////////////////////////////////
+#define USE_BUILTIN_FFT 1
 
-FFT::FFT()
+#ifdef USE_BUILTIN_FFT
+
+FFT::FFT(unsigned int n) :
+    m_n(n),
+    m_private(0)
 {
-
+    if( !MathUtilities::isPowerOfTwo(m_n) )
+    {
+        std::cerr << "ERROR: FFT: Non-power-of-two FFT size "
+                  << m_n << " not supported in this implementation"
+                  << std::endl;
+	return;
+    }
 }
 
 FFT::~FFT()
@@ -29,13 +37,60 @@ FFT::~FFT()
 
 }
 
-void FFT::process(unsigned int p_nSamples, bool p_bInverseTransform,
-                  const double *p_lpRealIn, const double *p_lpImagIn,
-                  double *p_lpRealOut, double *p_lpImagOut)
+FFTReal::FFTReal(unsigned int n) :
+    m_n(n),
+    m_private(0)
 {
+    m_private = new FFT(m_n);
+}
 
+FFTReal::~FFTReal()
+{
+    delete (FFT *)m_private;
+}
+
+void
+FFTReal::process(bool inverse,
+                 const double *realIn,
+                 double *realOut, double *imagOut)
+{
+    ((FFT *)m_private)->process(inverse, realIn, 0, realOut, imagOut);
+}
+
+static unsigned int numberOfBitsNeeded(unsigned int p_nSamples)
+{	
+    int i;
+
+    if( p_nSamples < 2 )
+    {
+	return 0;
+    }
+
+    for ( i=0; ; i++ )
+    {
+	if( p_nSamples & (1 << i) ) return i;
+    }
+}
+
+static unsigned int reverseBits(unsigned int p_nIndex, unsigned int p_nBits)
+{
+    unsigned int i, rev;
+
+    for(i=rev=0; i < p_nBits; i++)
+    {
+	rev = (rev << 1) | (p_nIndex & 1);
+	p_nIndex >>= 1;
+    }
+
+    return rev;
+}
+
+void
+FFT::process(bool p_bInverseTransform,
+             const double *p_lpRealIn, const double *p_lpImagIn,
+             double *p_lpRealOut, double *p_lpImagOut)
+{
     if(!p_lpRealIn || !p_lpRealOut || !p_lpImagOut) return;
-
 
     unsigned int NumBits;
     unsigned int i, j, k, n;
@@ -44,20 +99,20 @@ void FFT::process(unsigned int p_nSamples, bool p_bInverseTransform,
     double angle_numerator = 2.0 * M_PI;
     double tr, ti;
 
-    if( !MathUtilities::isPowerOfTwo(p_nSamples) )
+    if( !MathUtilities::isPowerOfTwo(m_n) )
     {
         std::cerr << "ERROR: FFT::process: Non-power-of-two FFT size "
-                  << p_nSamples << " not supported in this implementation"
+                  << m_n << " not supported in this implementation"
                   << std::endl;
 	return;
     }
 
     if( p_bInverseTransform ) angle_numerator = -angle_numerator;
 
-    NumBits = numberOfBitsNeeded ( p_nSamples );
+    NumBits = numberOfBitsNeeded ( m_n );
 
 
-    for( i=0; i < p_nSamples; i++ )
+    for( i=0; i < m_n; i++ )
     {
 	j = reverseBits ( i, NumBits );
 	p_lpRealOut[j] = p_lpRealIn[i];
@@ -66,7 +121,7 @@ void FFT::process(unsigned int p_nSamples, bool p_bInverseTransform,
 
 
     BlockEnd = 1;
-    for( BlockSize = 2; BlockSize <= p_nSamples; BlockSize <<= 1 )
+    for( BlockSize = 2; BlockSize <= m_n; BlockSize <<= 1 )
     {
 	double delta_angle = angle_numerator / (double)BlockSize;
 	double sm2 = -sin ( -2 * delta_angle );
@@ -76,7 +131,7 @@ void FFT::process(unsigned int p_nSamples, bool p_bInverseTransform,
 	double w = 2 * cm1;
 	double ar[3], ai[3];
 
-	for( i=0; i < p_nSamples; i += BlockSize )
+	for( i=0; i < m_n; i += BlockSize )
 	{
 
 	    ar[2] = cm2;
@@ -116,9 +171,9 @@ void FFT::process(unsigned int p_nSamples, bool p_bInverseTransform,
 
     if( p_bInverseTransform )
     {
-	double denom = (double)p_nSamples;
+	double denom = (double)m_n;
 
-	for ( i=0; i < p_nSamples; i++ )
+	for ( i=0; i < m_n; i++ )
 	{
 	    p_lpRealOut[i] /= denom;
 	    p_lpImagOut[i] /= denom;
@@ -126,30 +181,9 @@ void FFT::process(unsigned int p_nSamples, bool p_bInverseTransform,
     }
 }
 
-unsigned int FFT::numberOfBitsNeeded(unsigned int p_nSamples)
-{	
-    int i;
+#else
 
-    if( p_nSamples < 2 )
-    {
-	return 0;
-    }
+#include "kissfft/kiss_fft.h"
+#include "kissfft/kiss_fftr.h"
 
-    for ( i=0; ; i++ )
-    {
-	if( p_nSamples & (1 << i) ) return i;
-    }
-}
-
-unsigned int FFT::reverseBits(unsigned int p_nIndex, unsigned int p_nBits)
-{
-    unsigned int i, rev;
-
-    for(i=rev=0; i < p_nBits; i++)
-    {
-	rev = (rev << 1) | (p_nIndex & 1);
-	p_nIndex >>= 1;
-    }
-
-    return rev;
-}
+#endif
