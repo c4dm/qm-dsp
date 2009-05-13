@@ -90,7 +90,9 @@ FFT::process(bool p_bInverseTransform,
              const double *p_lpRealIn, const double *p_lpImagIn,
              double *p_lpRealOut, double *p_lpImagOut)
 {
-    if(!p_lpRealIn || !p_lpRealOut || !p_lpImagOut) return;
+    if (!p_lpRealIn || !p_lpRealOut || !p_lpImagOut) return;
+
+//    std::cerr << "FFT::process(" << m_n << "," << p_bInverseTransform << ")" << std::endl;
 
     unsigned int NumBits;
     unsigned int i, j, k, n;

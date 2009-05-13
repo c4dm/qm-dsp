@@ -186,8 +186,12 @@ private:
     virtual void run() {
         m_todo.lock();
         while (!m_finishing) {
-            while (!m_inTask && !m_finishing) m_todo.wait();
-            if (m_finishing) break;
+            while (!m_inTask && !m_finishing) {
+                m_todo.wait();
+            }
+            if (m_finishing) {
+                break;
+            }
             if (m_inTask) {
                 performTask();
                 m_inTask = false;
