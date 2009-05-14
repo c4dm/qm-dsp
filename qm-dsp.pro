@@ -71,6 +71,8 @@ HEADERS += base/Pitch.h \
            maths/MathUtilities.h \
            maths/Polyfit.h \
            maths/pca/pca.h \
+           thread/AsynchronousTask.h \
+           thread/BlockAllocator.h \
            thread/Thread.h
 SOURCES += base/Pitch.cpp \
            dsp/chromagram/Chromagram.cpp \
