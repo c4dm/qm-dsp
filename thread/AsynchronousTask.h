@@ -68,6 +68,7 @@ protected:
         m_todo.unlock();
     }
     void awaitTask() {
+        m_done.lock();
         while (m_inTask) m_done.wait();
         m_done.unlock();
     }
@@ -82,6 +83,8 @@ private:
                 m_todo.wait();
             }
             if (m_finishing) {
+                m_inTask = false;
+                m_done.signal();
                 break;
             }
             if (m_inTask) {
