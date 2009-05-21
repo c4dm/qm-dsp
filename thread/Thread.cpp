@@ -207,12 +207,6 @@ Condition::~Condition()
 void
 Condition::lock()
 {
-    if (m_locked) {
-#ifdef DEBUG_CONDITION
-        cerr << "CONDITION DEBUG: " << (void *)GetCurrentThreadId() << ": Already locked " << &m_condition << " \"" << m_name << "\"" << endl;
-#endif
-        return;
-    }
 #ifdef DEBUG_CONDITION
     cerr << "CONDITION DEBUG: " << (void *)GetCurrentThreadId() << ": Want to lock " << &m_condition << " \"" << m_name << "\"" << endl;
 #endif
@@ -468,12 +462,6 @@ Condition::~Condition()
 void
 Condition::lock()
 {
-    if (m_locked) {
-#ifdef DEBUG_CONDITION
-        cerr << "CONDITION DEBUG: " << (void *)pthread_self() << ": Already locked " << &m_condition << " \"" << m_name << "\"" << endl;
-#endif
-        return;
-    }
 #ifdef DEBUG_CONDITION
     cerr << "CONDITION DEBUG: " << (void *)pthread_self() << ": Want to lock " << &m_condition << " \"" << m_name << "\"" << endl;
 #endif
@@ -534,6 +522,8 @@ Condition::wait(int us)
 #ifdef DEBUG_CONDITION
     cerr << "CONDITION DEBUG: " << (void *)pthread_self() << ": Wait done on " << &m_condition << " \"" << m_name << "\"" << endl;
 #endif
+
+    m_locked = true;
 }
 
 void

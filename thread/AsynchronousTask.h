@@ -12,6 +12,8 @@
 
 #include "Thread.h"
 
+#include <iostream>
+
 /**
  * AsynchronousTask provides a thread pattern implementation for
  * threads which are used to perform a series of similar operations in
@@ -46,8 +48,10 @@ public:
     }
     virtual ~AsynchronousTask()
     {
+        m_todo.lock();
         m_finishing = true;
         m_todo.signal();
+        m_todo.unlock();
         wait();
     }
 
@@ -61,15 +65,14 @@ public:
 
 protected:
     void startTask() {
+        m_done.lock();
         m_todo.lock();
         m_inTask = true;
         m_todo.signal();
-        m_done.lock();
         m_todo.unlock();
     }
     void awaitTask() {
-        m_done.lock();
-        while (m_inTask) m_done.wait();
+        m_done.wait();
         m_done.unlock();
     }
 
@@ -78,20 +81,22 @@ protected:
 private:
     virtual void run() {
         m_todo.lock();
-        while (!m_finishing) {
+        while (1) {
             while (!m_inTask && !m_finishing) {
                 m_todo.wait();
             }
             if (m_finishing) {
+                m_done.lock();
                 m_inTask = false;
                 m_done.signal();
+                m_done.unlock();
                 break;
             }
-            if (m_inTask) {
-                performTask();
-                m_inTask = false;
-                m_done.signal();
-            }
+            performTask();
+            m_done.lock();
+            m_inTask = false;
+            m_done.signal();
+            m_done.unlock();
         }
         m_todo.unlock();
     }
