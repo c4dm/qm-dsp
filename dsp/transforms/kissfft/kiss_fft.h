@@ -5,7 +5,11 @@
 #include <stdio.h>
 #include <math.h>
 #include <memory.h>
+#ifdef __APPLE__
+#include <malloc/malloc.h>
+#else
 #include <malloc.h>
+#endif
 
 #ifdef __cplusplus
 extern "C" {

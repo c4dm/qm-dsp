@@ -1,5 +1,5 @@
 TEMPLATE = lib
-CONFIG += warn_on staticlib release
+CONFIG += release warn_on staticlib
 CONFIG -= qt
 OBJECTS_DIR = tmp_obj
 MOC_DIR = tmp_moc
@@ -21,23 +21,14 @@ win32-x-g++ {
 }
 
 macx-g++* {
+    QMAKE_MAC_SDK=/Developer/SDKs/MacOSX10.4u.sdk
+    CONFIG += x86 ppc
+    QMAKE_CXXFLAGS_RELEASE += -O2 -g0 -fvisibility=hidden -I/Developer/SDKs/MacOSX10.4u.sdk/System/Library/Frameworks/Accelerate.framework/Versions/A/Frameworks/vecLib.framework/Versions/A/Headers/
+    INCLUDEPATH += /Developer/SDKs/MacOSX10.4u.sdk/System/Library/Frameworks/Accelerate.framework/Versions/A/Frameworks/vecLib.framework/Versions/A/Headers/
     DEFINES += USE_PTHREADS
     QMAKE_CXXFLAGS_RELEASE += -fvisibility=hidden
 }
 
-#DEPENDPATH += base \
-#              dsp/chromagram \
-#              dsp/keydetection \
-#              dsp/maths \
-#              dsp/onsets \
-#              dsp/phasevocoder \
-#              dsp/rateconversion \
-#              dsp/signalconditioning \
-#              dsp/tempotracking \
-#              dsp/tonal \
-#              dsp/transforms
-
-#INCLUDEPATH += . include
 INCLUDEPATH += . 
 
 # Input
