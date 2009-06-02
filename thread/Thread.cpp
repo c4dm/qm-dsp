@@ -259,6 +259,8 @@ Condition::wait(int us)
 #ifdef DEBUG_CONDITION
     cerr << "CONDITION DEBUG: " << (void *)GetCurrentThreadId() << ": Wait done on " << &m_condition << " \"" << m_name << "\"" << endl;
 #endif
+
+    m_locked = true;
 }
 
 void

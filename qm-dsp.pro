@@ -17,7 +17,7 @@ linux-g++-64 {
 
 win32-x-g++ {
     QMAKE_CXXFLAGS_RELEASE += -DNDEBUG -O2 -march=pentium3 -msse
-    INCLUDEPATH += ../include
+    INCLUDEPATH += . include ../include
 }
 
 macx-g++* {
