@@ -4,14 +4,26 @@ CONFIG -= qt
 OBJECTS_DIR = tmp_obj
 MOC_DIR = tmp_moc
 
-linux-g++*:QMAKE_CXXFLAGS_RELEASE += -DNDEBUG -O3 -fno-exceptions -fPIC -ffast-math -msse -msse2 -ftree-vectorize -fomit-frame-pointer
+linux-g++* {
+    QMAKE_CXXFLAGS_RELEASE += -DNDEBUG -O3 -fno-exceptions -fPIC -ffast-math -msse -msse2 -ftree-vectorize -fomit-frame-pointer
+    DEFINES += USE_PTHREADS
+    INCLUDEPATH += ../vamp-plugin-sdk ../qm-dsp
+    LIBPATH += ../vamp-plugin-sdk/vamp-sdk ../qm-dsp
+}
 
-linux-g++*:DEFINES += USE_PTHREADS
-macx-g++*:DEFINES += USE_PTHREADS
+linux-g++-64 {
+    INCLUDEPATH += ../qm-vamp-plugins/build/linux/amd64
+}
 
-linux-g++-64:INCLUDEPATH += ../qm-vamp-plugins/build/linux/amd64
+win32-x-g++ {
+    QMAKE_CXXFLAGS_RELEASE += -DNDEBUG -O2 -march=pentium3 -msse
+    INCLUDEPATH += ../include
+}
 
-macx-g++:QMAKE_CXXFLAGS_RELEASE += -fvisibility=hidden
+macx-g++* {
+    DEFINES += USE_PTHREADS
+    QMAKE_CXXFLAGS_RELEASE += -fvisibility=hidden
+}
 
 #DEPENDPATH += base \
 #              dsp/chromagram \

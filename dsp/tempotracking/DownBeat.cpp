@@ -217,7 +217,7 @@ DownBeat::findDownBeats(const float *audio,
 
     // We now have all spectral difference measures in specdiff
 
-    uint timesig = m_bpb;
+    unsigned int timesig = m_bpb;
     if (timesig == 0) timesig = 4;
 
     d_vec_t dbcand(timesig); // downbeat candidates
@@ -253,7 +253,7 @@ DownBeat::measureSpecDiff(d_vec_t oldspec, d_vec_t newspec)
 {
     // JENSEN-SHANNON DIVERGENCE BETWEEN SPECTRAL FRAMES
 
-    uint SPECSIZE = 512;   // ONLY LOOK AT FIRST 512 SAMPLES OF SPECTRUM. 
+    unsigned int SPECSIZE = 512;   // ONLY LOOK AT FIRST 512 SAMPLES OF SPECTRUM. 
     if (SPECSIZE > oldspec.size()/4) {
         SPECSIZE = oldspec.size()/4;
     }
@@ -263,7 +263,7 @@ DownBeat::measureSpecDiff(d_vec_t oldspec, d_vec_t newspec)
     double sumnew = 0.;
     double sumold = 0.;
   
-    for (uint i = 0;i < SPECSIZE;i++)
+    for (unsigned int i = 0;i < SPECSIZE;i++)
     {
         newspec[i] +=EPS;
         oldspec[i] +=EPS;
@@ -272,7 +272,7 @@ DownBeat::measureSpecDiff(d_vec_t oldspec, d_vec_t newspec)
         sumold+=oldspec[i];
     } 
     
-    for (uint i = 0;i < SPECSIZE;i++)
+    for (unsigned int i = 0;i < SPECSIZE;i++)
     {
         newspec[i] /= (sumnew);
         oldspec[i] /= (sumold);
