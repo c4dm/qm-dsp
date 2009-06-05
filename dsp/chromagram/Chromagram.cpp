@@ -135,7 +135,7 @@ double* Chromagram::process( const double *data )
     m_window->cut(m_windowbuf);
 
     // FFT of current frame
-    m_FFT->process(0, m_windowbuf, m_FFTRe, m_FFTIm);
+    m_FFT->process(false, m_windowbuf, m_FFTRe, m_FFTIm);
 
     return process(m_FFTRe, m_FFTIm);
 }

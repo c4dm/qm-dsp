@@ -278,12 +278,23 @@ FFTReal::process(bool inverse,
     KissFFTRealRec *rec = (KissFFTRealRec *)m_private;
     if (inverse) {
         kiss_fftr(rec->inverse, rin, rec->out);
+        for (int i = 0; i < m_n; ++i) {
+            rout[i] = rec->out[i].r;
+            iout[i] = rec->out[i].i;
+        }
     } else {
         kiss_fftr(rec->forward, rin, rec->out);
-    }
-    for (int i = 0; i < m_n; ++i) {
-        rout[i] = rec->out[i].r;
-        iout[i] = rec->out[i].i;
+        rout[0] = rec->out[0].r;
+        iout[0] = rec->out[0].i;
+        for (int i = 1; i < m_n/2; ++i) {
+            rout[m_n-i] = rout[i] = rec->out[i].r;
+        }
+        for (int i = 1; i < m_n/2; ++i) {
+            iout[i] = rec->out[i].i;
+            iout[m_n-i] = -iout[i];
+        }
+        rout[m_n/2] = rec->out[m_n/2].r;
+        iout[m_n/2] = rec->out[m_n/2].i;
     }
 }
 

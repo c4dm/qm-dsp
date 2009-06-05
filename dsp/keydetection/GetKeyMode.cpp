@@ -174,13 +174,13 @@ int GetKeyMode::process(double *PCMData)
     // Added 21.11.07 by Chris Sutton based on debugging with Katy
     // Noland + comparison with Matlab equivalent.
     MathUtilities::circShift( m_ChrPointer, m_BPO, 1);
-
 /*
-  std::cout << "raw chroma: ";
-  for (int ii = 0; ii < m_BPO; ++ii) {
-  std::cout << m_ChrPointer[ii] << " ";
-  }
-  std::cout << std::endl;
+    std::cout << "raw chroma: ";
+    for (int ii = 0; ii < m_BPO; ++ii) {
+      if (ii % (m_BPO/12) == 0) std::cout << "\n";
+        std::cout << m_ChrPointer[ii] << " ";
+    }
+    std::cout << std::endl;
 */
     // populate hpcp values;
     int cbidx;
@@ -232,13 +232,27 @@ int GetKeyMode::process(double *PCMData)
 
     for( k = 0; k < m_BPO*2; k++ )
     {
-        m_keyStrengths[k/(m_BPO/12)] += m_Keys[k];
+        int idx = k / (m_BPO/12);
+        int rem = k % (m_BPO/12);
+        if (rem == 0 || m_Keys[k] > m_keyStrengths[idx]) {
+            m_keyStrengths[idx] = m_Keys[k];
+        }
+
+//        m_keyStrengths[k/(m_BPO/12)] += m_Keys[k];
     }
 
 /*
   std::cout << "raw keys: ";
   for (int ii = 0; ii < 2*m_BPO; ++ii) {
-  std::cout << m_Keys[ii] << " ";
+      if (ii % (m_BPO/12) == 0) std::cout << "\n";
+      std::cout << m_Keys[ii] << " ";
+  }
+  std::cout << std::endl;
+
+  std::cout << "key strengths: ";
+  for (int ii = 0; ii < 24; ++ii) {
+      if (ii % 6 == 0) std::cout << "\n";
+      std::cout << m_keyStrengths[ii] << " ";
   }
   std::cout << std::endl;
 */
@@ -246,7 +260,7 @@ int GetKeyMode::process(double *PCMData)
     // '1 +' because we number keys 1-24, not 0-23.
     key = 1 + (int)ceil( (double)MathUtilities::getMax( m_Keys, 2* m_BPO, &dummy )/3 );
 
-//	std::cout << "key pre-sorting: " << key << std::endl;
+//    std::cout << "key pre-sorting: " << key << std::endl;
 
 
     //Median filtering
@@ -285,10 +299,14 @@ int GetKeyMode::process(double *PCMData)
     int sortlength = m_MedianBufferFilling;
     int midpoint = (int)ceil((double)sortlength/2);
 
+//  std::cout << "midpoint = " << midpoint << endl;
+
     if( midpoint <= 0 )
         midpoint = 1;
 
     key = m_SortedBuffer[midpoint-1];
+
+// std::cout << "returning key = " << key << endl;
 
     return key;
 }

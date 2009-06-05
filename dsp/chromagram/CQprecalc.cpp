@@ -1,3 +1,10 @@
+
+#ifdef NOT_DEFINED
+
+// Well, I now think this doesn't save enough time to justify the
+// extra bulk in the plugin executable.  But keep it around and only
+// ifdef it out, just in case...
+
 #include <vector>
 using std::vector;
 static unsigned int sk_i_76_16384[5818] = {
@@ -49838,3 +49845,6 @@ static void push_84_65536(vector<unsigned int> &is, vector<unsigned int> &js, ve
         imag.push_back(sk_imag_84_65536[i]);
     }
 }
+
+#endif
+

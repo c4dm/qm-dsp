@@ -12,6 +12,9 @@
 
 #include <iostream>
 
+#ifdef NOT_DEFINED
+// see note in CQprecalc
+
 #include "CQprecalc.cpp"
 
 static bool push_precalculated(int uk, int fftlength,
@@ -38,6 +41,7 @@ static bool push_precalculated(int uk, int fftlength,
     }
     return false;
 }
+#endif
 
 //---------------------------------------------------------------------------
 // nextpow2 returns the smallest integer n such that 2^n >= x.
@@ -70,12 +74,15 @@ void ConstantQ::sparsekernel()
 
     SparseKernel *sk = new SparseKernel();
 
+#ifdef NOT_DEFINED
     if (push_precalculated(m_uK, m_FFTLength,
                            sk->is, sk->js, sk->real, sk->imag)) {
+//        std::cerr << "using precalculated kernel" << std::endl;
         m_sparseKernel = sk;
         return;
     }
-    
+#endif
+
     //generates spectral kernel matrix (upside down?)
     // initialise temporal kernel with zeros, twice length to deal w. complex numbers
 
