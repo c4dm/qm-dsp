@@ -199,6 +199,12 @@ FFT::FFT(unsigned int n) :
     m_n(n),
     m_private(0)
 {
+    if (m_n & 1) {
+        std::cerr << "Error: Odd FFT size " << m_n
+                  << " not supported in this implementation"
+                  << std::endl;
+        return;
+    }
     KissFFTRec *rec = new KissFFTRec;
     rec->forward = kiss_fft_alloc(m_n, 0, 0, 0);
     rec->inverse = kiss_fft_alloc(m_n, 1, 0, 0);
@@ -209,6 +215,7 @@ FFT::FFT(unsigned int n) :
 
 FFT::~FFT()
 {
+    if (!m_private) return;
     KissFFTRec *rec = (KissFFTRec *)m_private;
     kiss_fft_free(rec->forward);
     kiss_fft_free(rec->inverse);
@@ -221,6 +228,7 @@ FFT::process(bool inverse,
              const double *rin, const double *iin,
              double *rout, double *iout)
 {
+    if (!m_private) return;
     KissFFTRec *rec = (KissFFTRec *)m_private;
     for (int i = 0; i < m_n; ++i) {
         rec->in[i].r = rin[i];
@@ -255,6 +263,12 @@ FFTReal::FFTReal(unsigned int n) :
     m_n(n),
     m_private(0)
 {
+    if (m_n & 1) {
+        std::cerr << "Error: Odd FFT size " << m_n
+                  << " not supported in this implementation"
+                  << std::endl;
+        return;
+    }
     KissFFTRealRec *rec = new KissFFTRealRec;
     rec->forward = kiss_fftr_alloc(m_n, 0, 0, 0);
     rec->inverse = kiss_fftr_alloc(m_n, 1, 0, 0);
@@ -264,6 +278,7 @@ FFTReal::FFTReal(unsigned int n) :
 
 FFTReal::~FFTReal()
 {
+    if (!m_private) return;
     KissFFTRealRec *rec = (KissFFTRealRec *)m_private;
     kiss_fftr_free(rec->forward);
     kiss_fftr_free(rec->inverse);
@@ -275,6 +290,7 @@ FFTReal::process(bool inverse,
                  const double *rin,
                  double *rout, double *iout)
 {
+    if (!m_private) return;
     KissFFTRealRec *rec = (KissFFTRealRec *)m_private;
     if (inverse) {
         kiss_fftr(rec->inverse, rin, rec->out);

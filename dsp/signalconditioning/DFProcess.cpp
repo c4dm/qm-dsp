@@ -82,8 +82,8 @@ void DFProcess::process(double *src, double* dst)
 
 void DFProcess::medianFilter(double *src, double *dst)
 {
-    unsigned int i,k,j,l;
-    unsigned int index = 0;
+    int i,k,j,l;
+    int index = 0;
 
     double val = 0;
 
@@ -92,8 +92,10 @@ void DFProcess::medianFilter(double *src, double *dst)
 
     double* scratch = new double[ m_length ];
 
-    for( i = 0; i < m_winPre; i++)
+    for( i = 0; i < m_winPre && index; i++)
     {
+        if (index >= m_length) break;
+
 	k = i + m_winPost + 1;
 
 	for( j = 0; j < k; j++)
@@ -104,8 +106,10 @@ void DFProcess::medianFilter(double *src, double *dst)
 	index++;
     }
 
-    for(  i = 0; i < ( m_length - ( m_winPost + m_winPre ) ); i ++)
+    for(  i = 0; i + m_winPost + m_winPre < m_length; i ++)
     {
+        if (index >= m_length) break;
+
 			 
 	l = 0;
 	for(  j  = i; j < ( i + m_winPost + m_winPre + 1); j++)
@@ -117,9 +121,11 @@ void DFProcess::medianFilter(double *src, double *dst)
 	scratch[ index++ ] = MathUtilities::median( y, (m_winPost + m_winPre + 1 ));
     }
 
-    for( i = std::max( m_length - m_winPost, (unsigned)1); i < m_length; i++)
+    for( i = std::max( m_length - m_winPost, 1); i < m_length; i++)
     {
-	k = std::max( i - m_winPre, (unsigned)1);
+        if (index >= m_length) break;
+
+	k = std::max( i - m_winPre, 1);
 
 	l = 0;
 	for( j = k; j < m_length; j++)

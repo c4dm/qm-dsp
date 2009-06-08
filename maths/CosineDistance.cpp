@@ -19,6 +19,7 @@ double CosineDistance::distance(const vector<double> &v1,
                                 const vector<double> &v2)
 {
     dist = 1.0; dDenTot = 0; dDen1 = 0; dDen2 = 0; dSum1 =0;
+    double small = 1e-20;
 
     //check if v1, v2 same size
     if (v1.size() != v2.size())
@@ -34,13 +35,7 @@ double CosineDistance::distance(const vector<double> &v1,
             dDen1 += v1[i]*v1[i];
             dDen2 += v2[i]*v2[i];
         }
-        dDenTot = sqrt(fabs(dDen1*dDen2));
-        if(dDenTot == 0)
-        {
-            cerr << "CosineDistance::distance: WARNING: dividing by zero in cosine dist\n";
-            return 1.0;
-        }
-	
+        dDenTot = sqrt(fabs(dDen1*dDen2)) + small;
         dist = 1-((dSum1)/dDenTot);
         return dist;
     }

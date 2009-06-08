@@ -40,11 +40,11 @@ private:
     void removeDCNormalize( double *src, double*dst );
     void medianFilter( double* src, double* dst );
 
-    unsigned int m_length;
-    unsigned int m_FFOrd;
+    int m_length;
+    int m_FFOrd;
 
-    unsigned int m_winPre;
-    unsigned int m_winPost;
+    int m_winPre;
+    int m_winPost;
 
     double m_alphaNormParam;
 

@@ -44,6 +44,12 @@ public:
 		for (size_t i = 0; i < 12; dSum > 0.0000001?((*this)[i] /= dSum):(*this)[i]=0.0, i++) ;
 
 	}
+
+    void clear()
+    {
+        for (size_t i = 0; i < 12; ++i) (*this)[i] = 0.0;
+    }
+        
 	
 };
 

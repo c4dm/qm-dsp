@@ -20,10 +20,16 @@ double KLDivergence::distanceGaussian(const vector<double> &m1,
     int sz = m1.size();
 
     double d = -2.0 * sz;
+    double small = 1e-20;
 
     for (int k = 0; k < sz; ++k) {
-        d += v1[k] / v2[k] + v2[k] / v1[k];
-        d += (m1[k] - m2[k]) * (1.0 / v1[k] + 1.0 / v2[k]) * (m1[k] - m2[k]);
+
+        double kv1 = v1[k] + small;
+        double kv2 = v2[k] + small;
+        double km = (m1[k] - m2[k]) + small;
+
+        d += kv1 / kv2 + kv2 / kv1;
+        d += km * (1.0 / kv1 + 1.0 / kv2) * km;
     }
 
     d /= 2.0;
