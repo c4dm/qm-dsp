@@ -6,13 +6,14 @@ OBJECTS_DIR = tmp_obj
 MOC_DIR = tmp_moc
 
 linux-g++* {
-    QMAKE_CXXFLAGS_RELEASE += -DNDEBUG -O3 -fno-exceptions -fPIC -ffast-math -msse -msse2 -ftree-vectorize -fomit-frame-pointer
+    QMAKE_CXXFLAGS_RELEASE += -DNDEBUG -O3 -fno-exceptions -fPIC -ffast-math -msse -ftree-vectorize -fomit-frame-pointer
     DEFINES += USE_PTHREADS
     INCLUDEPATH += ../vamp-plugin-sdk ../qm-dsp
     LIBPATH += ../vamp-plugin-sdk/vamp-sdk ../qm-dsp
 }
 
 linux-g++-64 {
+    QMAKE_CXXFLAGS_RELEASE += -msse2
     INCLUDEPATH += ../qm-vamp-plugins/build/linux/amd64
 }
 
