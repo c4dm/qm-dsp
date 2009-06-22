@@ -226,18 +226,17 @@ DownBeat::findDownBeats(const float *audio,
         dbcand[beat] = 0;
     }
 
-    // look for beat transition which leads to greatest spectral change
-    for (int beat = 0; beat < timesig; ++beat) {
-        int count = 0;
-        for (int example = beat - 1; example < m_beatsd.size(); example += timesig) {
-            if (example < 0) continue;
-            dbcand[beat] += (m_beatsd[example]) / timesig;
-            ++count;
-        }
-        if (count > 0) m_beatsd[beat] /= count;
+   // look for beat transition which leads to greatest spectral change
+   for (int beat = 0; beat < timesig; ++beat) {
+       int count = 0;
+       for (int example = beat; example < m_beatsd.size(); example += timesig) {
+           if (example < 0) continue;
+           dbcand[beat] += (m_beatsd[example]) / timesig;
+           ++count;
+       }
+       if (count > 0) dbcand[beat] /= count;
 //        std::cerr << "dbcand[" << beat << "] = " << dbcand[beat] << std::endl;
-    }
-
+   }
 
     // first downbeat is beat at index of maximum value of dbcand
     int dbind = MathUtilities::getMax(dbcand);
