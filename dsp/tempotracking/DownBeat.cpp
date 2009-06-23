@@ -69,7 +69,7 @@ DownBeat::makeDecimators()
 {
 //    std::cerr << "m_factor = " << m_factor << std::endl;
     if (m_factor < 2) return;
-    int highest = Decimator::getHighestSupportedFactor();
+    size_t highest = Decimator::getHighestSupportedFactor();
     if (m_factor <= highest) {
         m_decimator1 = new Decimator(m_increment, m_factor);
 //        std::cerr << "DownBeat: decimator 1 factor " << m_factor << ", size " << m_increment << std::endl;
@@ -107,7 +107,7 @@ DownBeat::pushAudioBlock(const float *audio)
         m_decimator1->process(audio, m_buffer + m_buffill);
     } else {
         // just copy across (m_factor is presumably 1)
-        for (int i = 0; i < m_increment; ++i) {
+        for (size_t i = 0; i < m_increment; ++i) {
             (m_buffer + m_buffill)[i] = audio[i];
         }
     }
@@ -217,7 +217,7 @@ DownBeat::findDownBeats(const float *audio,
 
     // We now have all spectral difference measures in specdiff
 
-    unsigned int timesig = m_bpb;
+    int timesig = m_bpb;
     if (timesig == 0) timesig = 4;
 
     d_vec_t dbcand(timesig); // downbeat candidates
@@ -229,7 +229,7 @@ DownBeat::findDownBeats(const float *audio,
    // look for beat transition which leads to greatest spectral change
    for (int beat = 0; beat < timesig; ++beat) {
        int count = 0;
-       for (int example = beat; example < m_beatsd.size(); example += timesig) {
+       for (int example = beat-1; example < (int)m_beatsd.size(); example += timesig) {
            if (example < 0) continue;
            dbcand[beat] += (m_beatsd[example]) / timesig;
            ++count;
@@ -242,7 +242,7 @@ DownBeat::findDownBeats(const float *audio,
     int dbind = MathUtilities::getMax(dbcand);
 
     // remaining downbeats are at timesig intervals from the first
-    for (int i = dbind; i < beats.size(); i += timesig) {
+    for (int i = dbind; i < (int)beats.size(); i += timesig) {
         downbeats.push_back(i);
     }
 }
@@ -298,6 +298,6 @@ DownBeat::measureSpecDiff(d_vec_t oldspec, d_vec_t newspec)
 void
 DownBeat::getBeatSD(vector<double> &beatsd) const
 {
-    for (int i = 0; i < m_beatsd.size(); ++i) beatsd.push_back(m_beatsd[i]);
+    for (int i = 0; i < (int)m_beatsd.size(); ++i) beatsd.push_back(m_beatsd[i]);
 }
 
