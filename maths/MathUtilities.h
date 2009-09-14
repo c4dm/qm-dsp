@@ -13,6 +13,8 @@
 
 #include <vector>
 
+#include "nan-inf.h"
+
 class MathUtilities  
 {
 public:	

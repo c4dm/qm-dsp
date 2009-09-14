@@ -41,7 +41,7 @@ void MathUtilities::getAlphaNorm(const double *data, unsigned int len, unsigned 
     {
 	temp = data[ i ];
 		
-	a  += ::pow( fabs(temp), alpha );
+	a  += ::pow( fabs(temp), double(alpha) );
     }
     a /= ( double )len;
     a = ::pow( a, ( 1.0 / (double) alpha ) );
@@ -60,7 +60,7 @@ double MathUtilities::getAlphaNorm( const std::vector <double> &data, unsigned i
     {
 	temp = data[ i ];
 		
-	a  += ::pow( fabs(temp), alpha );
+	a  += ::pow( fabs(temp), double(alpha) );
     }
     a /= ( double )len;
     a = ::pow( a, ( 1.0 / (double) alpha ) );

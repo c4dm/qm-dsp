@@ -87,8 +87,9 @@ TempoTrackV2::filter_df(d_vec_t &df)
 
 
 void
-TempoTrackV2::calculateBeatPeriod(const d_vec_t &df, d_vec_t &beat_period,
-                                  d_vec_t &tempi)
+TempoTrackV2::calculateBeatPeriod(const vector<double> &df,
+                                  vector<double> &beat_period,
+                                  vector<double> &tempi)
 {
     // to follow matlab.. split into 512 sample frames with a 128 hop size
     // calculate the acf,
@@ -392,8 +393,9 @@ TempoTrackV2::normalise_vec(d_vec_t &df)
 }
 
 void
-TempoTrackV2::calculateBeats(const d_vec_t &df, const d_vec_t &beat_period,
-                             d_vec_t &beats)
+TempoTrackV2::calculateBeats(const vector<double> &df,
+                             const vector<double> &beat_period,
+                             vector<double> &beats)
 {
     if (df.empty() || beat_period.empty()) return;
 

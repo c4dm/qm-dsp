@@ -15,6 +15,8 @@
 
 #include <clapack.h>		/* LAPACK for matrix inversion */
 
+#include "maths/nan-inf.h"
+
 #ifdef ATLAS_ORDER
 #define HAVE_ATLAS 1
 #endif
@@ -216,7 +218,7 @@ void hmm_train(double** x, int T, model_t* model)
 		fprintf(stderr, "re-estimation...\n");
 		fflush(stderr);
 */
-		if (isnan(loglik)) {
+		if (ISNAN(loglik)) {
 		    foundnan = 1;
 		    continue;
 		}
@@ -339,16 +341,16 @@ void baum_welch(double* p0, double** a, double** mu, double** cov, int N, int T,
 			 
 			 cov[d][e] /= sum_sum_gamma;
 			 
-			 if (isnan(cov[d][e]))
+			 if (ISNAN(cov[d][e]))
 			 {
 				 printf("cov[%d][%d] was nan\n", d, e);
 				 for (j = 0; j < N; j++)
 					 for (i = 0; i < L; i++)
-						 if (isnan(mu[j][i]))
+						 if (ISNAN(mu[j][i]))
 							 printf("mu[%d][%d] was nan\n", j, i);
 				 for (t = 0; t < T; t++)
 					 for (j = 0; j < N; j++)
-						 if (isnan(gamma[t][j]))
+						 if (ISNAN(gamma[t][j]))
 							 printf("gamma[%d][%d] was nan\n", t, j);
 				 exit(-1);
 			 }
@@ -783,11 +785,11 @@ double loggauss(double* x, int L, double* mu, double** icov, double detcov, doub
 	
 	/*
 	// TEST
-	if (isinf(ret) > 0)
+	if (ISINF(ret) > 0)
 		printf("loggauss returning infinity\n");
-	if (isinf(ret) < 0)
+	if (ISINF(ret) < 0)
 		printf("loggauss returning -infinity\n");
-	if (isnan(ret))
+	if (ISNAN(ret))
 		printf("loggauss returning nan\n");	
 	*/
 	

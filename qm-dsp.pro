@@ -31,6 +31,12 @@ macx-g++* {
     QMAKE_CXXFLAGS_RELEASE += -fvisibility=hidden
 }
 
+solaris* {
+    QMAKE_CXXFLAGS_RELEASE += -DNDEBUG -fast
+    INCLUDEPATH += /opt/ATLAS3.9.14/include
+    DEFINES += USE_PTHREADS
+}
+
 INCLUDEPATH += . 
 
 # Input

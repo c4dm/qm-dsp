@@ -9,7 +9,7 @@
 
 #include "Pitch.h"
 
-#include <cmath>
+#include <math.h>
 
 float
 Pitch::getFrequencyForPitch(int midiPitch,
