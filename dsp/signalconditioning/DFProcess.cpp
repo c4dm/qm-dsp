@@ -92,7 +92,7 @@ void DFProcess::medianFilter(double *src, double *dst)
 
     double* scratch = new double[ m_length ];
 
-    for( i = 0; i < m_winPre && index; i++)
+    for( i = 0; i < m_winPre; i++)
     {
         if (index >= m_length) break;
 
