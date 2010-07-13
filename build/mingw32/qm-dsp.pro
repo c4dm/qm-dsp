@@ -44,11 +44,17 @@ HEADERS += base/Pitch.h \
            dsp/signalconditioning/Filter.h \
            dsp/signalconditioning/FiltFilt.h \
            dsp/signalconditioning/Framer.h \
+           dsp/tempotracking/DownBeat.h \
            dsp/tempotracking/TempoTrack.h \
+           dsp/tempotracking/TempoTrackV2.h \
            dsp/tonal/ChangeDetectionFunction.h \
            dsp/tonal/TCSgram.h \
            dsp/tonal/TonalEstimator.h \
            dsp/transforms/FFT.h \
+           dsp/transforms/kissfft/kiss_fft.h \
+           dsp/transforms/kissfft/kiss_fftr.h \
+           dsp/transforms/kissfft/_kiss_fft_guts.h \
+           dsp/wavelet/Wavelet.h \
            hmm/hmm.h \
            maths/Correlation.h \
            maths/CosineDistance.h \
@@ -57,7 +63,10 @@ HEADERS += base/Pitch.h \
            maths/MathAliases.h \
            maths/MathUtilities.h \
            maths/Polyfit.h \
-           maths/pca/pca.h
+           maths/pca/pca.h \
+           thread/AsynchronousTask.h \
+           thread/BlockAllocator.h \
+           thread/Thread.h
 SOURCES += base/Pitch.cpp \
            dsp/chromagram/Chromagram.cpp \
            dsp/chromagram/ChromaProcess.cpp \
@@ -78,14 +87,20 @@ SOURCES += base/Pitch.cpp \
            dsp/signalconditioning/Filter.cpp \
            dsp/signalconditioning/FiltFilt.cpp \
            dsp/signalconditioning/Framer.cpp \
+           dsp/tempotracking/DownBeat.cpp \
            dsp/tempotracking/TempoTrack.cpp \
+           dsp/tempotracking/TempoTrackV2.cpp \
            dsp/tonal/ChangeDetectionFunction.cpp \
            dsp/tonal/TCSgram.cpp \
            dsp/tonal/TonalEstimator.cpp \
            dsp/transforms/FFT.cpp \
+           dsp/transforms/kissfft/kiss_fft.c \
+           dsp/transforms/kissfft/kiss_fftr.c \
+           dsp/wavelet/Wavelet.cpp \
            hmm/hmm.c \
            maths/Correlation.cpp \
            maths/CosineDistance.cpp \
            maths/KLDivergence.cpp \
            maths/MathUtilities.cpp \
-           maths/pca/pca.c
+           maths/pca/pca.c \
+           thread/Thread.cpp
