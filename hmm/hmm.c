@@ -1,6 +1,5 @@
 /*
  *  hmm.c
- *  soundbite
  *
  *  Created by Mark Levy on 12/02/2006.
  *  Copyright 2006 Centre for Digital Music, Queen Mary, University of London. All rights reserved.

@@ -7,7 +7,6 @@ extern "C" {
 
 /*
  *  segment.h
- *  soundbite
  *
  *  Created by Mark Levy on 06/04/2006.
  *  Copyright 2006 Centre for Digital Music, Queen Mary, University of London. All rights reserved.

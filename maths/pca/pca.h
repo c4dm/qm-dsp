@@ -7,7 +7,6 @@ extern "C" {
 
 /*
  *  pca.h
- *  soundbite
  *
  *  Created by Mark Levy on 08/02/2006.
  *  Copyright 2006 Centre for Digital Music, Queen Mary, University of London. All rights reserved.
