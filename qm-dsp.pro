@@ -43,7 +43,6 @@ INCLUDEPATH += .
 HEADERS += base/Pitch.h \
            base/Window.h \
            dsp/chromagram/Chromagram.h \
-           dsp/chromagram/ChromaProcess.h \
            dsp/chromagram/ConstantQ.h \
            dsp/keydetection/GetKeyMode.h \
            dsp/mfcc/MFCC.h \
@@ -55,7 +54,6 @@ HEADERS += base/Pitch.h \
            dsp/segmentation/cluster_melt.h \
            dsp/segmentation/ClusterMeltSegmenter.h \
            dsp/segmentation/cluster_segmenter.h \
-           dsp/segmentation/SavedFeatureSegmenter.h \
            dsp/segmentation/Segmenter.h \
            dsp/segmentation/segment.h \
            dsp/signalconditioning/DFProcess.h \
@@ -69,9 +67,6 @@ HEADERS += base/Pitch.h \
            dsp/tonal/TCSgram.h \
            dsp/tonal/TonalEstimator.h \
            dsp/transforms/FFT.h \
-           dsp/transforms/kissfft/kiss_fft.h \
-           dsp/transforms/kissfft/kiss_fftr.h \
-           dsp/transforms/kissfft/_kiss_fft_guts.h \
            dsp/wavelet/Wavelet.h \
            hmm/hmm.h \
            maths/Correlation.h \
@@ -87,7 +82,6 @@ HEADERS += base/Pitch.h \
            thread/Thread.h
 SOURCES += base/Pitch.cpp \
            dsp/chromagram/Chromagram.cpp \
-           dsp/chromagram/ChromaProcess.cpp \
            dsp/chromagram/ConstantQ.cpp \
            dsp/keydetection/GetKeyMode.cpp \
            dsp/mfcc/MFCC.cpp \
@@ -99,7 +93,6 @@ SOURCES += base/Pitch.cpp \
            dsp/segmentation/cluster_melt.c \
            dsp/segmentation/ClusterMeltSegmenter.cpp \
            dsp/segmentation/cluster_segmenter.c \
-           dsp/segmentation/SavedFeatureSegmenter.cpp \
            dsp/segmentation/Segmenter.cpp \
            dsp/signalconditioning/DFProcess.cpp \
            dsp/signalconditioning/Filter.cpp \
@@ -112,8 +105,6 @@ SOURCES += base/Pitch.cpp \
            dsp/tonal/TCSgram.cpp \
            dsp/tonal/TonalEstimator.cpp \
            dsp/transforms/FFT.cpp \
-           dsp/transforms/kissfft/kiss_fft.c \
-           dsp/transforms/kissfft/kiss_fftr.c \
            dsp/wavelet/Wavelet.cpp \
            hmm/hmm.c \
            maths/Correlation.cpp \
