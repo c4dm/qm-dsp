@@ -21,8 +21,10 @@ See individual files for further authorship details.
 License
 =======
 
-This code is provided under the terms of the GNU General Public
-License.  You may use, modify and redistribute it in source or
-binary form, provided you comply with the terms given by the GNU
-General Public License.  See the file COPYING for more details.
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License as
+published by the Free Software Foundation; either version 2 of the
+License, or (at your option) any later version.  See the file
+COPYING included with this distribution for more information.
+
 
