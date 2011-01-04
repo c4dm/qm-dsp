@@ -71,7 +71,6 @@ HEADERS += base/Pitch.h \
            hmm/hmm.h \
            maths/Correlation.h \
            maths/CosineDistance.h \
-           maths/Histogram.h \
            maths/KLDivergence.h \
            maths/MathAliases.h \
            maths/MathUtilities.h \
