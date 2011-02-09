@@ -1,4 +1,13 @@
 
+LIBRARY ?= libqm-dsp.a
+CXX	?= g++
+CC	?= gcc
+AR	?= ar
+RANLIB	?= ranlib
+
+CFLAGS	:= $(CFLAGS) -I.
+CXXFLAGS	:= $(CXXFLAGS) -I.
+
 HEADERS := base/Pitch.h \
            base/Window.h \
            dsp/chromagram/Chromagram.h \
@@ -76,3 +85,12 @@ SOURCES := base/Pitch.cpp \
 OBJECTS := $(SOURCES:.cpp=.o)
 OBJECTS := $(OBJECTS:.c=.o)
 
+$(LIBRARY):	$(OBJECTS)
+		$(AR) cr $@ $^
+		$(RANLIB) $@
+
+clean:		
+		rm $(OBJECTS)
+
+distclean:	clean
+		rm $(LIBRARY)
