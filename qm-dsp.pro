@@ -24,7 +24,9 @@ win32-x-g++ {
 
 macx-g++* {
     QMAKE_MAC_SDK=/Developer/SDKs/MacOSX10.4u.sdk
-    CONFIG += x86 ppc
+    CONFIG += x86 ppc x86_64
+    QMAKE_CXX = g++-4.0
+    QMAKE_CC = gcc-4.0
     QMAKE_CXXFLAGS_RELEASE += -O2 -g0 -fvisibility=hidden -I/Developer/SDKs/MacOSX10.4u.sdk/System/Library/Frameworks/Accelerate.framework/Versions/A/Frameworks/vecLib.framework/Versions/A/Headers/
     INCLUDEPATH += /Developer/SDKs/MacOSX10.4u.sdk/System/Library/Frameworks/Accelerate.framework/Versions/A/Frameworks/vecLib.framework/Versions/A/Headers/
     DEFINES += USE_PTHREADS
