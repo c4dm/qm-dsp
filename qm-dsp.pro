@@ -27,10 +27,10 @@ macx-g++* {
     CONFIG += x86 ppc x86_64
     QMAKE_CXX = g++-4.0
     QMAKE_CC = gcc-4.0
-    QMAKE_CXXFLAGS_RELEASE += -O2 -g0 -fvisibility=hidden -I/Developer/SDKs/MacOSX10.4u.sdk/System/Library/Frameworks/Accelerate.framework/Versions/A/Frameworks/vecLib.framework/Versions/A/Headers/
+    QMAKE_CXXFLAGS_RELEASE += -mmacosx-version-min=10.4 -O2 -g0 -I/Developer/SDKs/MacOSX10.4u.sdk/System/Library/Frameworks/Accelerate.framework/Versions/A/Frameworks/vecLib.framework/Versions/A/Headers/
+    QMAKE_CFLAGS_RELEASE += -mmacosx-version-min=10.4 
     INCLUDEPATH += /Developer/SDKs/MacOSX10.4u.sdk/System/Library/Frameworks/Accelerate.framework/Versions/A/Frameworks/vecLib.framework/Versions/A/Headers/
     DEFINES += USE_PTHREADS
-    QMAKE_CXXFLAGS_RELEASE += -fvisibility=hidden
 }
 
 solaris* {
