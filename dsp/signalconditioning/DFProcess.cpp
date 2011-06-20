@@ -6,6 +6,14 @@
     Centre for Digital Music, Queen Mary, University of London.
     This file 2005-2006 Christian Landone.
 
+    Modifications:
+
+    - delta threshold
+    Description: add delta threshold used as offset in the smoothed
+    detection function
+    Author: Mathieu Barthet
+    Date: June 2010
+
     This program is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License as
     published by the Free Software Foundation; either version 2 of the
@@ -57,7 +65,10 @@ void DFProcess::initialise( DFProcConfig Config )
     m_FilterConfigParams.ACoeffs = Config.LPACoeffs;
     m_FilterConfigParams.BCoeffs = Config.LPBCoeffs;
 	
-    m_FiltFilt = new FiltFilt( m_FilterConfigParams );	
+    m_FiltFilt = new FiltFilt( m_FilterConfigParams );
+	
+    //add delta threshold
+    m_Delta = Config.Delta;
 }
 
 void DFProcess::deInitialise()
@@ -146,7 +157,9 @@ void DFProcess::medianFilter(double *src, double *dst)
 
     for( i = 0; i < m_length; i++ )
     {
-	val = src[ i ] - scratch[ i ];// - 0.033;
+	//add a delta threshold used as an offset when computing the smoothed detection function
+	//(helps to discard noise when detecting peaks)	
+	val = src[ i ] - scratch[ i ] - m_Delta;
 		
 	if( m_isMedianPositive )
 	{

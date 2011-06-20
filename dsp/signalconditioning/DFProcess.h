@@ -6,6 +6,14 @@
     Centre for Digital Music, Queen Mary, University of London.
     This file 2005-2006 Christian Landone.
 
+    Modifications:
+
+    - delta threshold
+    Description: add delta threshold used as offset in the smoothed
+    detection function
+    Author: Mathieu Barthet
+    Date: June 2010
+
     This program is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License as
     published by the Free Software Foundation; either version 2 of the
@@ -28,6 +36,7 @@ struct DFProcConfig{
     unsigned int winPost; 
     double AlphaNormParam;
     bool isMedianPositive;
+    float Delta; //delta threshold used as an offset when computing the smoothed detection function
 };
 
 class DFProcess  
@@ -64,6 +73,7 @@ private:
     FiltFilt* m_FiltFilt;
 
     bool m_isMedianPositive;
+    float m_Delta; //add delta threshold
 };
 
 #endif

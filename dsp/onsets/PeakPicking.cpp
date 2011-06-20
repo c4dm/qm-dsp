@@ -6,11 +6,19 @@
     Centre for Digital Music, Queen Mary, University of London.
     This file 2005-2006 Christian Landone.
 
+    Modifications:
+
+    - delta threshold
+    Description: add delta threshold used as offset in the smoothed
+    detection function
+    Author: Mathieu Barthet
+    Date: June 2010
+
     This program is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License as
     published by the Free Software Foundation; either version 2 of the
     License, or (at your option) any later version.  See the file
-    COPYING included with this distribution for more information.
+    COPYING included with this distribution for more information.    
 */
 
 #include "PeakPicking.h"
@@ -50,7 +58,8 @@ void PeakPicking::initialise( PPickParams Config )
     m_DFProcessingParams.winPost = Config.WinT.post; 
     m_DFProcessingParams.AlphaNormParam = Config.alpha;
     m_DFProcessingParams.isMedianPositive = false;
-	
+    m_DFProcessingParams.Delta = Config.delta; //add the delta threshold as an adjustable parameter
+
     m_DFSmoothing = new DFProcess( m_DFProcessingParams );
 
     m_workBuffer = new double[ m_DFLength ];
