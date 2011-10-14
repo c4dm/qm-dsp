@@ -17,6 +17,7 @@
 #define DOWNBEAT_H
 
 #include <vector>
+#include <cstddef>
 
 #include "dsp/rateconversion/Decimator.h"
 

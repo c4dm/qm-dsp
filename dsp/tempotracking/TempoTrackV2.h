@@ -18,6 +18,7 @@
 #define TEMPOTRACKV2_H
 
 #include <vector>
+#include <cstddef>
 
 using std::vector;
 
