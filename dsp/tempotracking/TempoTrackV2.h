@@ -18,16 +18,14 @@
 #define TEMPOTRACKV2_H
 
 #include <vector>
-#include <cstddef>
-
-using std::vector;
+using namespace std;
 
 //!!! Question: how far is this actually sample rate dependent?  I
 // think it does produce plausible results for e.g. 48000 as well as
 // 44100, but surely the fixed window sizes and comb filtering will
 // make it prefer double or half time when run at e.g. 96000?
 
-class TempoTrackV2  
+class TempoTrackV2
 {
 public:
     /**
@@ -41,15 +39,17 @@ public:
     TempoTrackV2(float sampleRate, size_t dfIncrement);
     ~TempoTrackV2();
 
-    // Returned beat periods are given in df increment units; tempi in bpm
+    // Returned beat periods are given in df increment units; inputtempo and tempi in bpm
+    // MEPD 28/11/12 Expose inputtempo and constraintempo parameters
     void calculateBeatPeriod(const vector<double> &df,
                              vector<double> &beatPeriod,
-                             vector<double> &tempi);
+                             vector<double> &tempi, double inputtempo, bool constraintempo);
 
     // Returned beat positions are given in df increment units
+    // MEPD 28/11/12 Expose alpha and tightness parameters
     void calculateBeats(const vector<double> &df,
                         const vector<double> &beatPeriod,
-                        vector<double> &beats);
+                        vector<double> &beats, double alpha, double tightness);
 
 private:
     typedef vector<int> i_vec_t;
