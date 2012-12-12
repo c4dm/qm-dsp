@@ -1,5 +1,5 @@
 
-CFLAGS := -arch i386 -arch ppc -arch x86_64 -isysroot /Developer/SDKs/MacOSX10.4u.sdk -I/Developer/SDKs/MacOSX10.4u.sdk/System/Library/Frameworks/Accelerate.framework/Versions/A/Frameworks/vecLib.framework/Versions/A/Headers/ -DUSE_PTHREADS
+CFLAGS := -arch i386 -arch x86_64 -isysroot /Developer/SDKs/MacOSX10.6.sdk -I/Developer/SDKs/MacOSX10.6.sdk/System/Library/Frameworks/Accelerate.framework/Versions/A/Frameworks/vecLib.framework/Versions/A/Headers/ -DUSE_PTHREADS
 
 CXXFLAGS  := $(CFLAGS)
 
