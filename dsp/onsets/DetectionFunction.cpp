@@ -102,10 +102,10 @@ double DetectionFunction::process( const double *TDomain )
 
     int actualLength = MathUtilities::previousPowerOfTwo(m_dataLength);
 
-    if (actualLength != m_dataLength) {
+    if (actualLength != (int)m_dataLength) {
         // Pre-fill mag and phase vectors with zero, as the FFT output
         // will not fill the arrays
-        for (int i = actualLength/2; i < m_dataLength/2; ++i) {
+        for (int i = actualLength/2; i < (int)m_dataLength/2; ++i) {
             m_magnitude[i] = 0;
             m_thetaAngle[0] = 0;
         }

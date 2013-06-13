@@ -124,7 +124,7 @@ double TPolyFit::PolyFit2 (const vector<double> &x,
         std::cerr << "ERROR: PolyFit called with less than two points" << std::endl;
         return 0;
     }
-    if(npoints != y.size()) {
+    if(npoints != (int)y.size()) {
         std::cerr << "ERROR: PolyFit called with x and y of unequal size" << std::endl;
         return 0;
     }

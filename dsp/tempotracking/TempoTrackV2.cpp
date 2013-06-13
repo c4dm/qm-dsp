@@ -462,7 +462,7 @@ TempoTrackV2::calculateBeats(const vector<double> &df,
     int startpoint = get_max_ind(tmp_vec) + cumscore.size() - beat_period[beat_period.size()-1] ;
 
     // can happen if no results obtained earlier (e.g. input too short)
-    if (startpoint >= backlink.size()) startpoint = backlink.size()-1;
+    if (startpoint >= (int)backlink.size()) startpoint = backlink.size()-1;
 
     // USE BACKLINK TO GET EACH NEW BEAT (TOWARDS THE BEGINNING OF THE FILE)
     //  BACKTRACKING FROM THE END TO THE BEGINNING.. MAKING SURE NOT TO GO BEFORE SAMPLE 0
