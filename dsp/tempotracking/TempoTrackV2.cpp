@@ -120,9 +120,9 @@ TempoTrackV2::calculateBeatPeriod(const vector<double> &df,
     double rayparam = (60*44100/512)/inputtempo;
 
     // these debug statements can be removed.
-    std::cout << "inputtempo" << inputtempo << std::endl;
-    std::cout << "rayparam" << rayparam << std::endl;
-    std::cout << "constraintempo" << constraintempo << std::endl;
+//    std::cerr << "inputtempo" << inputtempo << std::endl;
+//    std::cerr << "rayparam" << rayparam << std::endl;
+//    std::cerr << "constraintempo" << constraintempo << std::endl;
 
     // make rayleigh weighting curve
     d_vec_t wv(wv_len);
@@ -458,8 +458,8 @@ TempoTrackV2::calculateBeats(const vector<double> &df,
     //double alpha = 0.9;
     // MEPD 28/11/12
     // debug statements that can be removed.
-    std::cout << "alpha" << alpha << std::endl;
-    std::cout << "tightness" << tightness << std::endl;
+//    std::cerr << "alpha" << alpha << std::endl;
+//    std::cerr << "tightness" << tightness << std::endl;
 
     // main loop
     for (unsigned int i=0; i<localscore.size(); i++)
