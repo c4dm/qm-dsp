@@ -41,7 +41,7 @@ TempoTrackV2::filter_df(d_vec_t &df)
     b[0] = 0.2066;
     b[1] = 0.4131;
     b[2] = 0.2066;
-    
+
     double inp1 = 0.;
     double inp2 = 0.;
     double out1 = 0.;
@@ -67,7 +67,7 @@ TempoTrackV2::filter_df(d_vec_t &df)
 
     for (unsigned int i = 0;i < df.size();i++)
     {
-        lp_df[i] = 0.;    
+        lp_df[i] = 0.;
     }
 
     inp1 = 0.; inp2 = 0.;
@@ -91,10 +91,17 @@ TempoTrackV2::filter_df(d_vec_t &df)
 }
 
 
+// MEPD 28/11/12
+// This function now allows for a user to specify an inputtempo (in BPM)
+// and a flag "constraintempo" which replaces the general rayleigh weighting for periodicities
+// with a gaussian which is centered around the input tempo
+// Note, if inputtempo = 120 and constraintempo = false, then functionality is
+// as it was before
 void
 TempoTrackV2::calculateBeatPeriod(const vector<double> &df,
                                   vector<double> &beat_period,
-                                  vector<double> &tempi)
+                                  vector<double> &tempi,
+                                  double inputtempo, bool constraintempo)
 {
     // to follow matlab.. split into 512 sample frames with a 128 hop size
     // calculate the acf,
@@ -103,13 +110,42 @@ TempoTrackV2::calculateBeatPeriod(const vector<double> &df,
     // and get best path
 
     unsigned int wv_len = 128;
-    double rayparam = 43.;
+
+    // MEPD 28/11/12
+    // the default value of inputtempo in the beat tracking plugin is 120
+    // so if the user specifies a different inputtempo, the rayparam will be updated
+    // accordingly.
+    // note: 60*44100/512 is a magic number
+    // this might (will?) break if a user specifies a different frame rate for the onset detection function
+    double rayparam = (60*44100/512)/inputtempo;
+
+    // these debug statements can be removed.
+    std::cout << "inputtempo" << inputtempo << std::endl;
+    std::cout << "rayparam" << rayparam << std::endl;
+    std::cout << "constraintempo" << constraintempo << std::endl;
 
     // make rayleigh weighting curve
     d_vec_t wv(wv_len);
-    for (unsigned int i=0; i<wv.size(); i++)
+
+    // check whether or not to use rayleigh weighting (if constraintempo is false)
+    // or use gaussian weighting it (constraintempo is true)
+    if (constraintempo)
     {
-        wv[i] = (static_cast<double> (i) / pow(rayparam,2.)) * exp((-1.*pow(-static_cast<double> (i),2.)) / (2.*pow(rayparam,2.)));
+        for (unsigned int i=0; i<wv.size(); i++)
+        {
+            // MEPD 28/11/12
+            // do a gaussian weighting instead of rayleigh
+            wv[i] = exp( (-1.*pow((static_cast<double> (i)-rayparam),2.)) / (2.*pow(rayparam/4.,2.)) );
+        }
+    }
+    else
+    {
+        for (unsigned int i=0; i<wv.size(); i++)
+        {
+            // MEPD 28/11/12
+            // standard rayleigh weighting over periodicities
+            wv[i] = (static_cast<double> (i) / pow(rayparam,2.)) * exp((-1.*pow(-static_cast<double> (i),2.)) / (2.*pow(rayparam,2.)));
+        }
     }
 
     // beat tracking frame size (roughly 6 seconds) and hop (1.5 seconds)
@@ -130,9 +166,9 @@ TempoTrackV2::calculateBeatPeriod(const vector<double> &df,
             dfframe[k] = df[i+k];
         }
         // get rcf vector for current frame
-        d_vec_t rcf(wv_len);    
+        d_vec_t rcf(wv_len);
         get_rcf(dfframe,wv,rcf);
-  
+
         rcfmat.push_back( d_vec_t() ); // adds a new column
         col_counter++;
         for (unsigned int j=0; j<rcf.size(); j++)
@@ -140,7 +176,7 @@ TempoTrackV2::calculateBeatPeriod(const vector<double> &df,
             rcfmat[col_counter].push_back( rcf[j] );
         }
     }
-  
+
     // now call viterbi decoding function
     viterbi_decode(rcfmat,wv,beat_period,tempi);
 }
@@ -161,7 +197,7 @@ TempoTrackV2::get_rcf(const d_vec_t &dfframe_in, const d_vec_t &wv, d_vec_t &rcf
 
     d_vec_t acf(dfframe.size());
 
-    
+
     for (unsigned int lag=0; lag<dfframe.size(); lag++)
     {
         double sum = 0.;
@@ -169,7 +205,7 @@ TempoTrackV2::get_rcf(const d_vec_t &dfframe_in, const d_vec_t &wv, d_vec_t &rcf
 
         for (unsigned int n=0; n<(dfframe.size()-lag); n++)
         {
-            tmp = dfframe[n] * dfframe[n+lag];    
+            tmp = dfframe[n] * dfframe[n+lag];
             sum += tmp;
         }
         acf[lag] = static_cast<double> (sum/ (dfframe.size()-lag));
@@ -177,7 +213,7 @@ TempoTrackV2::get_rcf(const d_vec_t &dfframe_in, const d_vec_t &wv, d_vec_t &rcf
 
     // now apply comb filtering
     int numelem = 4;
-	
+
     for (unsigned int i = 2;i < rcf.size();i++) // max beat period
     {
         for (int a = 1;a <= numelem;a++) // number of comb elements
@@ -188,10 +224,10 @@ TempoTrackV2::get_rcf(const d_vec_t &dfframe_in, const d_vec_t &wv, d_vec_t &rcf
             }
         }
     }
-  
+
     // apply adaptive threshold to rcf
     MathUtilities::adaptiveThreshold(rcf);
-  
+
     double rcfsum =0.;
     for (unsigned int i=0; i<rcf.size(); i++)
     {
@@ -218,11 +254,11 @@ TempoTrackV2::viterbi_decode(const d_mat_t &rcfmat, const d_vec_t &wv, d_vec_t &
     {
         tmat.push_back ( d_vec_t() ); // adds a new column
         for (unsigned int j=0; j<wv.size(); j++)
-        {	
+        {
             tmat[i].push_back(0.); // fill with zeros initially
         }
     }
-    
+
     // variance of Gaussians in transition matrix
     // formed of Gaussians on diagonal - implies slow tempo change
     double sigma = 8.;
@@ -230,7 +266,7 @@ TempoTrackV2::viterbi_decode(const d_mat_t &rcfmat, const d_vec_t &wv, d_vec_t &
     for (unsigned int i=20;i <wv.size()-20; i++)
     {
         for (unsigned int j=20; j<wv.size()-20; j++)
-        {	
+        {
             double mu = static_cast<double>(i);
             tmat[i][j] = exp( (-1.*pow((j-mu),2.)) / (2.*pow(sigma,2.)) );
         }
@@ -246,7 +282,7 @@ TempoTrackV2::viterbi_decode(const d_mat_t &rcfmat, const d_vec_t &wv, d_vec_t &
         delta.push_back( d_vec_t());
         psi.push_back( i_vec_t());
         for (unsigned int j=0; j<rcfmat[i].size(); j++)
-        {	
+        {
             delta[i].push_back(0.); // fill with zeros initially
             psi[i].push_back(0); // fill with zeros initially
         }
@@ -265,16 +301,16 @@ TempoTrackV2::viterbi_decode(const d_mat_t &rcfmat, const d_vec_t &wv, d_vec_t &
         delta[0][j] = wv[j] * rcfmat[0][j];
         psi[0][j] = 0;
     }
-    
+
     double deltasum = 0.;
     for (unsigned int i=0; i<Q; i++)
     {
         deltasum += delta[0][i];
-    }      
+    }
     for (unsigned int i=0; i<Q; i++)
     {
         delta[0][i] /= (deltasum + EPS);
-    }      
+    }
 
 
     for (unsigned int t=1; t<T; t++)
@@ -286,12 +322,12 @@ TempoTrackV2::viterbi_decode(const d_mat_t &rcfmat, const d_vec_t &wv, d_vec_t &
             for (unsigned int i=0; i<Q; i++)
             {
                 tmp_vec[i] = delta[t-1][i] * tmat[j][i];
-            }      
-   
-            delta[t][j] = get_max_val(tmp_vec);    
+            }
+
+            delta[t][j] = get_max_val(tmp_vec);
 
             psi[t][j] = get_max_ind(tmp_vec);
- 
+
             delta[t][j] *= rcfmat[t][j];
         }
 
@@ -300,23 +336,23 @@ TempoTrackV2::viterbi_decode(const d_mat_t &rcfmat, const d_vec_t &wv, d_vec_t &
         for (unsigned int i=0; i<Q; i++)
         {
             deltasum += delta[t][i];
-        }      
+        }
         for (unsigned int i=0; i<Q; i++)
         {
             delta[t][i] /= (deltasum + EPS);
-        }      
+        }
     }
 
     i_vec_t bestpath(T);
     d_vec_t tmp_vec(Q);
     for (unsigned int i=0; i<Q; i++)
-    {  
+    {
         tmp_vec[i] = delta[T-1][i];
     }
 
     // find starting point - best beat period for "last" frame
     bestpath[T-1] = get_max_ind(tmp_vec);
- 
+
     // backtrace through index of maximum values in psi
     for (unsigned int t=T-2; t>0 ;t--)
     {
@@ -328,7 +364,7 @@ TempoTrackV2::viterbi_decode(const d_mat_t &rcfmat, const d_vec_t &wv, d_vec_t &
 
     unsigned int lastind = 0;
     for (unsigned int i=0; i<T; i++)
-    {  
+    {
         unsigned int step = 128;
         for (unsigned int j=0; j<step; j++)
         {
@@ -361,7 +397,7 @@ TempoTrackV2::get_max_val(const d_vec_t &df)
             maxval = df[i];
         }
     }
-    
+
     return maxval;
 }
 
@@ -378,7 +414,7 @@ TempoTrackV2::get_max_ind(const d_vec_t &df)
             ind = i;
         }
     }
-    
+
     return ind;
 }
 
@@ -390,17 +426,21 @@ TempoTrackV2::normalise_vec(d_vec_t &df)
     {
         sum += df[i];
     }
-    
+
     for (unsigned int i=0; i<df.size(); i++)
     {
         df[i]/= (sum + EPS);
     }
 }
 
+// MEPD 28/11/12
+// this function has been updated to allow the "alpha" and "tightness" parameters
+// of the dynamic program to be set by the user
+// the default value of alpha = 0.9 and tightness = 4
 void
 TempoTrackV2::calculateBeats(const vector<double> &df,
                              const vector<double> &beat_period,
-                             vector<double> &beats)
+                             vector<double> &beats, double alpha, double tightness)
 {
     if (df.empty() || beat_period.empty()) return;
 
@@ -414,8 +454,12 @@ TempoTrackV2::calculateBeats(const vector<double> &df,
         backlink[i] = -1;
     }
 
-    double tightness = 4.;
-    double alpha = 0.9;
+    //double tightness = 4.;
+    //double alpha = 0.9;
+    // MEPD 28/11/12
+    // debug statements that can be removed.
+    std::cout << "alpha" << alpha << std::endl;
+    std::cout << "tightness" << tightness << std::endl;
 
     // main loop
     for (unsigned int i=0; i<localscore.size(); i++)
@@ -436,7 +480,7 @@ TempoTrackV2::calculateBeats(const vector<double> &df,
             // ELSE LEAVE AT DEFAULT VALUE FROM INITIALISATION:  D_VEC_T SCORECANDS (TXWT.SIZE());
 
             int cscore_ind = i+prange_min+j;
-            if (cscore_ind >= 0)   
+            if (cscore_ind >= 0)
             {
                 scorecands[j] = txwt[j] * cumscore[cscore_ind];
             }
@@ -457,7 +501,7 @@ TempoTrackV2::calculateBeats(const vector<double> &df,
     for (unsigned int i=cumscore.size() - beat_period[beat_period.size()-1] ; i<cumscore.size(); i++)
     {
         tmp_vec.push_back(cumscore[i]);
-    }  
+    }
 
     int startpoint = get_max_ind(tmp_vec) + cumscore.size() - beat_period[beat_period.size()-1] ;
 
@@ -476,10 +520,10 @@ TempoTrackV2::calculateBeats(const vector<double> &df,
         if (backlink[b] == b) break; // shouldn't happen... haha
         ibeats.push_back(backlink[b]);
     }
-  
+
     // REVERSE SEQUENCE OF IBEATS AND STORE AS BEATS
     for (unsigned int i=0; i<ibeats.size(); i++)
-    { 
+    {
         beats.push_back( static_cast<double>(ibeats[ibeats.size()-i-1]) );
     }
 }
