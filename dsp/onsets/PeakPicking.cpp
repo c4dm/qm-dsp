@@ -106,8 +106,6 @@ int PeakPicking::quadEval( vector<double> &src, vector<int> &idx )
     vector <double> m_poly;
     vector <double> m_err;
 
-//    double p;
-
     m_poly.push_back(0);
     m_poly.push_back(0);
     m_poly.push_back(0);
@@ -137,13 +135,10 @@ int PeakPicking::quadEval( vector<double> &src, vector<int> &idx )
 	    m_maxFit.push_back(selMax);			
 	}
 
-//	p = TPolyFit::PolyFit2( m_err, m_maxFit, m_poly);
+	TPolyFit::PolyFit2(m_err, m_maxFit, m_poly);
 
 	double f = m_poly[0];
-//	double g = m_poly[1];
 	double h = m_poly[2];
-
-//	int kk = m_poly.size();
 
 	if (h < -Qfilta || f > Qfiltc)
 	{

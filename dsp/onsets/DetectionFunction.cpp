@@ -100,7 +100,7 @@ double DetectionFunction::process( const double *TDomain )
     // data directly), we will have to use the next smallest power of
     // two from the block size.  Results may vary accordingly!
 
-    int actualLength = MathUtilities::previousPowerOfTwo(m_dataLength);
+    int actualLength = MathUtilities::previousPowerOfTwo((int)m_dataLength);
 
     if (actualLength != (int)m_dataLength) {
         // Pre-fill mag and phase vectors with zero, as the FFT output
