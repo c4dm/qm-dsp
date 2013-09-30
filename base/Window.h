@@ -25,8 +25,9 @@ enum WindowType {
     HammingWindow,
     HanningWindow,
     BlackmanWindow,
-    GaussianWindow,
-    ParzenWindow
+
+    FirstWindow = RectangularWindow,
+    LastWindow = BlackmanWindow
 };
 
 template <typename T>
@@ -34,7 +35,11 @@ class Window
 {
 public:
     /**
-     * Construct a windower of the given type.
+     * Construct a windower of the given type and size. 
+     *
+     * Note that the cosine windows are periodic by design, rather
+     * than symmetrical. (A window of size N is equivalent to a
+     * symmetrical window of size N+1 with the final element missing.)
      */
     Window(WindowType type, size_t size) : m_type(type), m_size(size) { encache(); }
     Window(const Window &w) : m_type(w.m_type), m_size(w.m_size) { encache(); }
@@ -74,51 +79,51 @@ void Window<T>::encache()
     switch (m_type) {
 		
     case RectangularWindow:
-	for (i = 0; i < n; ++i) {
-	    mult[i] = mult[i] * 0.5;
+        for (i = 0; i < n; ++i) {
+            mult[i] = mult[i] * 0.5;
 	}
 	break;
 	    
     case BartlettWindow:
-	for (i = 0; i < n/2; ++i) {
-	    mult[i] = mult[i] * (i / T(n/2));
-	    mult[i + n/2] = mult[i + n/2] * (1.0 - (i / T(n/2)));
+        if (n == 2) {
+            mult[0] = mult[1] = 0; // "matlab compatible"
+        } else if (n == 3) {
+            mult[0] = 0;
+            mult[1] = mult[2] = 2./3.;
+        } else if (n > 3) {
+            for (i = 0; i < n/2; ++i) {
+                mult[i] = mult[i] * (i / T(n/2));
+                mult[i + n - n/2] = mult[i + n - n/2] * (1.0 - (i / T(n/2)));
+            }
 	}
 	break;
 	    
     case HammingWindow:
-	for (i = 0; i < n; ++i) {
-	    mult[i] = mult[i] * (0.54 - 0.46 * cos(2 * M_PI * i / n));
+        if (n > 1) {
+            for (i = 0; i < n; ++i) {
+                mult[i] = mult[i] * (0.54 - 0.46 * cos(2 * M_PI * i / n));
+            }
 	}
 	break;
 	    
     case HanningWindow:
-	for (i = 0; i < n; ++i) {
-	    mult[i] = mult[i] * (0.50 - 0.50 * cos(2 * M_PI * i / n));
+        if (n > 1) {
+            for (i = 0; i < n; ++i) {
+                mult[i] = mult[i] * (0.50 - 0.50 * cos(2 * M_PI * i / n));
+            }
 	}
 	break;
 	    
     case BlackmanWindow:
-	for (i = 0; i < n; ++i) {
-	    mult[i] = mult[i] * (0.42 - 0.50 * cos(2 * M_PI * i / n)
-				 + 0.08 * cos(4 * M_PI * i / n));
-	}
-	break;
-	    
-    case GaussianWindow:
-	for (i = 0; i < n; ++i) {
-	    mult[i] = mult[i] * exp((-1.0 / (n*n)) * ((T(2*i) - n) *
-						      (T(2*i) - n)));
-	}
-	break;
-	    
-    case ParzenWindow:
-	for (i = 0; i < n; ++i) {
-	    mult[i] = mult[i] * (1.0 - fabs((T(2*i) - n) / T(n + 1)));
+        if (n > 1) {
+            for (i = 0; i < n; ++i) {
+                mult[i] = mult[i] * (0.42 - 0.50 * cos(2 * M_PI * i / n)
+                                     + 0.08 * cos(4 * M_PI * i / n));
+            }
 	}
 	break;
     }
-	
+	   
     m_cache = mult;
 }
 
