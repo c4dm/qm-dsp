@@ -56,6 +56,14 @@ BOOST_AUTO_TEST_CASE(fullcycle)
 
     double phaseExpected1[] = { 999, 0, 0, 2 * M_PI, 0, 0, 999 };
     COMPARE_ARRAY(phase, phaseExpected1);
+
+    pvoc.process(frame, mag + 1, phase + 1);
+
+    double magExpected2[] = { 999, 0, 0, 4, 0, 0, 999 };
+    COMPARE_ARRAY_EXACT(mag, magExpected2);
+
+    double phaseExpected2[] = { 999, 0, 0, 4 * M_PI, 0, 0, 999 };
+    COMPARE_ARRAY(phase, phaseExpected2);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
