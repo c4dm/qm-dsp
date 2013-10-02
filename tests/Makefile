@@ -1,6 +1,6 @@
 
 CFLAGS := -I.. $(CFLAGS)
-CXXFLAGS := -I.. $(CXXFLAGS)
+CXXFLAGS := -I.. -Wall -g $(CXXFLAGS)
 
 LDFLAGS := $(LDFLAGS) -lboost_unit_test_framework
 LIBS := ../libqm-dsp.a
@@ -19,6 +19,10 @@ test-fft: TestFFT.o $(LIBS)
 test-pvoc: TestPhaseVocoder.o $(LIBS)
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
+TestWindow.o: $(LIBS)
+TestFFT.o: $(LIBS)
+TestPhaseVocoder.o: $(LIBS)
+
 clean: 
-	rm *.o $(TESTS)
+	rm -f *.o $(TESTS)
 
