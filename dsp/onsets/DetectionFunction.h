@@ -77,6 +77,7 @@ private:
     double* m_DFWindowedFrame; // Array for windowed analysis frame
     double* m_magnitude; // Magnitude of analysis frame ( frequency domain )
     double* m_thetaAngle;// Phase of analysis frame ( frequency domain )
+    double* m_unwrapped; // Unwrapped phase of analysis frame
 
     Window<double> *m_window;
     PhaseVocoder* m_phaseVoc;	// Phase Vocoder

@@ -40,7 +40,7 @@ DetectionFunction::~DetectionFunction()
 void DetectionFunction::initialise( DFConfig Config )
 {
     m_dataLength = Config.frameLength;
-    m_halfLength = m_dataLength/2;
+    m_halfLength = m_dataLength/2 + 1;
 
     m_DFType = Config.DFType;
     m_stepSize = Config.stepSize;
@@ -65,11 +65,12 @@ void DetectionFunction::initialise( DFConfig Config )
 
     // See note in process(const double *) below
     int actualLength = MathUtilities::previousPowerOfTwo(m_dataLength);
-    m_phaseVoc = new PhaseVocoder(actualLength);
+    m_phaseVoc = new PhaseVocoder(actualLength, m_stepSize);
 
     m_DFWindowedFrame = new double[ m_dataLength ];
     m_magnitude = new double[ m_halfLength ];
     m_thetaAngle = new double[ m_halfLength ];
+    m_unwrapped = new double[ m_halfLength ];
 
     m_window = new Window<double>(HanningWindow, m_dataLength);
 }
@@ -111,7 +112,8 @@ double DetectionFunction::process( const double *TDomain )
         }
     }
 
-    m_phaseVoc->process(m_DFWindowedFrame, m_magnitude, m_thetaAngle);
+    m_phaseVoc->process(m_DFWindowedFrame, m_magnitude,
+                        m_thetaAngle, m_unwrapped);
 
     if (m_whiten) whiten();
 
