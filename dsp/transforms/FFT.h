@@ -12,31 +12,82 @@
 class FFT  
 {
 public:
-    FFT(unsigned int nsamples);
+    /**
+     * Construct an FFT object to carry out complex-to-complex
+     * transforms of size nsamples. nsamples must be a power of two in
+     * this implementation.
+     */
+    FFT(int nsamples);
     ~FFT();
 
+    /**
+     * Carry out a forward or inverse transform (depending on the
+     * value of inverse) of size nsamples, where nsamples is the value
+     * provided to the constructor above.
+     *
+     * realIn and (where present) imagIn should contain nsamples each,
+     * and realOut and imagOut should point to enough space to receive
+     * nsamples each.
+     *
+     * imagIn may be NULL if the signal is real, but the other
+     * pointers must be valid.
+     *
+     * The inverse transform is scaled by 1/nsamples.
+     */
     void process(bool inverse,
                  const double *realIn, const double *imagIn,
                  double *realOut, double *imagOut);
     
 private:
-    unsigned int m_n;
-    void *m_private;
+    int m_n;
 };
 
 class FFTReal
 {
 public:
-    FFTReal(unsigned int nsamples);
+    /**
+     * Construct an FFT object to carry out real-to-complex transforms
+     * of size nsamples. nsamples must be a power of two in this
+     * implementation.
+     */
+    FFTReal(int nsamples);
     ~FFTReal();
 
-    void process(bool inverse,
-                 const double *realIn,
+    /**
+     * Carry out a forward real-to-complex transform of size nsamples,
+     * where nsamples is the value provided to the constructor above.
+     *
+     * realIn, realOut, and imagOut must point to (enough space for)
+     * nsamples values. For consistency with the FFT class above, and
+     * compatibility with existing code, the conjugate half of the
+     * output is returned even though it is redundant.
+     */
+    void forward(const double *realIn,
                  double *realOut, double *imagOut);
 
+    /**
+     * Carry out an inverse real transform (i.e. complex-to-real) of
+     * size nsamples, where nsamples is the value provided to the
+     * constructor above.
+     *
+     * realIn and imagIn should point to at least nsamples/2+1 values;
+     * if more are provided, only the first nsamples/2+1 values of
+     * each will be used (the conjugate half will always be deduced
+     * from the first nsamples/2+1 rather than being read from the
+     * input data).  realOut should point to enough space to receive
+     * nsamples values.
+     *
+     * The inverse transform is scaled by 1/nsamples.
+     */
+    void inverse(const double *realIn, const double *imagIn,
+                 double *realOut);
+
 private:
-    unsigned int m_n;
-    void *m_private;
+    int m_n;
+    FFT *m_fft;
+    double *m_r;
+    double *m_i;
+    double *m_discard;
 };    
 
 #endif

@@ -139,8 +139,7 @@ double* Chromagram::process( const double *data )
     }
     m_window->cut(m_windowbuf);
 
-    // FFT of current frame
-    m_FFT->process(false, m_windowbuf, m_FFTRe, m_FFTIm);
+    m_FFT->forward(m_windowbuf, m_FFTRe, m_FFTIm);
 
     return process(m_FFTRe, m_FFTIm);
 }
@@ -158,7 +157,6 @@ double* Chromagram::process( const double *real, const double *imag )
 
     double cmax = 0.0;
     double cval = 0;
-
     // Calculate ConstantQ frame
     m_ConstantQ->process( real, imag, m_CQRe, m_CQIm );
 	
