@@ -120,10 +120,6 @@ void PhaseVocoder::getPhases(double *theta)
 
 void PhaseVocoder::unwrapPhases(double *theta, double *unwrapped)
 {
-    cerr << "PhaseVocoder::unwrapPhases" << endl;
-
-//!!! if magnitude in a bin below a threshold, reset stored unwrapped phase angle for that bin
-
     for (int i = 0; i < m_n/2 + 1; ++i) {
 
         double omega = (2 * M_PI * m_hop * i) / m_n;
@@ -131,8 +127,6 @@ void PhaseVocoder::unwrapPhases(double *theta, double *unwrapped)
         double error = MathUtilities::princarg(theta[i] - expected);
 
         unwrapped[i] = m_unwrapped[i] + omega + error;
-
-        cerr << "i = " << i << ", (" << m_real[i] << "," << m_imag[i] << "), instantaneous phase = " << theta[i] << ", prev phase = " << m_phase[i] << ", omega = " << omega << ", expected = " << expected << ", error = " << error << ", unwrapped = " << unwrapped[i] << endl;
 
         m_phase[i] = theta[i];
         m_unwrapped[i] = unwrapped[i];
