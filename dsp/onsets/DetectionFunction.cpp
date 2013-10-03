@@ -160,6 +160,10 @@ double DetectionFunction::runDF()
 	break;
 	
     case DF_PHASEDEV:
+        // Using the instantaneous phases here actually provides the
+        // same results (for these calculations) as if we had used
+        // unwrapped phases, but without the possible accumulation of
+        // phase error over time
 	retVal = phaseDev( m_halfLength, m_thetaAngle);
 	break;
 	

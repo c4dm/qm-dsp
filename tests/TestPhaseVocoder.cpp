@@ -146,8 +146,6 @@ BOOST_AUTO_TEST_CASE(overlapping)
     double magExpected1[] = { 999, 0, 4, 4, 0, 0, 999 };
     COMPARE_ARRAY(mag, magExpected1);
 
-    //!!! I don't know why [2] here is -M_PI and not M_PI; and I definitely don't know why [4] here is M_PI. Check these with care
-
     // Derivation of unwrapped values:
     // 
     // * Bin 0 (DC) always has phase 0 and expected phase 0
