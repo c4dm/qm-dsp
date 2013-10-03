@@ -53,18 +53,18 @@ BOOST_AUTO_TEST_CASE(fullcycle)
     double phase[] = { 999, 999, 999, 999, 999, 999, 999 };
     double unw[]   = { 999, 999, 999, 999, 999, 999, 999 };
 
-    pvoc.process(frame, mag + 1, phase + 1, unw + 1);
+    pvoc.processTimeDomain(frame, mag + 1, phase + 1, unw + 1);
 
     double magExpected0[] = { 999, 0, 0, 4, 0, 0, 999 };
     COMPARE_ARRAY_EXACT(mag, magExpected0);
 
     double phaseExpected0[] = { 999, 0, 0, 0, 0, 0, 999 };
-    COMPARE_ARRAY_EXACT(phase, phaseExpected0);
+    COMPARE_ARRAY(phase, phaseExpected0);
 
     double unwExpected0[] = { 999, 0, 0, 0, 0, 0, 999 };
     COMPARE_ARRAY(unw, unwExpected0);
 
-    pvoc.process(frame, mag + 1, phase + 1, unw + 1);
+    pvoc.processTimeDomain(frame, mag + 1, phase + 1, unw + 1);
 
     double magExpected1[] = { 999, 0, 0, 4, 0, 0, 999 };
     COMPARE_ARRAY_EXACT(mag, magExpected1);
@@ -82,19 +82,19 @@ BOOST_AUTO_TEST_CASE(fullcycle)
     //   mapped into (-pi,pi] range as pi, giving an unwrapped phase
     //   of 2*pi.
     //  
-    // * Bin 2 has expected unwrapped phase 2*pi, measured phase 0,
-    //   hence error 0 and unwrapped phase 2*pi.
+    // * Bin 2 has expected phase 2*pi, measured phase 0, hence error
+    //   0 and unwrapped phase 2*pi.
     //
     // * Bin 3 is like bin 1: it has expected phase 3*pi, measured
     //   phase 0, so phase error -pi and unwrapped phase 4*pi.
     //
-    // * Bin 4 (Nyquist) is like bin 2: expected phase 4*pi, measured
-    //   phase 0, hence error 0 and unwrapped phase 4*pi.
+    // * Bin 4 (Nyquist) has expected phase 4*pi, measured phase 0,
+    //   hence error 0 and unwrapped phase 4*pi.
 
     double unwExpected1[] = { 999, 0, 2*M_PI, 2*M_PI, 4*M_PI, 4*M_PI, 999 };
     COMPARE_ARRAY(unw, unwExpected1);
 
-    pvoc.process(frame, mag + 1, phase + 1, unw + 1);
+    pvoc.processTimeDomain(frame, mag + 1, phase + 1, unw + 1);
 
     double magExpected2[] = { 999, 0, 0, 4, 0, 0, 999 };
     COMPARE_ARRAY_EXACT(mag, magExpected2);
@@ -130,9 +130,7 @@ BOOST_AUTO_TEST_CASE(overlapping)
     double phase[] = { 999, 999, 999, 999, 999, 999, 999 };
     double unw[]   = { 999, 999, 999, 999, 999, 999, 999 };
 
-cerr << "process 0" << endl;
-
-    pvoc.process(data, mag + 1, phase + 1, unw + 1);
+    pvoc.processTimeDomain(data, mag + 1, phase + 1, unw + 1);
 
     double magExpected0[] = { 999, 0, 0, 4, 0, 0, 999 };
     COMPARE_ARRAY(mag, magExpected0);
@@ -143,23 +141,45 @@ cerr << "process 0" << endl;
     double unwExpected0[] = { 999, 0, 0, -M_PI/2, 0, 0, 999 };
     COMPARE_ARRAY(unw, unwExpected0);
 
-cerr << "process 1" << endl;
-
-    pvoc.process(data + 8, mag + 1, phase + 1, unw + 1);
+    pvoc.processTimeDomain(data + 8, mag + 1, phase + 1, unw + 1);
 
     double magExpected1[] = { 999, 0, 4, 4, 0, 0, 999 };
     COMPARE_ARRAY(mag, magExpected1);
 
     //!!! I don't know why [2] here is -M_PI and not M_PI; and I definitely don't know why [4] here is M_PI. Check these with care
+
+    // Derivation of unwrapped values:
+    // 
+    // * Bin 0 (DC) always has phase 0 and expected phase 0
+    //
+    // * Bin 1 has a new signal, a cosine starting with phase 0. But
+    //   because of the "FFT shift" which the phase vocoder carries
+    //   out to place zero phase in the centre of the (usually
+    //   windowed) frame, and because a single cycle at this frequency
+    //   spans the whole frame, this bin actually has measured phase
+    //   of either pi or -pi. (The shift doesn't affect those
+    //   higher-frequency bins whose signals fit exact multiples of a
+    //   cycle into a frame.) This maps into (-pi,pi] as pi, which
+    //   matches the expected phase, hence unwrapped phase is also pi.
+    //
+    // * Bin 2 has expected phase 3pi/2 (being the previous measured
+    //   phase of -pi/2 plus advance of 2pi). It has the same measured
+    //   phase as last time around, -pi/2, which is consistent with
+    //   the expected phase, so the unwrapped phase is 3pi/2.
+    //!!!
+    // * Bin 3 is a bit of a puzzle -- it has an effectively zero
+    //   magnitude but a non-zero measured phase. Spectral leakage?
+    //
+    // * Bin 4 (Nyquist) has expected phase 4*pi, measured phase 0,
+    //   hence error 0 and unwrapped phase 4*pi.
+
     double phaseExpected1[] = { 999, 0, -M_PI, -M_PI/2, M_PI, 0, 999 };
     COMPARE_ARRAY(phase, phaseExpected1);
 
     double unwExpected1[] = { 999, 0, M_PI, 3*M_PI/2, 3*M_PI, 4*M_PI, 999 };
     COMPARE_ARRAY(unw, unwExpected1);
 
-cerr << "process 2" << endl;
-
-    pvoc.process(data + 16, mag + 1, phase + 1, unw + 1);
+    pvoc.processTimeDomain(data + 16, mag + 1, phase + 1, unw + 1);
 
     double magExpected2[] = { 999, 0, 4, 4, 0, 0, 999 };
     COMPARE_ARRAY(mag, magExpected2);

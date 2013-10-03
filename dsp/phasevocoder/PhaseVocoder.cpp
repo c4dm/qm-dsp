@@ -18,6 +18,8 @@
 #include "maths/MathUtilities.h"
 #include <math.h>
 
+#include <cassert>
+
 #include <iostream>
 using std::cerr;
 using std::endl;
@@ -27,6 +29,7 @@ PhaseVocoder::PhaseVocoder(int n, int hop) :
     m_hop(hop)
 {
     m_fft = new FFTReal(m_n);
+    m_time = new double[m_n];
     m_real = new double[m_n];
     m_imag = new double[m_n];
     m_phase = new double[m_n/2 + 1];
@@ -42,10 +45,11 @@ PhaseVocoder::PhaseVocoder(int n, int hop) :
 
 PhaseVocoder::~PhaseVocoder()
 {
-    delete [] m_unwrapped;
-    delete [] m_phase;
-    delete [] m_real;
-    delete [] m_imag;
+    delete[] m_unwrapped;
+    delete[] m_phase;
+    delete[] m_real;
+    delete[] m_imag;
+    delete[] m_time;
     delete m_fft;
 }
 
@@ -59,13 +63,29 @@ void PhaseVocoder::FFTShift(double *src)
     }
 }
 
-void PhaseVocoder::process(double *src, double *mag, double *theta,
-                           double *unwrapped)
+void PhaseVocoder::processTimeDomain(const double *src,
+                                     double *mag, double *theta,
+                                     double *unwrapped)
 {
-    FFTShift(src);
-	
-    m_fft->forward(src, m_real, m_imag);
+    for (int i = 0; i < m_n; ++i) {
+        m_time[i] = src[i];
+    }
+    FFTShift(m_time);
+    m_fft->forward(m_time, m_real, m_imag);
+    getMagnitudes(mag);
+    getPhases(theta);
+    unwrapPhases(theta, unwrapped);
+}
 
+void PhaseVocoder::processFrequencyDomain(const double *reals, 
+                                          const double *imags,
+                                          double *mag, double *theta,
+                                          double *unwrapped)
+{
+    for (int i = 0; i < m_n/2 + 1; ++i) {
+        m_real[i] = reals[i];
+        m_imag[i] = imags[i];
+    }
     getMagnitudes(mag);
     getPhases(theta);
     unwrapPhases(theta, unwrapped);
@@ -102,6 +122,8 @@ void PhaseVocoder::unwrapPhases(double *theta, double *unwrapped)
 {
     cerr << "PhaseVocoder::unwrapPhases" << endl;
 
+//!!! if magnitude in a bin below a threshold, reset stored unwrapped phase angle for that bin
+
     for (int i = 0; i < m_n/2 + 1; ++i) {
 
         double omega = (2 * M_PI * m_hop * i) / m_n;
@@ -110,7 +132,7 @@ void PhaseVocoder::unwrapPhases(double *theta, double *unwrapped)
 
         unwrapped[i] = m_unwrapped[i] + omega + error;
 
-        cerr << "i = " << i << ", instantaneous phase = " << theta[i] << ", prev phase = " << m_phase[i] << ", omega = " << omega << ", expected = " << expected << ", error = " << error << ", unwrapped = " << unwrapped[i] << endl;
+        cerr << "i = " << i << ", (" << m_real[i] << "," << m_imag[i] << "), instantaneous phase = " << theta[i] << ", prev phase = " << m_phase[i] << ", omega = " << omega << ", expected = " << expected << ", error = " << error << ", unwrapped = " << unwrapped[i] << endl;
 
         m_phase[i] = theta[i];
         m_unwrapped[i] = unwrapped[i];

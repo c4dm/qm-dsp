@@ -21,6 +21,7 @@ class FFTReal;
 class PhaseVocoder  
 {
 public:
+    //!!! review: size must be a power of two, or not?
     PhaseVocoder(int size, int hop);
     virtual ~PhaseVocoder();
 
@@ -36,7 +37,22 @@ public:
      * enough space for size/2 + 1 values. The redundant conjugate
      * half of the output is not returned.
      */
-    void process(double *src, double *mag, double *phase, double *unwrapped);
+    void processTimeDomain(const double *src,
+                           double *mag, double *phase, double *unwrapped);
+
+    /**
+     * Given one frame of frequency-domain samples, return the
+     * magnitudes, instantaneous phases, and unwrapped phases.
+     *
+     * reals and imags must each contain size/2+1 values (where size
+     * is the frame size value as passed to the PhaseVocoder
+     * constructor).
+     *
+     * mag, phase, and unwrapped must each be non-NULL and point to
+     * enough space for size/2+1 values.
+     */
+    void processFrequencyDomain(const double *reals, const double *imags,
+                                double *mag, double *phase, double *unwrapped);
 
     /**
      * Reset the stored phases to zero. Note that this may be
@@ -55,6 +71,7 @@ protected:
     int m_n;
     int m_hop;
     FFTReal *m_fft;
+    double *m_time;
     double *m_imag;
     double *m_real;
     double *m_phase;

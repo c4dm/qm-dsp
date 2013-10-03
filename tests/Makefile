@@ -8,7 +8,7 @@ LIBS := ../libqm-dsp.a
 TESTS	:= test-window test-fft test-pvoc
 
 all: $(TESTS)
-	for t in $(TESTS); do echo "Running $$t"; ./"$$t" || exit 1; done
+	for t in $(TESTS); do echo "Running $$t"; valgrind ./"$$t" || exit 1; done
 
 test-window: TestWindow.o $(LIBS)
 	$(CXX) -o $@ $^ $(LDFLAGS)

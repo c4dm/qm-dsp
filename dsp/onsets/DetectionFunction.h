@@ -43,8 +43,18 @@ public:
     double* getSpectrumMagnitude();
     DetectionFunction( DFConfig Config );
     virtual ~DetectionFunction();
-    double process( const double* TDomain );
-    double process( const double* magnitudes, const double* phases );
+
+    /**
+     * Process a single time-domain frame of audio, provided as
+     * frameLength samples.
+     */
+    double processTimeDomain(const double* samples);
+
+    /**
+     * Process a single frequency-domain frame, provided as
+     * frameLength/2+1 real and imaginary component values.
+     */
+    double processFrequencyDomain(const double* reals, const double* imags);
 
 private:
     void whiten();
@@ -74,7 +84,7 @@ private:
     double* m_phaseHistoryOld;
     double* m_magPeaks;
 
-    double* m_DFWindowedFrame; // Array for windowed analysis frame
+    double* m_windowed; // Array for windowed analysis frame
     double* m_magnitude; // Magnitude of analysis frame ( frequency domain )
     double* m_thetaAngle;// Phase of analysis frame ( frequency domain )
     double* m_unwrapped; // Unwrapped phase of analysis frame

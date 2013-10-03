@@ -63,16 +63,16 @@ void DetectionFunction::initialise( DFConfig Config )
     m_magPeaks = new double[ m_halfLength ];
     memset(m_magPeaks,0, m_halfLength*sizeof(double));
 
-    // See note in process(const double *) below
+    // See note in processTimeDomain below
     int actualLength = MathUtilities::previousPowerOfTwo(m_dataLength);
     m_phaseVoc = new PhaseVocoder(actualLength, m_stepSize);
 
-    m_DFWindowedFrame = new double[ m_dataLength ];
     m_magnitude = new double[ m_halfLength ];
     m_thetaAngle = new double[ m_halfLength ];
     m_unwrapped = new double[ m_halfLength ];
 
     m_window = new Window<double>(HanningWindow, m_dataLength);
+    m_windowed = new double[ m_dataLength ];
 }
 
 void DetectionFunction::deInitialise()
@@ -84,16 +84,17 @@ void DetectionFunction::deInitialise()
 
     delete m_phaseVoc;
 
-    delete [] m_DFWindowedFrame;
     delete [] m_magnitude;
     delete [] m_thetaAngle;
+    delete [] m_windowed;
+    delete [] m_unwrapped;
 
     delete m_window;
 }
 
-double DetectionFunction::process( const double *TDomain )
+double DetectionFunction::processTimeDomain(const double *samples)
 {
-    m_window->cut( TDomain, m_DFWindowedFrame );
+    m_window->cut(samples, m_windowed);
 
     // Our own FFT implementation supports power-of-two sizes only.
     // If we have to use this implementation (as opposed to the
@@ -112,20 +113,19 @@ double DetectionFunction::process( const double *TDomain )
         }
     }
 
-    m_phaseVoc->process(m_DFWindowedFrame, m_magnitude,
-                        m_thetaAngle, m_unwrapped);
+    m_phaseVoc->processTimeDomain(m_windowed, 
+                                  m_magnitude, m_thetaAngle, m_unwrapped);
 
     if (m_whiten) whiten();
 
     return runDF();
 }
 
-double DetectionFunction::process( const double *magnitudes, const double *phases )
+double DetectionFunction::processFrequencyDomain(const double *reals,
+                                                 const double *imags)
 {
-    for (size_t i = 0; i < m_halfLength; ++i) {
-        m_magnitude[i] = magnitudes[i];
-        m_thetaAngle[i] = phases[i];
-    }
+    m_phaseVoc->processFrequencyDomain(reals, imags,
+                                       m_magnitude, m_thetaAngle, m_unwrapped);
 
     if (m_whiten) whiten();
 
@@ -239,7 +239,6 @@ double DetectionFunction::phaseDev(unsigned int length, double *srcPhase)
 	m_phaseHistoryOld[ i ] = m_phaseHistory[ i ] ;
 	m_phaseHistory[ i ] = srcPhase[ i ];
     }
-	
 	
     return val;
 }
