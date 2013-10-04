@@ -16,6 +16,8 @@
 #include "MathUtilities.h"
 
 #include <iostream>
+#include <algorithm>
+#include <vector>
 #include <cmath>
 
 
@@ -75,54 +77,27 @@ double MathUtilities::getAlphaNorm( const std::vector <double> &data, unsigned i
 
 double MathUtilities::round(double x)
 {
-    double val = (double)floor(x + 0.5);
-  
-    return val;
+    if (x < 0) {
+        return -floor(-x + 0.5);
+    } else {
+        return floor(x + 0.5);
+    }
 }
 
 double MathUtilities::median(const double *src, unsigned int len)
 {
-    unsigned int i, j;
-    double tmp = 0.0;
-    double tempMedian;
-    double medianVal;
- 
-    double* scratch = new double[ len ];//Vector < double > sortedX = Vector < double > ( size );
+    if (len == 0) return 0;
+    
+    std::vector<double> scratch;
+    for (int i = 0; i < len; ++i) scratch.push_back(src[i]);
+    std::sort(scratch.begin(), scratch.end());
 
-    for ( i = 0; i < len; i++ )
-    {
-	scratch[i] = src[i];
+    int middle = len/2;
+    if (len % 2 == 0) {
+        return (scratch[middle] + scratch[middle - 1]) / 2;
+    } else {
+        return scratch[middle];
     }
-
-    for ( i = 0; i < len - 1; i++ )
-    {
-	for ( j = 0; j < len - 1 - i; j++ )
-	{
-	    if ( scratch[j + 1] < scratch[j] )
-	    {
-		// compare the two neighbors
-		tmp = scratch[j]; // swap a[j] and a[j+1]
-		scratch[j] = scratch[j + 1];
-		scratch[j + 1] = tmp;
-	    }
-	}
-    }
-    int middle;
-    if ( len % 2 == 0 )
-    {
-	middle = len / 2;
-	tempMedian = ( scratch[middle] + scratch[middle - 1] ) / 2;
-    }
-    else
-    {
-	middle = ( int )floor( len / 2.0 );
-	tempMedian = scratch[middle];
-    }
-
-    medianVal = tempMedian;
-
-    delete [] scratch;
-    return medianVal;
 }
 
 double MathUtilities::sum(const double *src, unsigned int len)
@@ -142,6 +117,8 @@ double MathUtilities::mean(const double *src, unsigned int len)
 {
     double retVal =0.0;
 
+    if (len == 0) return 0;
+
     double s = sum( src, len );
 	
     retVal =  s  / (double)len;
@@ -155,6 +132,8 @@ double MathUtilities::mean(const std::vector<double> &src,
 {
     double sum = 0.;
 	
+    if (count == 0) return 0;
+    
     for (int i = 0; i < (int)count; ++i)
     {
         sum += src[start + i];
@@ -365,7 +344,7 @@ void MathUtilities::adaptiveThreshold(std::vector<double> &data)
 bool
 MathUtilities::isPowerOfTwo(int x)
 {
-    if (x < 2) return false;
+    if (x < 1) return false;
     if (x & (x-1)) return false;
     return true;
 }
@@ -374,6 +353,7 @@ int
 MathUtilities::nextPowerOfTwo(int x)
 {
     if (isPowerOfTwo(x)) return x;
+    if (x < 1) return 1;
     int n = 1;
     while (x) { x >>= 1; n <<= 1; }
     return n;
@@ -383,6 +363,7 @@ int
 MathUtilities::previousPowerOfTwo(int x)
 {
     if (isPowerOfTwo(x)) return x;
+    if (x < 1) return 1;
     int n = 1;
     x >>= 1;
     while (x) { x >>= 1; n <<= 1; }
@@ -393,8 +374,19 @@ int
 MathUtilities::nearestPowerOfTwo(int x)
 {
     if (isPowerOfTwo(x)) return x;
-    int n0 = previousPowerOfTwo(x), n1 = nearestPowerOfTwo(x);
+    int n0 = previousPowerOfTwo(x), n1 = nextPowerOfTwo(x);
     if (x - n0 < n1 - x) return n0;
     else return n1;
+}
+
+int
+MathUtilities::factorial(int x)
+{
+    if (x < 0) return 0;
+    int f = 1;
+    for (int i = 1; i <= x; ++i) {
+	f = f * i;
+    }
+    return f;
 }
 

@@ -5,10 +5,13 @@ CXXFLAGS := -I.. -Wall -g $(CXXFLAGS)
 LDFLAGS := $(LDFLAGS) -lboost_unit_test_framework
 LIBS := ../libqm-dsp.a
 
-TESTS	:= test-window test-fft test-pvoc
+TESTS	:= test-mathutilities test-window test-fft test-pvoc
 
 all: $(TESTS)
-	for t in $(TESTS); do echo "Running $$t"; valgrind ./"$$t" || exit 1; done
+	for t in $(TESTS); do echo "Running $$t"; ./"$$t" || exit 1; done
+
+test-mathutilities: TestMathUtilities.o $(LIBS)
+	$(CXX) -o $@ $^ $(LDFLAGS)
 
 test-window: TestWindow.o $(LIBS)
 	$(CXX) -o $@ $^ $(LDFLAGS)
@@ -19,6 +22,7 @@ test-fft: TestFFT.o $(LIBS)
 test-pvoc: TestPhaseVocoder.o $(LIBS)
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
+TestMathUtilities.o: $(LIBS)
 TestWindow.o: $(LIBS)
 TestFFT.o: $(LIBS)
 TestPhaseVocoder.o: $(LIBS)

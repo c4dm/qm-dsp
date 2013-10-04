@@ -51,11 +51,11 @@ public:
         NormaliseUnitMax
     };
 
-    static void   normalise(double *data, int length,
-                            NormaliseType n = NormaliseUnitMax);
+    static void normalise(double *data, int length,
+                          NormaliseType n = NormaliseUnitMax);
 
-    static void   normalise(std::vector<double> &data,
-                            NormaliseType n = NormaliseUnitMax);
+    static void normalise(std::vector<double> &data,
+                          NormaliseType n = NormaliseUnitMax);
 
     // moving mean threshholding:
     static void adaptiveThreshold(std::vector<double> &data);
@@ -63,7 +63,9 @@ public:
     static bool isPowerOfTwo(int x);
     static int nextPowerOfTwo(int x); // e.g. 1300 -> 2048, 2048 -> 2048
     static int previousPowerOfTwo(int x); // e.g. 1300 -> 1024, 2048 -> 2048
-    static int nearestPowerOfTwo(int x); // e.g. 1300 -> 1024, 1700 -> 2048
+    static int nearestPowerOfTwo(int x); // e.g. 1300 -> 1024, 12 -> 16 (not 8)
+
+    static int factorial(int x);
 };
 
 #endif
