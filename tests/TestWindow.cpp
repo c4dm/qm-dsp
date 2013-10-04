@@ -1,6 +1,7 @@
 /* -*- c-basic-offset: 4 indent-tabs-mode: nil -*-  vi:set ts=8 sts=4 sw=4: */
 
 #include "base/Window.h"
+#include "base/KaiserWindow.h"
 
 #include <iostream>
 
@@ -117,6 +118,40 @@ BOOST_AUTO_TEST_CASE(blackman)
     };
     testWindow<10>(BlackmanWindow, e10);
 }
+
+BOOST_AUTO_TEST_CASE(kaiser_4_10)
+{
+    double d[10];
+    for (int i = 0; i < 10; ++i) d[i] = 1.0;
+    double e[] = { 
+        0.0885, 0.2943, 0.5644, 0.8216, 0.9789,
+        0.9789, 0.8216, 0.5644, 0.2943, 0.0885
+    };
+    KaiserWindow::Parameters p;
+    p.length = 10;
+    p.beta = 4;
+    KaiserWindow k(p);
+    k.cut(d);
+    COMPARE_ARRAY(d, e);
+}
     
+BOOST_AUTO_TEST_CASE(kaiser_2p5_11)
+{
+    double d[11];
+    for (int i = 0; i < 11; ++i) d[i] = 1.0;
+    double e[] = { 
+        0.3040, 0.5005, 0.6929, 0.8546, 0.9622,
+        1.0000, 0.9622, 0.8546, 0.6929, 0.5005, 0.3040
+    };
+    KaiserWindow::Parameters p;
+    p.length = 11;
+    p.beta = 2.5;
+    KaiserWindow k(p);
+    k.cut(d);
+    COMPARE_ARRAY(d, e);
+}
+
+//!!! todo: tests for kaiser with attenuation and bandwidth parameters
+        
 BOOST_AUTO_TEST_SUITE_END()
 
