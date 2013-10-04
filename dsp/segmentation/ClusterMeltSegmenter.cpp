@@ -209,7 +209,7 @@ void ClusterMeltSegmenter::extractFeaturesConstQ(const double* samples, int nsam
 
         window->cut(frame);
         
-        fft->process(false, frame, real, imag);
+        fft->forward(frame, real, imag);
         
         constq->process(real, imag, cqre, cqim);
 	

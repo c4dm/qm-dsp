@@ -193,7 +193,7 @@ DownBeat::findDownBeats(const float *audio,
 
         // Now FFT beat frame
         
-        m_fft->process(false, m_beatframe, m_fftRealOut, m_fftImagOut);
+        m_fft->forward(m_beatframe, m_fftRealOut, m_fftImagOut);
         
         // Calculate magnitudes
 

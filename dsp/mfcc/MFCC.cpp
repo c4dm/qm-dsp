@@ -210,7 +210,7 @@ int MFCC::process(const double *inframe, double *outceps)
     window->cut(inputData);
   
     /* Calculate the fft on the input frame */
-    fft->process(0, inputData, realOut, imagOut);
+    fft->forward(inputData, realOut, imagOut);
 
     free(inputData);
 

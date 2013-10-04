@@ -15,9 +15,8 @@
 
 #include <iostream>
 
-FFT::FFT(unsigned int n) :
-    m_n(n),
-    m_private(0)
+FFT::FFT(int n) :
+    m_n(n)
 {
     if( !MathUtilities::isPowerOfTwo(m_n) )
     {
@@ -33,27 +32,51 @@ FFT::~FFT()
 
 }
 
-FFTReal::FFTReal(unsigned int n) :
+FFTReal::FFTReal(int n) :
     m_n(n),
-    m_private(0)
+    m_fft(new FFT(n)),
+    m_r(new double[n]),
+    m_i(new double[n]),
+    m_discard(new double[n])
 {
-    m_private = new FFT(m_n);
+    for (int i = 0; i < n; ++i) {
+        m_r[i] = 0;
+        m_i[i] = 0;
+        m_discard[i] = 0;
+    }
 }
 
 FFTReal::~FFTReal()
 {
-    delete (FFT *)m_private;
+    delete m_fft;
+    delete[] m_discard;
+    delete[] m_r;
+    delete[] m_i;
 }
 
 void
-FFTReal::process(bool inverse,
-                 const double *realIn,
+FFTReal::forward(const double *realIn,
                  double *realOut, double *imagOut)
 {
-    ((FFT *)m_private)->process(inverse, realIn, 0, realOut, imagOut);
+    m_fft->process(false, realIn, 0, realOut, imagOut);
 }
 
-static unsigned int numberOfBitsNeeded(unsigned int p_nSamples)
+void
+FFTReal::inverse(const double *realIn, const double *imagIn,
+                 double *realOut)
+{
+    for (int i = 0; i < m_n/2 + 1; ++i) {
+        m_r[i] = realIn[i];
+        m_i[i] = imagIn[i];
+        if (i > 0 && i < m_n/2) {
+            m_r[m_n - i] = realIn[i];
+            m_i[m_n - i] = -imagIn[i];
+        }
+    }
+    m_fft->process(true, m_r, m_i, realOut, m_discard);
+}
+
+static int numberOfBitsNeeded(int p_nSamples)
 {	
     int i;
 
@@ -68,9 +91,9 @@ static unsigned int numberOfBitsNeeded(unsigned int p_nSamples)
     }
 }
 
-static unsigned int reverseBits(unsigned int p_nIndex, unsigned int p_nBits)
+static int reverseBits(int p_nIndex, int p_nBits)
 {
-    unsigned int i, rev;
+    int i, rev;
 
     for(i=rev=0; i < p_nBits; i++)
     {
@@ -90,9 +113,9 @@ FFT::process(bool p_bInverseTransform,
 
 //    std::cerr << "FFT::process(" << m_n << "," << p_bInverseTransform << ")" << std::endl;
 
-    unsigned int NumBits;
-    unsigned int i, j, k, n;
-    unsigned int BlockSize, BlockEnd;
+    int NumBits;
+    int i, j, k, n;
+    int BlockSize, BlockEnd;
 
     double angle_numerator = 2.0 * M_PI;
     double tr, ti;
@@ -108,6 +131,7 @@ FFT::process(bool p_bInverseTransform,
     if( p_bInverseTransform ) angle_numerator = -angle_numerator;
 
     NumBits = numberOfBitsNeeded ( m_n );
+
 
 
     for( i=0; i < m_n; i++ )
