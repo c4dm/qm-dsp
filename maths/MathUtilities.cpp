@@ -390,3 +390,14 @@ MathUtilities::factorial(int x)
     return f;
 }
 
+int
+MathUtilities::gcd(int a, int b)
+{
+    int c = a % b;
+    if (c == 0) {
+        return b;
+    } else {
+        return gcd(b, c);
+    }
+}
+

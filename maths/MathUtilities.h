@@ -66,6 +66,8 @@ public:
     static int nearestPowerOfTwo(int x); // e.g. 1300 -> 1024, 12 -> 16 (not 8)
 
     static int factorial(int x);
+
+    static int gcd(int a, int b);
 };
 
 #endif

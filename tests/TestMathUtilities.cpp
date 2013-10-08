@@ -133,6 +133,18 @@ BOOST_AUTO_TEST_CASE(factorial)
     BOOST_CHECK_EQUAL(MathUtilities::factorial(4), 24);
 }
 
+BOOST_AUTO_TEST_CASE(gcd)
+{
+    BOOST_CHECK_EQUAL(MathUtilities::gcd(1, 1), 1);
+    BOOST_CHECK_EQUAL(MathUtilities::gcd(2, 1), 1);
+    BOOST_CHECK_EQUAL(MathUtilities::gcd(2, 3), 1);
+    BOOST_CHECK_EQUAL(MathUtilities::gcd(4, 2), 2);
+    BOOST_CHECK_EQUAL(MathUtilities::gcd(18, 24), 6);
+    BOOST_CHECK_EQUAL(MathUtilities::gcd(27, 18), 9);
+    BOOST_CHECK_EQUAL(MathUtilities::gcd(18, 36), 18);
+    BOOST_CHECK_EQUAL(MathUtilities::gcd(37, 18), 1);
+}
+
 BOOST_AUTO_TEST_SUITE_END()
 
 
