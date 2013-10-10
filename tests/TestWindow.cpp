@@ -2,6 +2,7 @@
 
 #include "base/Window.h"
 #include "base/KaiserWindow.h"
+#include "base/SincWindow.h"
 
 #include <iostream>
 
@@ -152,6 +153,38 @@ BOOST_AUTO_TEST_CASE(kaiser_2p5_11)
 }
 
 //!!! todo: tests for kaiser with attenuation and bandwidth parameters
+
+template <int N>
+void testSinc(double p, const double expected[N])
+{
+    double d[N];
+    for (int i = 0; i < N; ++i) d[i] = 1.0;
+    SincWindow w(N, p);
+    w.cut(d);
+    COMPARE_ARRAY(d, expected);
+
+    double d0[N], d1[N];
+    for (int i = 0; i < N; ++i) d0[i] = 0.5 + (1.0 / (N * 2)) * (i + 1);
+    w.cut(d0, d1);
+    for (int i = 0; i < N; ++i) {
+	BOOST_CHECK_SMALL(d1[i] - d0[i] * expected[i], 1e-4);
+    }
+}
+
+BOOST_AUTO_TEST_CASE(sinc)
+{
+    double e1[] = { 0, 0, 1, 0, 0 };
+    testSinc<5>(1, e1);
+
+    double e2[] = { 0, 0, 1, 0, 0 };
+    testSinc<5>(2, e2);
+
+    double e3[] = { -0.2122, 0.0, 0.6366, 1.0, 0.6366, 0, -0.2122 };
+    testSinc<7>(4, e3);
+
+    double e4[] = { -0.2122, 0, 0.6366, 1, 0.6366, 0 };
+    testSinc<6>(4, e4);
+}
         
 BOOST_AUTO_TEST_SUITE_END()
 

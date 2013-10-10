@@ -45,6 +45,7 @@ INCLUDEPATH += .
 HEADERS += base/Pitch.h \
            base/Window.h \
            base/KaiserWindow.h \
+           base/SincWindow.h \
            dsp/chromagram/Chromagram.h \
            dsp/chromagram/ConstantQ.h \
            dsp/keydetection/GetKeyMode.h \
@@ -84,6 +85,7 @@ HEADERS += base/Pitch.h \
            thread/Thread.h
 SOURCES += base/Pitch.cpp \
            base/KaiserWindow.cpp \
+           base/SincWindow.cpp \
            dsp/chromagram/Chromagram.cpp \
            dsp/chromagram/ConstantQ.cpp \
            dsp/keydetection/GetKeyMode.cpp \
