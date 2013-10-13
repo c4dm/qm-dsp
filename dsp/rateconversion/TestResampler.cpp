@@ -15,6 +15,23 @@ BOOST_AUTO_TEST_SUITE(TestResampler)
 
 using std::cout;
 using std::endl;
+using std::vector;
+
+void
+testResamplerOneShot(int sourceRate,
+		     int targetRate,
+		     int n,
+		     double *in,
+		     int m,
+		     double *expected)
+{
+    vector<double> resampled = Resampler::resample(sourceRate, targetRate,
+						   in, n);
+    BOOST_CHECK_EQUAL(resampled.size(), m);
+    for (int i = 0; i < m; ++i) {
+	BOOST_CHECK_SMALL(resampled[i] - expected[i], 1e-8);
+    }
+}
 
 void
 testResampler(int sourceRate,
@@ -24,6 +41,8 @@ testResampler(int sourceRate,
 	      int m,
 	      double *expected)
 {
+//!!! to be useful, this should provide the input in varying-size chunks
+
     Resampler r(sourceRate, targetRate);
     int latency = r.getLatency();
     std::cerr << "latency = " << latency << std::endl;
@@ -57,7 +76,7 @@ testResampler(int sourceRate,
     std::cerr << "\n";
 
     for (int i = latency; i < m1; ++i) {
-	BOOST_CHECK_CLOSE(outPadded[i], expected[i-latency], 1e-8);
+	BOOST_CHECK_SMALL(outPadded[i] - expected[i-latency], 1e-8);
     }
     delete[] outPadded;
     delete[] inPadded;
@@ -66,6 +85,7 @@ testResampler(int sourceRate,
 BOOST_AUTO_TEST_CASE(sameRate)
 {
     double d[] = { 0, 0.1, -0.3, -0.4, -0.3, 0, 0.5, 0.2, 0.8, -0.1 };
+    testResamplerOneShot(4, 4, 10, d, 10, d);
     testResampler(4, 4, 10, d, 10, d);
 }
 

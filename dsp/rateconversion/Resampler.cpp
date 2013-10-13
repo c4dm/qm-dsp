@@ -7,6 +7,9 @@
 #include "qm-dsp/base/SincWindow.h"
 
 #include <iostream>
+#include <vector>
+
+using std::vector;
 
 Resampler::Resampler(int sourceRate, int targetRate) :
     m_sourceRate(sourceRate),
@@ -143,5 +146,25 @@ Resampler::process(const double *src, double *dst, int n)
     //!!! save any excess 
 
     return m;
+}
+
+std::vector<double>
+Resampler::resample(int sourceRate, int targetRate, const double *data, int n)
+{
+    Resampler r(sourceRate, targetRate);
+
+    int latency = r.getLatency();
+
+    int m = int(ceil((n * targetRate) / sourceRate));
+    int m1 = m + latency;
+    int n1 = int((m1 * sourceRate) / targetRate);
+
+    vector<double> pad(n1 - n, 0.0);
+    vector<double> out(m1, 0.0);
+
+    int got = r.process(data, out.data(), n);
+    got += r.process(pad.data(), out.data() + got, pad.size());
+
+    return vector<double>(out.begin() + latency, out.begin() + got);
 }
 

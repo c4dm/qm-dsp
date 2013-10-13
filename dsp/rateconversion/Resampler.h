@@ -31,6 +31,13 @@ public:
      */
     int getLatency() const { return m_latency; }
 
+    /**
+     * Carry out a one-off resample of a single block of n
+     * samples. The output is latency-compensated.
+     */
+    static std::vector<double> resample
+    (int sourceRate, int targetRate, const double *data, int n);
+
 private:
     int m_sourceRate;
     int m_targetRate;
