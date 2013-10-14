@@ -52,7 +52,7 @@ Resampler::initialise()
     int inputSpacing = m_targetRate / m_gcd;
     int outputSpacing = m_sourceRate / m_gcd;
 
-    m_latency = int((m_filterLength / 2) / outputSpacing);
+    m_latency = int(ceil((m_filterLength / 2.0) / outputSpacing));
 
     int bufferLength = 0;
 
@@ -130,19 +130,19 @@ Resampler::process(const double *src, double *dst, int remaining)
     int offset = 0;
 
     while (remaining >= m_phaseData[m_phase].take) {
-	std::cerr << "remaining = " << remaining << ", m = " << m << ", take = " << m_phaseData[m_phase].take << std::endl;
+//	std::cerr << "remaining = " << remaining << ", m = " << m << ", take = " << m_phaseData[m_phase].take << std::endl;
 	int advance = m_phaseData[m_phase].take;
 	dst[m] = reconstructOne(src + offset);
 	offset += advance;
 	remaining -= advance;
 	m_phase = m_phaseData[m_phase].nextPhase;
-	std::cerr << "remaining -> " << remaining << ", new phase has advance " << m_phaseData[m_phase].take << std::endl;
+//	std::cerr << "remaining -> " << remaining << ", new phase has advance " << m_phaseData[m_phase].take << std::endl;
 	++m;
     }
 
-    if (remaining > 0) {
-	std::cerr << "have " << remaining << " spare, pushing to buffer" << std::endl;
-    }	
+//    if (remaining > 0) {
+//	std::cerr << "have " << remaining << " spare, pushing to buffer" << std::endl;
+//    }	
 
     for (int i = 0; i < remaining; ++i) {
 	m_buffer.push_back(src[offset + i]);

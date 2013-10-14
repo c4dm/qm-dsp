@@ -97,10 +97,15 @@ testResampler(int sourceRate,
     delete[] inPadded;
 }
 
-BOOST_AUTO_TEST_CASE(sameRate)
+BOOST_AUTO_TEST_CASE(sameRateOneShot)
 {
     double d[] = { 0, 0.1, -0.3, -0.4, -0.3, 0, 0.5, 0.2, 0.8, -0.1 };
     testResamplerOneShot(4, 4, 10, d, 10, d);
+}
+
+BOOST_AUTO_TEST_CASE(sameRate)
+{
+    double d[] = { 0, 0.1, -0.3, -0.4, -0.3, 0, 0.5, 0.2, 0.8, -0.1 };
     testResampler(4, 4, 10, d, 10, d);
 }
 
