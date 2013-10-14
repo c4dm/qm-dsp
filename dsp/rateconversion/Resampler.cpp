@@ -20,7 +20,6 @@ Resampler::Resampler(int sourceRate, int targetRate) :
 
 Resampler::~Resampler()
 {
-    delete[] m_buffer;
     delete[] m_phaseData;
 }
 
@@ -55,7 +54,7 @@ Resampler::initialise()
 
     m_latency = int((m_filterLength / 2) / outputSpacing);
 
-    m_bufferLength = 0;
+    int bufferLength = 0;
 
     m_phaseData = new Phase[inputSpacing];
 
@@ -73,8 +72,8 @@ Resampler::initialise()
 		     / outputSpacing);
 
 	int filtZipLength = int(ceil((m_filterLength - phase) / inputSpacing));
-	if (filtZipLength > m_bufferLength) {
-	    m_bufferLength = filtZipLength;
+	if (filtZipLength > bufferLength) {
+	    bufferLength = filtZipLength;
 	}
 	
 	for (int i = 0; i < filtZipLength; ++i) {
@@ -104,12 +103,11 @@ Resampler::initialise()
     // latter. (What do other implementations do?)
 
     m_phase = m_filterLength % inputSpacing;
-    m_buffer = new double[m_bufferLength];
-    for (int i = 0; i < m_bufferLength; ++i) m_buffer[i] = 0.0;
+    m_buffer = vector<double>(bufferLength, 0);
 }
 
 double
-Resampler::reconstructOne(const double **srcptr)
+Resampler::reconstructOne(const double *src)
 {
     Phase &pd = m_phaseData[m_phase];
     double *filt = pd.filter.data();
@@ -118,32 +116,37 @@ Resampler::reconstructOne(const double **srcptr)
     for (int i = 0; i < n; ++i) {
 	v += m_buffer[i] * filt[i];
     }
-    for (int i = pd.drop; i < n; ++i) {
-	m_buffer[i - pd.drop] = m_buffer[i];
-    }
+    m_buffer = vector<double>(m_buffer.begin() + pd.drop, m_buffer.end());
     for (int i = 0; i < pd.take; ++i) {
-	m_buffer[n - pd.drop + i] = **srcptr;
-	++ *srcptr;
+	m_buffer.push_back(src[i]);
     }
-    m_phase = pd.nextPhase;
     return v;
 }
 
 int
-Resampler::process(const double *src, double *dst, int n)
+Resampler::process(const double *src, double *dst, int remaining)
 {
     int m = 0;
-    const double *srcptr = src;
+    int offset = 0;
 
-    while (n > m_phaseData[m_phase].take) {
-	std::cerr << "n = " << n << ", m = " << m << ", take = " << m_phaseData[m_phase].take << std::endl;
-	n -= m_phaseData[m_phase].take;
-	dst[m] = reconstructOne(&srcptr);
-	std::cerr << "n -> " << n << std::endl;
+    while (remaining >= m_phaseData[m_phase].take) {
+	std::cerr << "remaining = " << remaining << ", m = " << m << ", take = " << m_phaseData[m_phase].take << std::endl;
+	int advance = m_phaseData[m_phase].take;
+	dst[m] = reconstructOne(src + offset);
+	offset += advance;
+	remaining -= advance;
+	m_phase = m_phaseData[m_phase].nextPhase;
+	std::cerr << "remaining -> " << remaining << ", new phase has advance " << m_phaseData[m_phase].take << std::endl;
 	++m;
     }
 
-    //!!! save any excess 
+    if (remaining > 0) {
+	std::cerr << "have " << remaining << " spare, pushing to buffer" << std::endl;
+    }	
+
+    for (int i = 0; i < remaining; ++i) {
+	m_buffer.push_back(src[offset + i]);
+    }
 
     return m;
 }

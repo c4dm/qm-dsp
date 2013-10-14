@@ -41,7 +41,7 @@ testResampler(int sourceRate,
 	      int m,
 	      double *expected)
 {
-//!!! to be useful, this should provide the input in varying-size chunks
+    // Here we provide the input in chunks (of varying size)
 
     Resampler r(sourceRate, targetRate);
     int latency = r.getLatency();
@@ -62,19 +62,34 @@ testResampler(int sourceRate,
 	outPadded[i] = -999.0;
     }
 
-    int got = r.process(inPadded, outPadded, n1);
+    int chunkSize = 1;
+    int got = 0;
+    int i = 0;
 
-    std::cerr << n1 << " in, " << got << " out" << std::endl;
+    while (true) {
+	std::cerr << "i = " << i << ", n1 = " << n1 << ", chunkSize = " << chunkSize << std::endl;
+	got += r.process(inPadded + i, outPadded + got, chunkSize);
+	i = i + chunkSize;
+	chunkSize = chunkSize + 1;
+	if (i + 1 >= n1) {
+	    break;
+	} else if (i + chunkSize >= n1) {
+	    chunkSize = n1 - i;
+	}
+    }
+
+//    int got = r.process(inPadded, outPadded, n1);
+    std::cerr << i << " in, " << got << " out" << std::endl;
 
     BOOST_CHECK_EQUAL(got, m1);
-
+/*
     std::cerr << "results including latency padding:" << std::endl;
     for (int i = 0; i < m1; ++i) {
 	std::cerr << outPadded[i] << " ";
 	if (i % 6 == 5) std::cerr << "\n";
     }
     std::cerr << "\n";
-
+*/
     for (int i = latency; i < m1; ++i) {
 	BOOST_CHECK_SMALL(outPadded[i] - expected[i-latency], 1e-8);
     }
