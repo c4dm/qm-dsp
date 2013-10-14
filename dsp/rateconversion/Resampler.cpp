@@ -163,9 +163,14 @@ Resampler::process(const double *src, double *dst, int n)
     std::cerr << "process: buf siz " << m_buffer.size() << " filt siz for phase " << m_phase << " " << m_phaseData[m_phase].filter.size() << std::endl;
 #endif
 
+    double scaleFactor = 1.0;
+    if (m_targetRate < m_sourceRate) {
+	scaleFactor = double(m_targetRate) / double(m_sourceRate);
+    }
+
     while (outidx < maxout &&
 	   m_buffer.size() >= m_phaseData[m_phase].filter.size()) {
-	dst[outidx] = reconstructOne();
+	dst[outidx] = scaleFactor * reconstructOne();
 	outidx++;
     }
     

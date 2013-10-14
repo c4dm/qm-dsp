@@ -119,6 +119,8 @@ BOOST_AUTO_TEST_CASE(interpolatedMisc)
 
 BOOST_AUTO_TEST_CASE(interpolatedSine)
 {
+    // Interpolating a sinusoid should give us a sinusoid, once we've
+    // dropped the first few samples
     double in[1000];
     double out[2000];
     for (int i = 0; i < 1000; ++i) {
@@ -127,7 +129,22 @@ BOOST_AUTO_TEST_CASE(interpolatedSine)
     for (int i = 0; i < 2000; ++i) {
 	out[i] = sin(i * M_PI / 4.0);
     }
-    testResamplerOneShot(8, 16, 1000, in, 200, out, 400);
+    testResamplerOneShot(8, 16, 1000, in, 200, out, 512);
+}
+
+BOOST_AUTO_TEST_CASE(decimatedSine)
+{
+    // Decimating a sinusoid should give us a sinusoid, once we've
+    // dropped the first few samples
+    double in[2000];
+    double out[1000];
+    for (int i = 0; i < 2000; ++i) {
+	in[i] = sin(i * M_PI / 8.0);
+    }
+    for (int i = 0; i < 1000; ++i) {
+	out[i] = sin(i * M_PI / 4.0);
+    }
+    testResamplerOneShot(16, 8, 2000, in, 200, out, 256);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
