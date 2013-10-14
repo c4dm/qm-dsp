@@ -50,7 +50,6 @@ private:
         int nextPhase;
         std::vector<double> filter;
         int drop;
-        int take;
     };
 
     Phase *m_phaseData;
@@ -58,7 +57,7 @@ private:
     std::vector<double> m_buffer;
 
     void initialise();
-    double reconstructOne(const double *);
+    double reconstructOne();
 };
 
 #endif

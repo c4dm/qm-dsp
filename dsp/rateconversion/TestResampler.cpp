@@ -23,13 +23,16 @@ testResamplerOneShot(int sourceRate,
 		     int n,
 		     double *in,
 		     int m,
-		     double *expected)
+		     double *expected,
+		     int skip)
 {
     vector<double> resampled = Resampler::resample(sourceRate, targetRate,
 						   in, n);
-    BOOST_CHECK_EQUAL(resampled.size(), m);
+    if (skip == 0) {
+	BOOST_CHECK_EQUAL(resampled.size(), m);
+    }
     for (int i = 0; i < m; ++i) {
-	BOOST_CHECK_SMALL(resampled[i] - expected[i], 1e-8);
+	BOOST_CHECK_SMALL(resampled[i + skip] - expected[i], 1e-8);
     }
 }
 
@@ -45,7 +48,6 @@ testResampler(int sourceRate,
 
     Resampler r(sourceRate, targetRate);
     int latency = r.getLatency();
-    std::cerr << "latency = " << latency << std::endl;
 
     int m1 = m + latency;
     int n1 = int((m1 * sourceRate) / targetRate);
@@ -67,32 +69,24 @@ testResampler(int sourceRate,
     int i = 0;
 
     while (true) {
-	std::cerr << "i = " << i << ", n1 = " << n1 << ", chunkSize = " << chunkSize << std::endl;
 	got += r.process(inPadded + i, outPadded + got, chunkSize);
 	i = i + chunkSize;
 	chunkSize = chunkSize + 1;
-	if (i + 1 >= n1) {
+	if (i >= n1) {
 	    break;
 	} else if (i + chunkSize >= n1) {
 	    chunkSize = n1 - i;
+	} else if (chunkSize > 15) {
+	    chunkSize = 1;
 	}
     }
 
-//    int got = r.process(inPadded, outPadded, n1);
-    std::cerr << i << " in, " << got << " out" << std::endl;
-
     BOOST_CHECK_EQUAL(got, m1);
-/*
-    std::cerr << "results including latency padding:" << std::endl;
-    for (int i = 0; i < m1; ++i) {
-	std::cerr << outPadded[i] << " ";
-	if (i % 6 == 5) std::cerr << "\n";
-    }
-    std::cerr << "\n";
-*/
+
     for (int i = latency; i < m1; ++i) {
 	BOOST_CHECK_SMALL(outPadded[i] - expected[i-latency], 1e-8);
     }
+
     delete[] outPadded;
     delete[] inPadded;
 }
@@ -100,13 +94,40 @@ testResampler(int sourceRate,
 BOOST_AUTO_TEST_CASE(sameRateOneShot)
 {
     double d[] = { 0, 0.1, -0.3, -0.4, -0.3, 0, 0.5, 0.2, 0.8, -0.1 };
-    testResamplerOneShot(4, 4, 10, d, 10, d);
+    testResamplerOneShot(4, 4, 10, d, 10, d, 0);
 }
 
 BOOST_AUTO_TEST_CASE(sameRate)
 {
     double d[] = { 0, 0.1, -0.3, -0.4, -0.3, 0, 0.5, 0.2, 0.8, -0.1 };
     testResampler(4, 4, 10, d, 10, d);
+}
+
+BOOST_AUTO_TEST_CASE(interpolatedMisc)
+{
+    // Interpolating any signal by N should give a signal in which
+    // every Nth sample is the original signal
+    double in[] = { 0, 0.1, -0.3, -0.4, -0.3, 0, 0.5, 0.2, 0.8, -0.1 };
+    int n = sizeof(in)/sizeof(in[0]);
+    for (int factor = 2; factor < 10; ++factor) {
+	vector<double> out = Resampler::resample(6, 6 * factor, in, n);
+	for (int i = 0; i < n; ++i) {
+	    BOOST_CHECK_SMALL(out[i * factor] - in[i], 1e-5);
+	}
+    }
+}
+
+BOOST_AUTO_TEST_CASE(interpolatedSine)
+{
+    double in[1000];
+    double out[2000];
+    for (int i = 0; i < 1000; ++i) {
+	in[i] = sin(i * M_PI / 2.0);
+    }
+    for (int i = 0; i < 2000; ++i) {
+	out[i] = sin(i * M_PI / 4.0);
+    }
+    testResamplerOneShot(8, 16, 1000, in, 200, out, 400);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

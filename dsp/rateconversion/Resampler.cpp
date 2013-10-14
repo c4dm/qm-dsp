@@ -11,6 +11,8 @@
 
 using std::vector;
 
+//#define DEBUG_RESAMPLER 1
+
 Resampler::Resampler(int sourceRate, int targetRate) :
     m_sourceRate(sourceRate),
     m_targetRate(targetRate)
@@ -52,9 +54,12 @@ Resampler::initialise()
     int inputSpacing = m_targetRate / m_gcd;
     int outputSpacing = m_sourceRate / m_gcd;
 
-    m_latency = int(ceil((m_filterLength / 2.0) / outputSpacing));
-
-    int bufferLength = 0;
+#ifdef DEBUG_RESAMPLER
+    std::cerr << "resample " << m_sourceRate << " -> " << m_targetRate
+	      << ": inputSpacing " << inputSpacing << ", outputSpacing "
+	      << outputSpacing << ": filter length " << m_filterLength
+	      << std::endl;
+#endif
 
     m_phaseData = new Phase[inputSpacing];
 
@@ -66,22 +71,35 @@ Resampler::initialise()
 	while (p.nextPhase < 0) p.nextPhase += inputSpacing;
 	p.nextPhase %= inputSpacing;
 	
-	p.drop = int(ceil(std::max(0, outputSpacing - phase) / inputSpacing));
-	p.take = int((outputSpacing +
-		      ((m_filterLength - 1 - phase) % inputSpacing))
-		     / outputSpacing);
+	p.drop = int(ceil(std::max(0.0, double(outputSpacing - phase))
+			  / inputSpacing));
 
-	int filtZipLength = int(ceil((m_filterLength - phase) / inputSpacing));
-	if (filtZipLength > bufferLength) {
-	    bufferLength = filtZipLength;
-	}
-	
+	int filtZipLength = int(ceil(double(m_filterLength - phase)
+				     / inputSpacing));
 	for (int i = 0; i < filtZipLength; ++i) {
 	    p.filter.push_back(filter[i * inputSpacing + phase]);
 	}
 
 	m_phaseData[phase] = p;
     }
+
+#ifdef DEBUG_RESAMPLER
+    for (int phase = 0; phase < inputSpacing; ++phase) {
+	std::cerr << "filter for phase " << phase << " of " << inputSpacing << " (with length " << m_phaseData[phase].filter.size() << "):";
+	for (int i = 0; i < m_phaseData[phase].filter.size(); ++i) {
+	    if (i % 4 == 0) {
+		std::cerr << std::endl << i << ": ";
+	    }
+	    float v = m_phaseData[phase].filter[i];
+	    if (v == 1) {
+		std::cerr << " *** " << v << " ***  ";
+	    } else {
+		std::cerr << v << " ";
+	    }
+	}
+	std::cerr << std::endl;
+    }
+#endif
 
     delete[] filter;
 
@@ -102,55 +120,58 @@ Resampler::initialise()
     // else have a lengthy declared latency on the output. We do the
     // latter. (What do other implementations do?)
 
-    m_phase = m_filterLength % inputSpacing;
-    m_buffer = vector<double>(bufferLength, 0);
+    m_phase = (m_filterLength/2) % inputSpacing;
+    
+    m_buffer = vector<double>(m_phaseData[0].filter.size(), 0);
+
+    m_latency =
+	((m_buffer.size() * inputSpacing) - (m_filterLength/2)) / outputSpacing
+	+ m_phase;
+
+#ifdef DEBUG_RESAMPLER
+    std::cerr << "initial phase " << m_phase << " (as " << (m_filterLength/2) << " % " << inputSpacing << ")"
+	      << ", latency " << m_latency << std::endl;
+#endif
 }
 
 double
-Resampler::reconstructOne(const double *src)
+Resampler::reconstructOne()
 {
     Phase &pd = m_phaseData[m_phase];
     double *filt = pd.filter.data();
-    int n = pd.filter.size();
     double v = 0.0;
+    int n = pd.filter.size();
     for (int i = 0; i < n; ++i) {
 	v += m_buffer[i] * filt[i];
     }
     m_buffer = vector<double>(m_buffer.begin() + pd.drop, m_buffer.end());
-    for (int i = 0; i < pd.take; ++i) {
-	m_buffer.push_back(src[i]);
-    }
+    m_phase = pd.nextPhase;
     return v;
 }
 
 int
-Resampler::process(const double *src, double *dst, int remaining)
+Resampler::process(const double *src, double *dst, int n)
 {
-    int m = 0;
-    int offset = 0;
-
-    while (remaining >= m_phaseData[m_phase].take) {
-//	std::cerr << "remaining = " << remaining << ", m = " << m << ", take = " << m_phaseData[m_phase].take << std::endl;
-	int advance = m_phaseData[m_phase].take;
-	dst[m] = reconstructOne(src + offset);
-	offset += advance;
-	remaining -= advance;
-	m_phase = m_phaseData[m_phase].nextPhase;
-//	std::cerr << "remaining -> " << remaining << ", new phase has advance " << m_phaseData[m_phase].take << std::endl;
-	++m;
+    for (int i = 0; i < n; ++i) {
+	m_buffer.push_back(src[i]);
     }
 
-//    if (remaining > 0) {
-//	std::cerr << "have " << remaining << " spare, pushing to buffer" << std::endl;
-//    }	
+    int maxout = int(ceil(double(n) * m_targetRate / m_sourceRate));
+    int outidx = 0;
 
-    for (int i = 0; i < remaining; ++i) {
-	m_buffer.push_back(src[offset + i]);
+#ifdef DEBUG_RESAMPLER
+    std::cerr << "process: buf siz " << m_buffer.size() << " filt siz for phase " << m_phase << " " << m_phaseData[m_phase].filter.size() << std::endl;
+#endif
+
+    while (outidx < maxout &&
+	   m_buffer.size() >= m_phaseData[m_phase].filter.size()) {
+	dst[outidx] = reconstructOne();
+	outidx++;
     }
-
-    return m;
+    
+    return outidx;
 }
-
+    
 std::vector<double>
 Resampler::resample(int sourceRate, int targetRate, const double *data, int n)
 {
@@ -158,15 +179,24 @@ Resampler::resample(int sourceRate, int targetRate, const double *data, int n)
 
     int latency = r.getLatency();
 
-    int m = int(ceil((n * targetRate) / sourceRate));
+    int m = int(ceil(double(n * targetRate) / sourceRate));
     int m1 = m + latency;
-    int n1 = int((m1 * sourceRate) / targetRate);
+    int n1 = int(double(m1 * sourceRate) / targetRate);
 
     vector<double> pad(n1 - n, 0.0);
     vector<double> out(m1, 0.0);
 
     int got = r.process(data, out.data(), n);
     got += r.process(pad.data(), out.data() + got, pad.size());
+
+#ifdef DEBUG_RESAMPLER
+    std::cerr << "resample: " << n << " in, " << got << " out" << std::endl;
+    for (int i = 0; i < got; ++i) {
+	if (i % 5 == 0) std::cout << std::endl << i << "... ";
+	std::cout << (float) out[i] << " ";
+    }
+    std::cout << std::endl;
+#endif
 
     return vector<double>(out.begin() + latency, out.begin() + got);
 }
