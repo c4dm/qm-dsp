@@ -63,9 +63,7 @@ void DetectionFunction::initialise( DFConfig Config )
     m_magPeaks = new double[ m_halfLength ];
     memset(m_magPeaks,0, m_halfLength*sizeof(double));
 
-    // See note in processTimeDomain below
-    int actualLength = MathUtilities::previousPowerOfTwo(m_dataLength);
-    m_phaseVoc = new PhaseVocoder(actualLength, m_stepSize);
+    m_phaseVoc = new PhaseVocoder(m_dataLength, m_stepSize);
 
     m_magnitude = new double[ m_halfLength ];
     m_thetaAngle = new double[ m_halfLength ];
@@ -95,23 +93,6 @@ void DetectionFunction::deInitialise()
 double DetectionFunction::processTimeDomain(const double *samples)
 {
     m_window->cut(samples, m_windowed);
-
-    // Our own FFT implementation supports power-of-two sizes only.
-    // If we have to use this implementation (as opposed to the
-    // version of process() below that operates on frequency domain
-    // data directly), we will have to use the next smallest power of
-    // two from the block size.  Results may vary accordingly!
-
-    int actualLength = MathUtilities::previousPowerOfTwo((int)m_dataLength);
-
-    if (actualLength != (int)m_dataLength) {
-        // Pre-fill mag and phase vectors with zero, as the FFT output
-        // will not fill the arrays
-        for (int i = actualLength/2; i < (int)m_dataLength/2; ++i) {
-            m_magnitude[i] = 0;
-            m_thetaAngle[0] = 0;
-        }
-    }
 
     m_phaseVoc->processTimeDomain(m_windowed, 
                                   m_magnitude, m_thetaAngle, m_unwrapped);
