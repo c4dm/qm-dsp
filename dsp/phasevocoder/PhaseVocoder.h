@@ -21,7 +21,6 @@ class FFTReal;
 class PhaseVocoder  
 {
 public:
-    //!!! review: size must be a power of two, or not?
     PhaseVocoder(int size, int hop);
     virtual ~PhaseVocoder();
 

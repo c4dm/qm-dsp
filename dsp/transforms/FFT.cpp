@@ -132,6 +132,19 @@ public:
         }
     }
 
+    void forwardMagnitude(const double *ri, double *mo) {
+
+        double *io = new double[m_n];
+
+        forward(ri, mo, io);
+
+        for (int i = 0; i < m_n; ++i) {
+            mo[i] = sqrt(mo[i] * mo[i] + io[i] * io[i]);
+        }
+
+        delete[] io;
+    }
+
     void inverse(const double *ri, const double *ii, double *ro) {
 
         for (int i = 0; i < m_n; ++i) {
@@ -169,6 +182,12 @@ void
 FFTReal::forward(const double *ri, double *ro, double *io)
 {
     m_d->forward(ri, ro, io);
+}
+
+void
+FFTReal::forwardMagnitude(const double *ri, double *mo)
+{
+    m_d->forwardMagnitude(ri, mo);
 }
 
 void
