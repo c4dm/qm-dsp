@@ -43,8 +43,10 @@ Resampler::initialise()
     
     m_filterLength = params.length;
     
+    std::cerr << "making filter... ";
     KaiserWindow kw(params);
     SincWindow sw(m_filterLength, peakToPole * 2);
+    std::cerr << "done" << std::endl;
 
     double *filter = new double[m_filterLength];
     for (int i = 0; i < m_filterLength; ++i) filter[i] = 1.0;
@@ -138,11 +140,12 @@ double
 Resampler::reconstructOne()
 {
     Phase &pd = m_phaseData[m_phase];
-    double *filt = pd.filter.data();
     double v = 0.0;
     int n = pd.filter.size();
+    const double *buf = m_buffer.data();
+    const double *filt = pd.filter.data();
     for (int i = 0; i < n; ++i) {
-	v += m_buffer[i] * filt[i];
+	v += buf[i] * filt[i]; //!!! gcc can't vectorize: why?
     }
     m_buffer = vector<double>(m_buffer.begin() + pd.drop, m_buffer.end());
     m_phase = pd.nextPhase;
@@ -168,6 +171,8 @@ Resampler::process(const double *src, double *dst, int n)
 	scaleFactor = double(m_targetRate) / double(m_sourceRate);
     }
 
+    std::cerr << "maxout = " << maxout << std::endl;
+
     while (outidx < maxout &&
 	   m_buffer.size() >= m_phaseData[m_phase].filter.size()) {
 	dst[outidx] = scaleFactor * reconstructOne();
@@ -184,12 +189,30 @@ Resampler::resample(int sourceRate, int targetRate, const double *data, int n)
 
     int latency = r.getLatency();
 
+    // latency is the output latency. We need to provide enough
+    // padding input samples at the end of input to guarantee at
+    // *least* the latency's worth of output samples. that is,
+
+    int inputPad = int(ceil(double(latency * sourceRate) / targetRate));
+
+    std::cerr << "latency = " << latency << ", inputPad = " << inputPad << std::endl;
+
+    // that means we are providing this much input in total:
+
+    int n1 = n + inputPad;
+
+    // and obtaining this much output in total:
+
+    int m1 = int(ceil(double(n1 * targetRate) / sourceRate));
+
+    // in order to return this much output to the user:
+
     int m = int(ceil(double(n * targetRate) / sourceRate));
-    int m1 = m + latency;
-    int n1 = int(double(m1 * sourceRate) / targetRate);
+    
+    std::cerr << "n = " << n << ", sourceRate = " << sourceRate << ", targetRate = " << targetRate << ", m = " << m << ", latency = " << latency << ", m1 = " << m1 << ", n1 = " << n1 << ", n1 - n = " << n1 - n << std::endl;
 
     vector<double> pad(n1 - n, 0.0);
-    vector<double> out(m1, 0.0);
+    vector<double> out(m1 + 1, 0.0);
 
     int got = r.process(data, out.data(), n);
     got += r.process(pad.data(), out.data() + got, pad.size());
@@ -203,6 +226,10 @@ Resampler::resample(int sourceRate, int targetRate, const double *data, int n)
     std::cout << std::endl;
 #endif
 
-    return vector<double>(out.begin() + latency, out.begin() + got);
+    int toReturn = got - latency;
+    if (toReturn > m) toReturn = m;
+
+    return vector<double>(out.begin() + latency, 
+			  out.begin() + latency + toReturn);
 }
 

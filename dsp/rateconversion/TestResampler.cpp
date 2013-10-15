@@ -2,6 +2,9 @@
 
 #include "Resampler.h"
 
+#include "qm-dsp/base/Window.h"
+#include "qm-dsp/dsp/transforms/FFT.h"
+
 #include <iostream>
 
 #include <cmath>
@@ -145,6 +148,69 @@ BOOST_AUTO_TEST_CASE(decimatedSine)
 	out[i] = sin(i * M_PI / 4.0);
     }
     testResamplerOneShot(16, 8, 2000, in, 200, out, 256);
+}
+
+vector<double>
+squareWave(int rate, int freq, int n)
+{
+    //!!! todo: hoist, test
+    vector<double> v(n, 0.0);
+    for (int h = 0; h < (rate/4)/freq; ++h) {
+	double m = h * 2 + 1;
+	double scale = 1 / m;
+	for (int i = 0; i < n; ++i) {
+	    v[i] += scale * sin(i * 2 * M_PI * freq / rate);
+	}
+    }
+    return v;
+}
+
+void
+testSpectrum(int inrate, int outrate)
+{
+    // One second of a square wave
+    int freq = 500;
+
+    std::cerr << "inrate = " << inrate << ", outrate = " << outrate << ", freq * outrate / inrate = " << (double(freq) * double(outrate)) / double(inrate) << std::endl;
+
+    std::cerr << "making square wave... ";
+    vector<double> square =
+	squareWave(inrate, freq, inrate);
+    std::cerr << "done" << std::endl;
+
+    vector<double> maybeSquare = 
+	Resampler::resample(inrate, outrate, square.data(), square.size());
+
+    BOOST_CHECK_EQUAL(maybeSquare.size(), outrate);
+
+    Window<double>(HanningWindow, inrate).cut(square.data());
+    Window<double>(HanningWindow, outrate).cut(maybeSquare.data());
+
+    // forward magnitude with size inrate, outrate
+
+    vector<double> inSpectrum(inrate, 0.0);
+    FFTReal(inrate).forwardMagnitude(square.data(), inSpectrum.data());
+
+    vector<double> outSpectrum(outrate, 0.0);
+    FFTReal(outrate).forwardMagnitude(maybeSquare.data(), outSpectrum.data());
+
+    // Don't compare bins any higher than 99% of Nyquist freq of lower sr
+    int lengthOfInterest = (inrate < outrate ? inrate : outrate) / 2;
+    lengthOfInterest = lengthOfInterest - (lengthOfInterest / 100);
+
+    for (int i = 0; i < lengthOfInterest; ++i) {
+	BOOST_CHECK_SMALL(inSpectrum[i] - outSpectrum[i], 1e-7);
+    }
+}
+
+BOOST_AUTO_TEST_CASE(spectrum)
+{
+    int rates[] = { 8000, 22050, 44100, 48000 };
+    for (int i = 0; i < sizeof(rates)/sizeof(rates[0]); ++i) {
+	for (int j = 0; j < sizeof(rates)/sizeof(rates[0]); ++j) {
+	    testSpectrum(rates[i], rates[j]);
+	}
+    }
 }
 
 BOOST_AUTO_TEST_SUITE_END()
