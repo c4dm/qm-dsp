@@ -5,6 +5,12 @@ CONFIG -= qt
 OBJECTS_DIR = tmp_obj
 MOC_DIR = tmp_moc
 
+# This one is vital
+QMAKE_CFLAGS += -Dkiss_fft_scalar=double
+QMAKE_CXXFLAGS += -Dkiss_fft_scalar=double
+
+INCLUDEPATH += ./ext/kissfft/tools ./ext/kissfft
+
 linux-g++* {
     QMAKE_CXXFLAGS_RELEASE += -DNDEBUG -O3 -fno-exceptions -fPIC -ffast-math -msse -mfpmath=sse -ftree-vectorize -fomit-frame-pointer
     DEFINES += USE_PTHREADS
@@ -82,7 +88,9 @@ HEADERS += base/Pitch.h \
            maths/pca/pca.h \
            thread/AsynchronousTask.h \
            thread/BlockAllocator.h \
-           thread/Thread.h
+           thread/Thread.h \
+           ext/kissfft/kiss_fft.h \
+           ext/kissfft/tools/kiss_fftr.h
 SOURCES += base/Pitch.cpp \
            base/KaiserWindow.cpp \
            base/SincWindow.cpp \
@@ -117,4 +125,6 @@ SOURCES += base/Pitch.cpp \
            maths/KLDivergence.cpp \
            maths/MathUtilities.cpp \
            maths/pca/pca.c \
-           thread/Thread.cpp
+           thread/Thread.cpp \
+           ext/kissfft/kiss_fft.c \
+           ext/kissfft/tools/kiss_fftr.c

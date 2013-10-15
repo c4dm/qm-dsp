@@ -14,8 +14,8 @@ class FFT
 public:
     /**
      * Construct an FFT object to carry out complex-to-complex
-     * transforms of size nsamples. nsamples must be a power of two in
-     * this implementation.
+     * transforms of size nsamples. nsamples does not have to be a
+     * power of two.
      */
     FFT(int nsamples);
     ~FFT();
@@ -39,7 +39,8 @@ public:
                  double *realOut, double *imagOut);
     
 private:
-    int m_n;
+    class D;
+    D *m_d;
 };
 
 class FFTReal
@@ -47,8 +48,9 @@ class FFTReal
 public:
     /**
      * Construct an FFT object to carry out real-to-complex transforms
-     * of size nsamples. nsamples must be a power of two in this
-     * implementation.
+     * of size nsamples. nsamples does not have to be a power of two,
+     * but it does have to be even. (A std::invalid_argument exception
+     * will be thrown if nsamples is odd.)
      */
     FFTReal(int nsamples);
     ~FFTReal();
@@ -83,11 +85,8 @@ public:
                  double *realOut);
 
 private:
-    int m_n;
-    FFT *m_fft;
-    double *m_r;
-    double *m_i;
-    double *m_discard;
+    class D;
+    D *m_d;
 };    
 
 #endif
