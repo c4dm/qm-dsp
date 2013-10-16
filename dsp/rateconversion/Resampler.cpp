@@ -5,6 +5,7 @@
 #include "qm-dsp/maths/MathUtilities.h"
 #include "qm-dsp/base/KaiserWindow.h"
 #include "qm-dsp/base/SincWindow.h"
+#include "qm-dsp/thread/Thread.h"
 
 #include <iostream>
 #include <vector>
@@ -27,6 +28,13 @@ Resampler::~Resampler()
     delete[] m_phaseData;
 }
 
+// peakToPole -> length -> beta -> window
+static map<int, map<int, map<double, vector<double> > > >
+knownFilters;
+
+static Mutex
+knownFilterMutex;
+
 void
 Resampler::initialise()
 {
@@ -45,13 +53,25 @@ Resampler::initialise()
     
     m_filterLength = params.length;
 
-    KaiserWindow kw(params);
-    SincWindow sw(m_filterLength, peakToPole * 2);
+    vector<double> filter;
+    knownFilterMutex.lock();
 
-    vector<double> filter(m_filterLength, 0.0);
-    for (int i = 0; i < m_filterLength; ++i) filter[i] = 1.0;
-    sw.cut(filter.data());
-    kw.cut(filter.data());
+    if (knownFilters[peakToPole][m_filterLength].find(params.beta) ==
+	knownFilters[peakToPole][m_filterLength].end()) {
+
+	KaiserWindow kw(params);
+	SincWindow sw(m_filterLength, peakToPole * 2);
+
+	filter = vector<double>(m_filterLength, 0.0);
+	for (int i = 0; i < m_filterLength; ++i) filter[i] = 1.0;
+	sw.cut(filter.data());
+	kw.cut(filter.data());
+
+	knownFilters[peakToPole][m_filterLength][params.beta] = filter;
+    }
+
+    filter = knownFilters[peakToPole][m_filterLength][params.beta];
+    knownFilterMutex.unlock();
 
     int inputSpacing = m_targetRate / m_gcd;
     int outputSpacing = m_sourceRate / m_gcd;
