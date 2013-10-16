@@ -8,8 +8,10 @@
 
 #include <iostream>
 #include <vector>
+#include <map>
 
 using std::vector;
+using std::map;
 
 //#define DEBUG_RESAMPLER 1
 
@@ -42,16 +44,14 @@ Resampler::initialise()
 	(params.length % 2 == 0 ? params.length + 1 : params.length);
     
     m_filterLength = params.length;
-    
-    std::cerr << "making filter... ";
+
     KaiserWindow kw(params);
     SincWindow sw(m_filterLength, peakToPole * 2);
-    std::cerr << "done" << std::endl;
 
-    double *filter = new double[m_filterLength];
+    vector<double> filter(m_filterLength, 0.0);
     for (int i = 0; i < m_filterLength; ++i) filter[i] = 1.0;
-    sw.cut(filter);
-    kw.cut(filter);
+    sw.cut(filter.data());
+    kw.cut(filter.data());
 
     int inputSpacing = m_targetRate / m_gcd;
     int outputSpacing = m_sourceRate / m_gcd;
@@ -85,26 +85,6 @@ Resampler::initialise()
 	m_phaseData[phase] = p;
     }
 
-#ifdef DEBUG_RESAMPLER
-    for (int phase = 0; phase < inputSpacing; ++phase) {
-	std::cerr << "filter for phase " << phase << " of " << inputSpacing << " (with length " << m_phaseData[phase].filter.size() << "):";
-	for (int i = 0; i < m_phaseData[phase].filter.size(); ++i) {
-	    if (i % 4 == 0) {
-		std::cerr << std::endl << i << ": ";
-	    }
-	    float v = m_phaseData[phase].filter[i];
-	    if (v == 1) {
-		std::cerr << " *** " << v << " ***  ";
-	    } else {
-		std::cerr << v << " ";
-	    }
-	}
-	std::cerr << std::endl;
-    }
-#endif
-
-    delete[] filter;
-
     // The May implementation of this uses a pull model -- we ask the
     // resampler for a certain number of output samples, and it asks
     // its source stream for as many as it needs to calculate
@@ -125,6 +105,7 @@ Resampler::initialise()
     m_phase = (m_filterLength/2) % inputSpacing;
     
     m_buffer = vector<double>(m_phaseData[0].filter.size(), 0);
+    m_bufferOrigin = 0;
 
     m_latency =
 	((m_buffer.size() * inputSpacing) - (m_filterLength/2)) / outputSpacing
@@ -142,12 +123,13 @@ Resampler::reconstructOne()
     Phase &pd = m_phaseData[m_phase];
     double v = 0.0;
     int n = pd.filter.size();
-    const double *buf = m_buffer.data();
-    const double *filt = pd.filter.data();
+    const double *const __restrict__ buf = m_buffer.data() + m_bufferOrigin;
+    const double *const __restrict__ filt = pd.filter.data();
     for (int i = 0; i < n; ++i) {
-	v += buf[i] * filt[i]; //!!! gcc can't vectorize: why?
+	// NB gcc can only vectorize this with -ffast-math
+	v += buf[i] * filt[i];
     }
-    m_buffer = vector<double>(m_buffer.begin() + pd.drop, m_buffer.end());
+    m_bufferOrigin += pd.drop;
     m_phase = pd.nextPhase;
     return v;
 }
@@ -171,13 +153,14 @@ Resampler::process(const double *src, double *dst, int n)
 	scaleFactor = double(m_targetRate) / double(m_sourceRate);
     }
 
-    std::cerr << "maxout = " << maxout << std::endl;
-
     while (outidx < maxout &&
-	   m_buffer.size() >= m_phaseData[m_phase].filter.size()) {
+	   m_buffer.size() >= m_phaseData[m_phase].filter.size() + m_bufferOrigin) {
 	dst[outidx] = scaleFactor * reconstructOne();
 	outidx++;
     }
+
+    m_buffer = vector<double>(m_buffer.begin() + m_bufferOrigin, m_buffer.end());
+    m_bufferOrigin = 0;
     
     return outidx;
 }
@@ -195,8 +178,6 @@ Resampler::resample(int sourceRate, int targetRate, const double *data, int n)
 
     int inputPad = int(ceil(double(latency * sourceRate) / targetRate));
 
-    std::cerr << "latency = " << latency << ", inputPad = " << inputPad << std::endl;
-
     // that means we are providing this much input in total:
 
     int n1 = n + inputPad;
@@ -209,7 +190,7 @@ Resampler::resample(int sourceRate, int targetRate, const double *data, int n)
 
     int m = int(ceil(double(n * targetRate) / sourceRate));
     
-    std::cerr << "n = " << n << ", sourceRate = " << sourceRate << ", targetRate = " << targetRate << ", m = " << m << ", latency = " << latency << ", m1 = " << m1 << ", n1 = " << n1 << ", n1 - n = " << n1 - n << std::endl;
+//    std::cerr << "n = " << n << ", sourceRate = " << sourceRate << ", targetRate = " << targetRate << ", m = " << m << ", latency = " << latency << ", m1 = " << m1 << ", n1 = " << n1 << ", n1 - n = " << n1 - n << std::endl;
 
     vector<double> pad(n1 - n, 0.0);
     vector<double> out(m1 + 1, 0.0);

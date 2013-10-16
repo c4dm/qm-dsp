@@ -55,6 +55,7 @@ private:
     Phase *m_phaseData;
     int m_phase;
     std::vector<double> m_buffer;
+    int m_bufferOrigin;
 
     void initialise();
     double reconstructOne();
