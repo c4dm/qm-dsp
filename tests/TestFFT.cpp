@@ -7,6 +7,8 @@
 
 #include <boost/test/unit_test.hpp>
 
+#include <stdexcept>
+
 BOOST_AUTO_TEST_SUITE(TestFFT)
 
 #define COMPARE_CONST(a, n) \
@@ -313,6 +315,49 @@ BOOST_AUTO_TEST_CASE(r_dirac)
     re[3] = 999;
     im[3] = 999;
     FFTReal(4).inverse(re, im, back);
+    COMPARE_ARRAY(back, in);
+}
+
+BOOST_AUTO_TEST_CASE(sizes) 
+{
+    // Complex supports any size. A single test with an odd size
+    // will do here, without getting too much into our expectations
+    // about supported butterflies etc
+
+    double in[] = { 1, 1, 1 };
+    double re[] = { 999, 999, 999 };
+    double im[] = { 999, 999, 999 };
+    FFT(3).process(false, in, 0, re, im);
+    BOOST_CHECK_EQUAL(re[0], 3.0);
+    BOOST_CHECK_EQUAL(re[1], 0.0);
+    BOOST_CHECK_EQUAL(re[2], 0.0);
+    COMPARE_CONST(im, 0.0);
+    double back[3];
+    double backim[3];
+    FFT(3).process(true, re, im, back, backim);
+    COMPARE_ARRAY(back, in);
+    COMPARE_CONST(backim, 0.0);
+}
+
+BOOST_AUTO_TEST_CASE(r_sizes)
+{
+    // Real supports any even size, but not odd ones
+
+    BOOST_CHECK_THROW(FFTReal r(3), std::invalid_argument);
+
+    double in[] = { 1, 1, 1, 1, 1, 1 };
+    double re[] = { 999, 999, 999, 999, 999, 999 };
+    double im[] = { 999, 999, 999, 999, 999, 999 };
+    FFTReal(6).forward(in, re, im);
+    BOOST_CHECK_EQUAL(re[0], 6.0);
+    BOOST_CHECK_EQUAL(re[1], 0.0);
+    BOOST_CHECK_EQUAL(re[2], 0.0);
+    BOOST_CHECK_EQUAL(re[3], 0.0);
+    BOOST_CHECK_EQUAL(re[4], 0.0);
+    BOOST_CHECK_EQUAL(re[5], 0.0);
+    COMPARE_CONST(im, 0.0);
+    double back[6];
+    FFTReal(6).inverse(re, im, back);
     COMPARE_ARRAY(back, in);
 }
 

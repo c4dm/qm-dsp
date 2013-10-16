@@ -164,14 +164,16 @@ BOOST_AUTO_TEST_CASE(overlapping)
     //   phase of -pi/2 plus advance of 2pi). It has the same measured
     //   phase as last time around, -pi/2, which is consistent with
     //   the expected phase, so the unwrapped phase is 3pi/2.
-    //!!!
-    // * Bin 3 is a bit of a puzzle -- it has an effectively zero
-    //   magnitude but a non-zero measured phase. Spectral leakage?
+    //
+    // * Bin 3 I don't really know about -- the magnitude here is 0,
+    //   but we get non-zero measured phase whose sign is
+    //   implementation-dependent
     //
     // * Bin 4 (Nyquist) has expected phase 4*pi, measured phase 0,
     //   hence error 0 and unwrapped phase 4*pi.
 
-    double phaseExpected1[] = { 999, 0, -M_PI, -M_PI/2, M_PI, 0, 999 };
+    phase[1+3] = 0.0; // Because we aren't testing for this one
+    double phaseExpected1[] = { 999, 0, -M_PI, -M_PI/2, 0, 0, 999 };
     COMPARE_ARRAY(phase, phaseExpected1);
 
     double unwExpected1[] = { 999, 0, M_PI, 3*M_PI/2, 3*M_PI, 4*M_PI, 999 };

@@ -29,7 +29,7 @@
 
 struct DFConfig{
     unsigned int stepSize; // DF step in samples
-    unsigned int frameLength; // DF analysis window - usually 2*step
+    unsigned int frameLength; // DF analysis window - usually 2*step. Must be even!
     int DFType; // type of detection function ( see defines )
     double dbRise; // only used for broadband df (and required for it)
     bool adaptiveWhitening; // perform adaptive whitening

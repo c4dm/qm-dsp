@@ -11,195 +11,190 @@
 
 #include "maths/MathUtilities.h"
 
+#include "kiss_fft.h"
+#include "kiss_fftr.h"
+
 #include <cmath>
 
 #include <iostream>
 
-FFT::FFT(int n) :
-    m_n(n)
+#include <stdexcept>
+
+class FFT::D
 {
-    if( !MathUtilities::isPowerOfTwo(m_n) )
-    {
-        std::cerr << "ERROR: FFT: Non-power-of-two FFT size "
-                  << m_n << " not supported in this implementation"
-                  << std::endl;
-	return;
+public:
+    D(int n) : m_n(n) {
+        m_planf = kiss_fft_alloc(m_n, 0, NULL, NULL);
+        m_plani = kiss_fft_alloc(m_n, 1, NULL, NULL);
+        m_kin = new kiss_fft_cpx[m_n];
+        m_kout = new kiss_fft_cpx[m_n];
     }
+
+    ~D() {
+        kiss_fft_free(m_planf);
+        kiss_fft_free(m_plani);
+        delete[] m_kin;
+        delete[] m_kout;
+    }
+
+    void process(bool inverse,
+                 const double *ri,
+                 const double *ii,
+                 double *ro,
+                 double *io) {
+
+        for (int i = 0; i < m_n; ++i) {
+            m_kin[i].r = ri[i];
+            m_kin[i].i = (ii ? ii[i] : 0.0);
+        }
+
+        if (!inverse) {
+
+            kiss_fft(m_planf, m_kin, m_kout);
+
+            for (int i = 0; i < m_n; ++i) {
+                ro[i] = m_kout[i].r;
+                io[i] = m_kout[i].i;
+            }
+
+        } else {
+
+            kiss_fft(m_plani, m_kin, m_kout);
+
+            double scale = 1.0 / m_n;
+
+            for (int i = 0; i < m_n; ++i) {
+                ro[i] = m_kout[i].r * scale;
+                io[i] = m_kout[i].i * scale;
+            }
+        }
+    }
+    
+private:
+    int m_n;
+    kiss_fft_cfg m_planf;
+    kiss_fft_cfg m_plani;
+    kiss_fft_cpx *m_kin;
+    kiss_fft_cpx *m_kout;
+};        
+
+FFT::FFT(int n) :
+    m_d(new D(n))
+{
 }
 
 FFT::~FFT()
 {
-
+    delete m_d;
 }
 
-FFTReal::FFTReal(int n) :
-    m_n(n),
-    m_fft(new FFT(n)),
-    m_r(new double[n]),
-    m_i(new double[n]),
-    m_discard(new double[n])
+void
+FFT::process(bool inverse,
+             const double *p_lpRealIn, const double *p_lpImagIn,
+             double *p_lpRealOut, double *p_lpImagOut)
 {
-    for (int i = 0; i < n; ++i) {
-        m_r[i] = 0;
-        m_i[i] = 0;
-        m_discard[i] = 0;
+    m_d->process(inverse,
+                 p_lpRealIn, p_lpImagIn,
+                 p_lpRealOut, p_lpImagOut);
+}
+    
+class FFTReal::D
+{
+public:
+    D(int n) : m_n(n) {
+        if (n % 2) {
+            throw std::invalid_argument
+                ("nsamples must be even in FFTReal constructor");
+        }
+        m_planf = kiss_fftr_alloc(m_n, 0, NULL, NULL);
+        m_plani = kiss_fftr_alloc(m_n, 1, NULL, NULL);
+        m_c = new kiss_fft_cpx[m_n];
     }
+
+    ~D() {
+        kiss_fftr_free(m_planf);
+        kiss_fftr_free(m_plani);
+        delete[] m_c;
+    }
+
+    void forward(const double *ri, double *ro, double *io) {
+
+        kiss_fftr(m_planf, ri, m_c);
+
+        for (int i = 0; i <= m_n/2; ++i) {
+            ro[i] = m_c[i].r;
+            io[i] = m_c[i].i;
+        }
+
+        for (int i = 0; i + 1 < m_n/2; ++i) {
+            ro[m_n - i - 1] =  ro[i + 1];
+            io[m_n - i - 1] = -io[i + 1];
+        }
+    }
+
+    void forwardMagnitude(const double *ri, double *mo) {
+
+        double *io = new double[m_n];
+
+        forward(ri, mo, io);
+
+        for (int i = 0; i < m_n; ++i) {
+            mo[i] = sqrt(mo[i] * mo[i] + io[i] * io[i]);
+        }
+
+        delete[] io;
+    }
+
+    void inverse(const double *ri, const double *ii, double *ro) {
+
+        for (int i = 0; i < m_n; ++i) {
+            m_c[i].r = ri[i];
+            m_c[i].i = ii[i];
+        }
+        
+        kiss_fftri(m_plani, m_c, ro);
+
+        double scale = 1.0 / m_n;
+
+        for (int i = 0; i < m_n; ++i) {
+            ro[i] *= scale;
+        }
+    }
+
+private:
+    int m_n;
+    kiss_fftr_cfg m_planf;
+    kiss_fftr_cfg m_plani;
+    kiss_fft_cpx *m_c;
+};
+
+FFTReal::FFTReal(int n) :
+    m_d(new D(n)) 
+{
 }
 
 FFTReal::~FFTReal()
 {
-    delete m_fft;
-    delete[] m_discard;
-    delete[] m_r;
-    delete[] m_i;
+    delete m_d;
 }
 
 void
-FFTReal::forward(const double *realIn,
-                 double *realOut, double *imagOut)
+FFTReal::forward(const double *ri, double *ro, double *io)
 {
-    m_fft->process(false, realIn, 0, realOut, imagOut);
+    m_d->forward(ri, ro, io);
 }
 
 void
-FFTReal::inverse(const double *realIn, const double *imagIn,
-                 double *realOut)
+FFTReal::forwardMagnitude(const double *ri, double *mo)
 {
-    for (int i = 0; i < m_n/2 + 1; ++i) {
-        m_r[i] = realIn[i];
-        m_i[i] = imagIn[i];
-        if (i > 0 && i < m_n/2) {
-            m_r[m_n - i] = realIn[i];
-            m_i[m_n - i] = -imagIn[i];
-        }
-    }
-    m_fft->process(true, m_r, m_i, realOut, m_discard);
-}
-
-static int numberOfBitsNeeded(int p_nSamples)
-{	
-    int i;
-
-    if( p_nSamples < 2 )
-    {
-	return 0;
-    }
-
-    for ( i=0; ; i++ )
-    {
-	if( p_nSamples & (1 << i) ) return i;
-    }
-}
-
-static int reverseBits(int p_nIndex, int p_nBits)
-{
-    int i, rev;
-
-    for(i=rev=0; i < p_nBits; i++)
-    {
-	rev = (rev << 1) | (p_nIndex & 1);
-	p_nIndex >>= 1;
-    }
-
-    return rev;
+    m_d->forwardMagnitude(ri, mo);
 }
 
 void
-FFT::process(bool p_bInverseTransform,
-             const double *p_lpRealIn, const double *p_lpImagIn,
-             double *p_lpRealOut, double *p_lpImagOut)
+FFTReal::inverse(const double *ri, const double *ii, double *ro)
 {
-    if (!p_lpRealIn || !p_lpRealOut || !p_lpImagOut) return;
-
-//    std::cerr << "FFT::process(" << m_n << "," << p_bInverseTransform << ")" << std::endl;
-
-    int NumBits;
-    int i, j, k, n;
-    int BlockSize, BlockEnd;
-
-    double angle_numerator = 2.0 * M_PI;
-    double tr, ti;
-
-    if( !MathUtilities::isPowerOfTwo(m_n) )
-    {
-        std::cerr << "ERROR: FFT::process: Non-power-of-two FFT size "
-                  << m_n << " not supported in this implementation"
-                  << std::endl;
-	return;
-    }
-
-    if( p_bInverseTransform ) angle_numerator = -angle_numerator;
-
-    NumBits = numberOfBitsNeeded ( m_n );
-
-
-
-    for( i=0; i < m_n; i++ )
-    {
-	j = reverseBits ( i, NumBits );
-	p_lpRealOut[j] = p_lpRealIn[i];
-	p_lpImagOut[j] = (p_lpImagIn == 0) ? 0.0 : p_lpImagIn[i];
-    }
-
-
-    BlockEnd = 1;
-    for( BlockSize = 2; BlockSize <= m_n; BlockSize <<= 1 )
-    {
-	double delta_angle = angle_numerator / (double)BlockSize;
-	double sm2 = -sin ( -2 * delta_angle );
-	double sm1 = -sin ( -delta_angle );
-	double cm2 = cos ( -2 * delta_angle );
-	double cm1 = cos ( -delta_angle );
-	double w = 2 * cm1;
-	double ar[3], ai[3];
-
-	for( i=0; i < m_n; i += BlockSize )
-	{
-
-	    ar[2] = cm2;
-	    ar[1] = cm1;
-
-	    ai[2] = sm2;
-	    ai[1] = sm1;
-
-	    for ( j=i, n=0; n < BlockEnd; j++, n++ )
-	    {
-
-		ar[0] = w*ar[1] - ar[2];
-		ar[2] = ar[1];
-		ar[1] = ar[0];
-
-		ai[0] = w*ai[1] - ai[2];
-		ai[2] = ai[1];
-		ai[1] = ai[0];
-
-		k = j + BlockEnd;
-		tr = ar[0]*p_lpRealOut[k] - ai[0]*p_lpImagOut[k];
-		ti = ar[0]*p_lpImagOut[k] + ai[0]*p_lpRealOut[k];
-
-		p_lpRealOut[k] = p_lpRealOut[j] - tr;
-		p_lpImagOut[k] = p_lpImagOut[j] - ti;
-
-		p_lpRealOut[j] += tr;
-		p_lpImagOut[j] += ti;
-
-	    }
-	}
-
-	BlockEnd = BlockSize;
-
-    }
-
-
-    if( p_bInverseTransform )
-    {
-	double denom = (double)m_n;
-
-	for ( i=0; i < m_n; i++ )
-	{
-	    p_lpRealOut[i] /= denom;
-	    p_lpImagOut[i] /= denom;
-	}
-    }
+    m_d->inverse(ri, ii, ro);
 }
 
+
+    

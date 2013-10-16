@@ -7,8 +7,10 @@ LIBS := ../libqm-dsp.a
 
 TESTS	:= test-mathutilities test-window test-fft test-pvoc
 
+#VG	:= valgrind
+
 all: $(TESTS)
-	for t in $(TESTS); do echo "Running $$t"; ./"$$t" || exit 1; done
+	for t in $(TESTS); do echo "Running $$t"; $(VG) ./"$$t" || exit 1; done
 
 test-mathutilities: TestMathUtilities.o $(LIBS)
 	$(CXX) -o $@ $^ $(LDFLAGS)
