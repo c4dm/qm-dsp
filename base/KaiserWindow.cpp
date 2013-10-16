@@ -54,8 +54,12 @@ void
 KaiserWindow::init()
 {
     double denominator = bessel0(m_beta);
-    for (int i = 0; i < m_length; ++i) {
+    bool even = (m_length % 2 == 0);
+    for (int i = 0; i < (even ? m_length/2 : (m_length+1)/2); ++i) {
 	double k = double(2*i) / double(m_length-1) - 1.0;
 	m_window.push_back(bessel0(m_beta * sqrt(1.0 - k*k)) / denominator);
+    }
+    for (int i = 0; i < (even ? m_length/2 : (m_length-1)/2); ++i) {
+        m_window.push_back(m_window[int(m_length/2) - i - 1]);
     }
 }
