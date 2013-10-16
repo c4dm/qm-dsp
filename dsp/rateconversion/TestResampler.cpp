@@ -151,15 +151,16 @@ BOOST_AUTO_TEST_CASE(decimatedSine)
 }
 
 vector<double>
-squareWave(int rate, int freq, int n)
+squareWave(int rate, double freq, int n)
 {
     //!!! todo: hoist, test
     vector<double> v(n, 0.0);
     for (int h = 0; h < (rate/4)/freq; ++h) {
 	double m = h * 2 + 1;
-	double scale = 1 / m;
+	double scale = 1.0 / m;
 	for (int i = 0; i < n; ++i) {
-	    v[i] += scale * sin(i * 2 * M_PI * freq / rate);
+	    double s = scale * sin((i * 2.0 * M_PI * m * freq) / rate);
+	    v[i] += s;
 	}
     }
     return v;
@@ -190,14 +191,33 @@ testSpectrum(int inrate, int outrate)
 
     vector<double> inSpectrum(inrate, 0.0);
     FFTReal(inrate).forwardMagnitude(square.data(), inSpectrum.data());
+    for (int i = 0; i < inSpectrum.size(); ++i) {
+	inSpectrum[i] /= inrate;
+    }
 
     vector<double> outSpectrum(outrate, 0.0);
     FFTReal(outrate).forwardMagnitude(maybeSquare.data(), outSpectrum.data());
+    for (int i = 0; i < outSpectrum.size(); ++i) {
+	outSpectrum[i] /= outrate;
+    }
 
     // Don't compare bins any higher than 99% of Nyquist freq of lower sr
     int lengthOfInterest = (inrate < outrate ? inrate : outrate) / 2;
     lengthOfInterest = lengthOfInterest - (lengthOfInterest / 100);
+/*
+    std::cerr << "inSpectrum:" << std::endl;
+    for (int i = 0; i < lengthOfInterest; ++i) {
+	if (i % 5 == 0) std::cerr << std::endl << i << ": ";
+	std::cerr << inSpectrum[i] << " ";
+    }
 
+    std::cerr << "\noutSpectrum:" << std::endl;
+    for (int i = 0; i < lengthOfInterest; ++i) {
+	if (i % 5 == 0) std::cerr << std::endl << i << ": ";
+	std::cerr << outSpectrum[i] << " ";
+    }
+    std::cerr << std::endl;
+*/
     for (int i = 0; i < lengthOfInterest; ++i) {
 	BOOST_CHECK_SMALL(inSpectrum[i] - outSpectrum[i], 1e-7);
     }
