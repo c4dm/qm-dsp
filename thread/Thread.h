@@ -15,6 +15,8 @@
 #else /* !_WIN32 */
 #ifdef USE_PTHREADS
 #include <pthread.h>
+#else
+#error Must have either _WIN32 or USE_PTHREADS defined
 #endif /* USE_PTHREADS */
 #endif /* !_WIN32 */
 
