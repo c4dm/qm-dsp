@@ -379,11 +379,11 @@ MathUtilities::nearestPowerOfTwo(int x)
     else return n1;
 }
 
-int
+double
 MathUtilities::factorial(int x)
 {
     if (x < 0) return 0;
-    int f = 1;
+    double f = 1;
     for (int i = 1; i <= x; ++i) {
 	f = f * i;
     }

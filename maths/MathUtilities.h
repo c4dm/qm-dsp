@@ -65,7 +65,7 @@ public:
     static int previousPowerOfTwo(int x); // e.g. 1300 -> 1024, 2048 -> 2048
     static int nearestPowerOfTwo(int x); // e.g. 1300 -> 1024, 12 -> 16 (not 8)
 
-    static int factorial(int x);
+    static double factorial(int x); // returns double in case it is large
 
     static int gcd(int a, int b);
 };

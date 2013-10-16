@@ -125,12 +125,15 @@ BOOST_AUTO_TEST_CASE(nearestPowerOfTwo)
 
 BOOST_AUTO_TEST_CASE(factorial)
 {
-    BOOST_CHECK_EQUAL(MathUtilities::factorial(-10), 0);
-    BOOST_CHECK_EQUAL(MathUtilities::factorial(0), 1);
-    BOOST_CHECK_EQUAL(MathUtilities::factorial(1), 1);
-    BOOST_CHECK_EQUAL(MathUtilities::factorial(2), 2);
-    BOOST_CHECK_EQUAL(MathUtilities::factorial(3), 6);
-    BOOST_CHECK_EQUAL(MathUtilities::factorial(4), 24);
+    BOOST_CHECK_EQUAL(MathUtilities::factorial(-10), 0.0);
+    BOOST_CHECK_EQUAL(MathUtilities::factorial(0), 1.0);
+    BOOST_CHECK_EQUAL(MathUtilities::factorial(1), 1.0);
+    BOOST_CHECK_EQUAL(MathUtilities::factorial(2), 2.0);
+    BOOST_CHECK_EQUAL(MathUtilities::factorial(3), 6.0);
+    BOOST_CHECK_EQUAL(MathUtilities::factorial(4), 24.0);
+
+    // Too big for an int, hence double return value from factorial
+    BOOST_CHECK_EQUAL(MathUtilities::factorial(20), 2432902008176640000.0);
 }
 
 BOOST_AUTO_TEST_CASE(gcd)
