@@ -10,6 +10,7 @@
 #include <iostream>
 #include <vector>
 #include <map>
+#include <cassert>
 
 using std::vector;
 using std::map;
@@ -51,6 +52,9 @@ Resampler::initialise()
     params.length =
 	(params.length % 2 == 0 ? params.length + 1 : params.length);
     
+    params.length =
+        (params.length > 200001 ? 200001 : params.length);
+
     m_filterLength = params.length;
 
     vector<double> filter;
@@ -66,7 +70,28 @@ Resampler::initialise()
 	for (int i = 0; i < m_filterLength; ++i) filter[i] = 1.0;
 	sw.cut(filter.data());
 	kw.cut(filter.data());
+/*
+        std::cerr << "sinc for " << params.length << ", " << params.beta 
+                  << ": ";
+        for (int i = 0; i < 10; ++i) {
+            std::cerr << sw.getWindow()[i] << " ";
+        }
+        std::cerr << std::endl;
 
+        std::cerr << "kaiser for " << params.length << ", " << params.beta 
+                  << ": ";
+        for (int i = 0; i < 10; ++i) {
+            std::cerr << kw.getWindow()[i] << " ";
+        }
+        std::cerr << std::endl;
+
+        std::cerr << "filter for " << params.length << ", " << params.beta 
+                  << ": ";
+        for (int i = 0; i < 10; ++i) {
+            std::cerr << filter[i] << " ";
+        }
+        std::cerr << std::endl;
+*/
 	knownFilters[peakToPole][m_filterLength][params.beta] = filter;
     }
 
@@ -83,6 +108,76 @@ Resampler::initialise()
 	      << std::endl;
 #endif
 
+    // Now we have a filter of (odd) length flen in which the lower
+    // sample rate corresponds to every n'th point and the higher rate
+    // to every m'th where n and m are higher and lower rates divided
+    // by their gcd respectively. So if x coordinates are on the same
+    // scale as our filter resolution, then source sample i is at i *
+    // (targetRate / gcd) and target sample j is at j * (sourceRate /
+    // gcd).
+
+    // To reconstruct a single target sample, we want a buffer (real
+    // or virtual) of flen values formed of source samples spaced at
+    // intervals of (targetRate / gcd), in our example case 3.  This
+    // is initially formed with the first sample at the filter peak.
+    //
+    // 0  0  0  0  a  0  0  b  0
+    //
+    // and of course we have our filter
+    //
+    // f1 f2 f3 f4 f5 f6 f7 f8 f9
+    //
+    // We take the sum of products of non-zero values from this buffer
+    // with corresponding values in the filter
+    //
+    // a * f5 + b * f8
+    //
+    // Then we drop (sourceRate / gcd) values, in our example case 4,
+    // from the start of the buffer and fill until it has flen values
+    // again
+    //
+    // a  0  0  b  0  0  c  0  0
+    //
+    // repeat to reconstruct the next target sample
+    //
+    // a * f1 + b * f4 + c * f7
+    //
+    // and so on.
+    //
+    // Above I said the buffer could be "real or virtual" -- ours is
+    // virtual. We don't actually store all the zero spacing values,
+    // except for padding at the start; normally we store only the
+    // values that actually came from the source stream, along with a
+    // phase value that tells us how many virtual zeroes there are at
+    // the start of the virtual buffer.  So the two examples above are
+    //
+    // 0 a b  [ with phase 1 ]
+    // a b c  [ with phase 0 ]
+    //
+    // Having thus broken down the buffer so that only the elements we
+    // need to multiply are present, we can also unzip the filter into
+    // every-nth-element subsets at each phase, allowing us to do the
+    // filter multiplication as a simply vector multiply. That is, rather
+    // than store
+    //
+    // f1 f2 f3 f4 f5 f6 f7 f8 f9
+    // 
+    // we store separately
+    //
+    // f1 f4 f7
+    // f2 f5 f8
+    // f3 f6 f9
+    //
+    // Each time we complete a multiply-and-sum, we need to work out
+    // how many (real) samples to drop from the start of our buffer,
+    // and how many to add at the end of it for the next multiply.  We
+    // know we want to drop enough real samples to move along by one
+    // computed output sample, which is our outputSpacing number of
+    // virtual buffer samples. Depending on the relationship between
+    // input and output spacings, this may mean dropping several real
+    // samples, one real sample, or none at all (and simply moving to
+    // a different "phase").
+
     m_phaseData = new Phase[inputSpacing];
 
     for (int phase = 0; phase < inputSpacing; ++phase) {
@@ -98,6 +193,7 @@ Resampler::initialise()
 
 	int filtZipLength = int(ceil(double(m_filterLength - phase)
 				     / inputSpacing));
+
 	for (int i = 0; i < filtZipLength; ++i) {
 	    p.filter.push_back(filter[i * inputSpacing + phase]);
 	}
@@ -122,14 +218,52 @@ Resampler::initialise()
     // else have a lengthy declared latency on the output. We do the
     // latter. (What do other implementations do?)
 
-    m_phase = (m_filterLength/2) % inputSpacing;
-    
-    m_buffer = vector<double>(m_phaseData[0].filter.size(), 0);
-    m_bufferOrigin = 0;
+    int centreToEnd = (m_filterLength/2) + 1; // from centre of filter
+                                              // to first sample after
+                                              // filter end
 
-    m_latency =
-	((m_buffer.size() * inputSpacing) - (m_filterLength/2)) / outputSpacing
-	+ m_phase;
+    // We want to make sure the first "real" sample will eventually be
+    // aligned with the centre sample in the filter (it's tidier, and
+    // easier to do diagnostic calculations that way). So we need to
+    // pick the initial phase and buffer fill accordingly.
+    // 
+    // Example: if the inputSpacing is 2, outputSpacing is 3, and
+    // filter length is 7,
+    // 
+    //    x     x     x     x     a     b     c ... input samples
+    // 0  1  2  3  4  5  6  7  8  9 10 11 12 13 ... 
+    //          i        j        k        l    ... output samples
+    // [--------|--------] <- filter with centre mark
+    //
+    // Let h be the index of the centre mark, here 3 (generally
+    // int(filterLength/2) for odd-length filters).
+    //
+    // The smallest n such that h + n * outputSpacing > filterLength
+    // is 2 (that is, ceil((filterLength - h) / outputSpacing)), and
+    // (h + 2 * outputSpacing) % inputSpacing == 1, so the initial
+    // phase is 1.
+    //
+    // To achieve our n, we need to pre-fill the "virtual" buffer with
+    // 4 zero samples: the x's above. This is int((h + n *
+    // outputSpacing) / inputSpacing). It's the phase that makes this
+    // buffer get dealt with in such a way as to give us an effective
+    // index for sample a of 9 rather than 8 or 10 or whatever.
+    //
+    // This gives us output latency of 2 (== n), i.e. output samples i
+    // and j will appear before the one in which input sample a is at
+    // the centre of the filter.
+
+    int h = int(m_filterLength / 2);
+    int n = ceil(double(m_filterLength - h) / outputSpacing);
+    
+    m_phase = (h + n * outputSpacing) % inputSpacing;
+
+    int fill = (h + n * outputSpacing) / inputSpacing;
+    
+    m_latency = n;
+
+    m_buffer = vector<double>(fill, 0);
+    m_bufferOrigin = 0;
 
 #ifdef DEBUG_RESAMPLER
     std::cerr << "initial phase " << m_phase << " (as " << (m_filterLength/2) << " % " << inputSpacing << ")"
@@ -143,8 +277,19 @@ Resampler::reconstructOne()
     Phase &pd = m_phaseData[m_phase];
     double v = 0.0;
     int n = pd.filter.size();
+
+    assert(n + m_bufferOrigin <= m_buffer.size());
+
     const double *const __restrict__ buf = m_buffer.data() + m_bufferOrigin;
     const double *const __restrict__ filt = pd.filter.data();
+
+//    std::cerr << "phase = " << m_phase << ", drop = " << pd.drop << ", buffer for reconstruction starts...";
+//    for (int i = 0; i < 20; ++i) {
+//        if (i % 5 == 0) std::cerr << "\n" << i << " ";
+//        std::cerr << buf[i] << " ";
+//    }
+//    std::cerr << std::endl;
+
     for (int i = 0; i < n; ++i) {
 	// NB gcc can only vectorize this with -ffast-math
 	v += buf[i] * filt[i];
@@ -220,17 +365,29 @@ Resampler::resample(int sourceRate, int targetRate, const double *data, int n)
 
 #ifdef DEBUG_RESAMPLER
     std::cerr << "resample: " << n << " in, " << got << " out" << std::endl;
-    for (int i = 0; i < got; ++i) {
-	if (i % 5 == 0) std::cout << std::endl << i << "... ";
-	std::cout << (float) out[i] << " ";
+    std::cerr << "first 10 in:" << std::endl;
+    for (int i = 0; i < 10; ++i) {
+        std::cerr << data[i] << " ";
+        if (i == 5) std::cerr << std::endl;
     }
-    std::cout << std::endl;
+    std::cerr << std::endl;
 #endif
 
     int toReturn = got - latency;
     if (toReturn > m) toReturn = m;
 
-    return vector<double>(out.begin() + latency, 
+    vector<double> sliced(out.begin() + latency, 
 			  out.begin() + latency + toReturn);
+
+#ifdef DEBUG_RESAMPLER
+    std::cerr << "all out (after latency compensation), length " << sliced.size() << ":";
+    for (int i = 0; i < sliced.size(); ++i) {
+	if (i % 5 == 0) std::cerr << std::endl << i << "... ";
+	std::cerr << sliced[i] << " ";
+    }
+    std::cerr << std::endl;
+#endif
+
+    return sliced;
 }
 

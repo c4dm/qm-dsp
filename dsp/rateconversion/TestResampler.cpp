@@ -93,7 +93,7 @@ testResampler(int sourceRate,
     delete[] outPadded;
     delete[] inPadded;
 }
-
+/*
 BOOST_AUTO_TEST_CASE(sameRateOneShot)
 {
     double d[] = { 0, 0.1, -0.3, -0.4, -0.3, 0, 0.5, 0.2, 0.8, -0.1 };
@@ -149,7 +149,7 @@ BOOST_AUTO_TEST_CASE(decimatedSine)
     }
     testResamplerOneShot(16, 8, 2000, in, 200, out, 256);
 }
-
+*/
 vector<double>
 squareWave(int rate, double freq, int n)
 {
@@ -204,20 +204,7 @@ testSpectrum(int inrate, int outrate)
     // Don't compare bins any higher than 99% of Nyquist freq of lower sr
     int lengthOfInterest = (inrate < outrate ? inrate : outrate) / 2;
     lengthOfInterest = lengthOfInterest - (lengthOfInterest / 100);
-/*
-    std::cerr << "inSpectrum:" << std::endl;
-    for (int i = 0; i < lengthOfInterest; ++i) {
-	if (i % 5 == 0) std::cerr << std::endl << i << ": ";
-	std::cerr << inSpectrum[i] << " ";
-    }
 
-    std::cerr << "\noutSpectrum:" << std::endl;
-    for (int i = 0; i < lengthOfInterest; ++i) {
-	if (i % 5 == 0) std::cerr << std::endl << i << ": ";
-	std::cerr << outSpectrum[i] << " ";
-    }
-    std::cerr << std::endl;
-*/
     for (int i = 0; i < lengthOfInterest; ++i) {
 	BOOST_CHECK_SMALL(inSpectrum[i] - outSpectrum[i], 1e-7);
     }
