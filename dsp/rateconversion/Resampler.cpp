@@ -70,28 +70,7 @@ Resampler::initialise()
 	for (int i = 0; i < m_filterLength; ++i) filter[i] = 1.0;
 	sw.cut(filter.data());
 	kw.cut(filter.data());
-/*
-        std::cerr << "sinc for " << params.length << ", " << params.beta 
-                  << ": ";
-        for (int i = 0; i < 10; ++i) {
-            std::cerr << sw.getWindow()[i] << " ";
-        }
-        std::cerr << std::endl;
 
-        std::cerr << "kaiser for " << params.length << ", " << params.beta 
-                  << ": ";
-        for (int i = 0; i < 10; ++i) {
-            std::cerr << kw.getWindow()[i] << " ";
-        }
-        std::cerr << std::endl;
-
-        std::cerr << "filter for " << params.length << ", " << params.beta 
-                  << ": ";
-        for (int i = 0; i < 10; ++i) {
-            std::cerr << filter[i] << " ";
-        }
-        std::cerr << std::endl;
-*/
 	knownFilters[peakToPole][m_filterLength][params.beta] = filter;
     }
 
@@ -217,11 +196,7 @@ Resampler::initialise()
     // until the filter fills, then half the filter length at once) or
     // else have a lengthy declared latency on the output. We do the
     // latter. (What do other implementations do?)
-
-    int centreToEnd = (m_filterLength/2) + 1; // from centre of filter
-                                              // to first sample after
-                                              // filter end
-
+    //
     // We want to make sure the first "real" sample will eventually be
     // aligned with the centre sample in the filter (it's tidier, and
     // easier to do diagnostic calculations that way). So we need to
@@ -278,7 +253,7 @@ Resampler::reconstructOne()
     double v = 0.0;
     int n = pd.filter.size();
 
-    assert(n + m_bufferOrigin <= m_buffer.size());
+    assert(n + m_bufferOrigin <= (int)m_buffer.size());
 
     const double *const __restrict__ buf = m_buffer.data() + m_bufferOrigin;
     const double *const __restrict__ filt = pd.filter.data();
@@ -341,7 +316,7 @@ Resampler::resample(int sourceRate, int targetRate, const double *data, int n)
     // padding input samples at the end of input to guarantee at
     // *least* the latency's worth of output samples. that is,
 
-    int inputPad = int(ceil(double(latency * sourceRate) / targetRate));
+    int inputPad = int(ceil((double(latency) * sourceRate) / targetRate));
 
     // that means we are providing this much input in total:
 
@@ -349,13 +324,13 @@ Resampler::resample(int sourceRate, int targetRate, const double *data, int n)
 
     // and obtaining this much output in total:
 
-    int m1 = int(ceil(double(n1 * targetRate) / sourceRate));
+    int m1 = int(ceil((double(n1) * targetRate) / sourceRate));
 
     // in order to return this much output to the user:
 
-    int m = int(ceil(double(n * targetRate) / sourceRate));
+    int m = int(ceil((double(n) * targetRate) / sourceRate));
     
-//    std::cerr << "n = " << n << ", sourceRate = " << sourceRate << ", targetRate = " << targetRate << ", m = " << m << ", latency = " << latency << ", m1 = " << m1 << ", n1 = " << n1 << ", n1 - n = " << n1 - n << std::endl;
+//    std::cerr << "n = " << n << ", sourceRate = " << sourceRate << ", targetRate = " << targetRate << ", m = " << m << ", latency = " << latency << ", inputPad = " << inputPad << ", m1 = " << m1 << ", n1 = " << n1 << ", n1 - n = " << n1 - n << std::endl;
 
     vector<double> pad(n1 - n, 0.0);
     vector<double> out(m1 + 1, 0.0);

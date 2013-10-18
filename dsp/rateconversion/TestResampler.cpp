@@ -35,7 +35,7 @@ testResamplerOneShot(int sourceRate,
 	BOOST_CHECK_EQUAL(resampled.size(), m);
     }
     for (int i = 0; i < m; ++i) {
-	BOOST_CHECK_SMALL(resampled[i + skip] - expected[i], 1e-8);
+	BOOST_CHECK_SMALL(resampled[i + skip] - expected[i], 1e-6);
     }
 }
 
@@ -93,7 +93,7 @@ testResampler(int sourceRate,
     delete[] outPadded;
     delete[] inPadded;
 }
-/*
+
 BOOST_AUTO_TEST_CASE(sameRateOneShot)
 {
     double d[] = { 0, 0.1, -0.3, -0.4, -0.3, 0, 0.5, 0.2, 0.8, -0.1 };
@@ -149,7 +149,7 @@ BOOST_AUTO_TEST_CASE(decimatedSine)
     }
     testResamplerOneShot(16, 8, 2000, in, 200, out, 256);
 }
-*/
+
 vector<double>
 squareWave(int rate, double freq, int n)
 {
@@ -172,12 +172,8 @@ testSpectrum(int inrate, int outrate)
     // One second of a square wave
     int freq = 500;
 
-    std::cerr << "inrate = " << inrate << ", outrate = " << outrate << ", freq * outrate / inrate = " << (double(freq) * double(outrate)) / double(inrate) << std::endl;
-
-    std::cerr << "making square wave... ";
     vector<double> square =
 	squareWave(inrate, freq, inrate);
-    std::cerr << "done" << std::endl;
 
     vector<double> maybeSquare = 
 	Resampler::resample(inrate, outrate, square.data(), square.size());
@@ -191,13 +187,13 @@ testSpectrum(int inrate, int outrate)
 
     vector<double> inSpectrum(inrate, 0.0);
     FFTReal(inrate).forwardMagnitude(square.data(), inSpectrum.data());
-    for (int i = 0; i < inSpectrum.size(); ++i) {
+    for (int i = 0; i < (int)inSpectrum.size(); ++i) {
 	inSpectrum[i] /= inrate;
     }
 
     vector<double> outSpectrum(outrate, 0.0);
     FFTReal(outrate).forwardMagnitude(maybeSquare.data(), outSpectrum.data());
-    for (int i = 0; i < outSpectrum.size(); ++i) {
+    for (int i = 0; i < (int)outSpectrum.size(); ++i) {
 	outSpectrum[i] /= outrate;
     }
 
@@ -213,8 +209,8 @@ testSpectrum(int inrate, int outrate)
 BOOST_AUTO_TEST_CASE(spectrum)
 {
     int rates[] = { 8000, 22050, 44100, 48000 };
-    for (int i = 0; i < sizeof(rates)/sizeof(rates[0]); ++i) {
-	for (int j = 0; j < sizeof(rates)/sizeof(rates[0]); ++j) {
+    for (int i = 0; i < (int)(sizeof(rates)/sizeof(rates[0])); ++i) {
+	    for (int j = 0; j < (int)(sizeof(rates)/sizeof(rates[0])); ++j) {
 	    testSpectrum(rates[i], rates[j]);
 	}
     }
