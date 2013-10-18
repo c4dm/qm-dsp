@@ -13,6 +13,14 @@ public:
      * targetRate.
      */
     Resampler(int sourceRate, int targetRate);
+
+    /**
+     * Construct a Resampler to resample from sourceRate to
+     * targetRate, using the given filter parameters.
+     */
+    Resampler(int sourceRate, int targetRate,
+              double snr, double bandwidth);
+
     virtual ~Resampler();
 
     /**
@@ -57,7 +65,7 @@ private:
     std::vector<double> m_buffer;
     int m_bufferOrigin;
 
-    void initialise();
+    void initialise(double, double);
     double reconstructOne();
 };
 

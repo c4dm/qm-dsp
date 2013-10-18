@@ -21,7 +21,15 @@ Resampler::Resampler(int sourceRate, int targetRate) :
     m_sourceRate(sourceRate),
     m_targetRate(targetRate)
 {
-    initialise();
+    initialise(100, 0.02);
+}
+
+Resampler::Resampler(int sourceRate, int targetRate, 
+                     double snr, double bandwidth) :
+    m_sourceRate(sourceRate),
+    m_targetRate(targetRate)
+{
+    initialise(snr, bandwidth);
 }
 
 Resampler::~Resampler()
@@ -37,7 +45,7 @@ static Mutex
 knownFilterMutex;
 
 void
-Resampler::initialise()
+Resampler::initialise(double snr, double bandwidth)
 {
     int higher = std::max(m_sourceRate, m_targetRate);
     int lower = std::min(m_sourceRate, m_targetRate);
@@ -47,7 +55,7 @@ Resampler::initialise()
     int peakToPole = higher / m_gcd;
 
     KaiserWindow::Parameters params =
-	KaiserWindow::parametersForBandwidth(100, 0.02, peakToPole);
+	KaiserWindow::parametersForBandwidth(snr, bandwidth, peakToPole);
 
     params.length =
 	(params.length % 2 == 0 ? params.length + 1 : params.length);
@@ -269,6 +277,7 @@ Resampler::reconstructOne()
 	// NB gcc can only vectorize this with -ffast-math
 	v += buf[i] * filt[i];
     }
+
     m_bufferOrigin += pd.drop;
     m_phase = pd.nextPhase;
     return v;
