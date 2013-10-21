@@ -15,6 +15,12 @@
 #ifndef DECIMATOR_H
 #define DECIMATOR_H
 
+/**
+ * Decimator carries out a fast downsample by a power-of-two
+ * factor. Only a limited number of factors are supported, from two to
+ * whatever getHighestSupportedFactor() returns. This is much faster
+ * than Resampler but has a worse signal-noise ratio.
+ */
 class Decimator  
 {
 public:

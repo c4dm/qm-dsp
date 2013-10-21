@@ -1,10 +1,32 @@
 /* -*- c-basic-offset: 4 indent-tabs-mode: nil -*-  vi:set ts=8 sts=4 sw=4: */
+/*
+    QM DSP Library
+
+    Centre for Digital Music, Queen Mary, University of London.
+    This file by Chris Cannam.
+
+    This program is free software; you can redistribute it and/or
+    modify it under the terms of the GNU General Public License as
+    published by the Free Software Foundation; either version 2 of the
+    License, or (at your option) any later version.  See the file
+    COPYING included with this distribution for more information.
+*/
 
 #ifndef RESAMPLER_H
 #define RESAMPLER_H
 
 #include <vector>
 
+/**
+ * Resampler resamples a stream from one integer sample rate to
+ * another (arbitrary) rate, using a kaiser-windowed sinc filter.  The
+ * results and performance are pretty similar to libraries such as
+ * libsamplerate, though this implementation does not support
+ * time-varying ratios (the ratio is fixed on construction).
+ *
+ * See also Decimator, which is faster and rougher but supports only
+ * power-of-two downsampling factors.
+ */
 class Resampler
 {
 public:

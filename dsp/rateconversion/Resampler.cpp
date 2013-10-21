@@ -1,11 +1,23 @@
 /* -*- c-basic-offset: 4 indent-tabs-mode: nil -*-  vi:set ts=8 sts=4 sw=4: */
+/*
+    QM DSP Library
+
+    Centre for Digital Music, Queen Mary, University of London.
+    This file by Chris Cannam.
+
+    This program is free software; you can redistribute it and/or
+    modify it under the terms of the GNU General Public License as
+    published by the Free Software Foundation; either version 2 of the
+    License, or (at your option) any later version.  See the file
+    COPYING included with this distribution for more information.
+*/
 
 #include "Resampler.h"
 
-#include "qm-dsp/maths/MathUtilities.h"
-#include "qm-dsp/base/KaiserWindow.h"
-#include "qm-dsp/base/SincWindow.h"
-#include "qm-dsp/thread/Thread.h"
+#include "maths/MathUtilities.h"
+#include "base/KaiserWindow.h"
+#include "base/SincWindow.h"
+#include "thread/Thread.h"
 
 #include <iostream>
 #include <vector>

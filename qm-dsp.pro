@@ -60,6 +60,7 @@ HEADERS += base/Pitch.h \
            dsp/onsets/PeakPicking.h \
            dsp/phasevocoder/PhaseVocoder.h \
            dsp/rateconversion/Decimator.h \
+           dsp/rateconversion/Resampler.h \
            dsp/rhythm/BeatSpectrum.h \
            dsp/segmentation/cluster_melt.h \
            dsp/segmentation/ClusterMeltSegmenter.h \
@@ -102,6 +103,7 @@ SOURCES += base/Pitch.cpp \
            dsp/onsets/PeakPicking.cpp \
            dsp/phasevocoder/PhaseVocoder.cpp \
            dsp/rateconversion/Decimator.cpp \
+           dsp/rateconversion/Resampler.cpp \
            dsp/rhythm/BeatSpectrum.cpp \
            dsp/segmentation/cluster_melt.c \
            dsp/segmentation/ClusterMeltSegmenter.cpp \

@@ -5,7 +5,7 @@ CXXFLAGS := -I.. -Wall -g $(CXXFLAGS)
 LDFLAGS := $(LDFLAGS) -lboost_unit_test_framework
 LIBS := ../libqm-dsp.a
 
-TESTS	:= test-mathutilities test-window test-fft test-pvoc
+TESTS	:= test-mathutilities test-window test-fft test-pvoc test-resampler
 
 #VG	:= valgrind
 
@@ -24,10 +24,14 @@ test-fft: TestFFT.o $(LIBS)
 test-pvoc: TestPhaseVocoder.o $(LIBS)
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
+test-resampler: TestResampler.o $(LIBS)
+	$(CXX) -o $@ $^ $(LDFLAGS)
+
 TestMathUtilities.o: $(LIBS)
 TestWindow.o: $(LIBS)
 TestFFT.o: $(LIBS)
 TestPhaseVocoder.o: $(LIBS)
+TestResampler.o: $(LIBS)
 
 clean: 
 	rm -f *.o $(TESTS)

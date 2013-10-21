@@ -1,9 +1,9 @@
 /* -*- c-basic-offset: 4 indent-tabs-mode: nil -*-  vi:set ts=8 sts=4 sw=4: */
 
-#include "Resampler.h"
+#include "dsp/rateconversion/Resampler.h"
 
-#include "qm-dsp/base/Window.h"
-#include "qm-dsp/dsp/transforms/FFT.h"
+#include "base/Window.h"
+#include "dsp/transforms/FFT.h"
 
 #include <iostream>
 
