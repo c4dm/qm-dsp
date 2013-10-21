@@ -19,7 +19,7 @@
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
 
-FiltFilt::FiltFilt( FiltFiltConfig Config )
+FiltFilt::FiltFilt( FilterConfig Config )
 {
     m_filtScratchIn = NULL;
     m_filtScratchOut = NULL;
@@ -33,7 +33,7 @@ FiltFilt::~FiltFilt()
     deInitialise();
 }
 
-void FiltFilt::initialise( FiltFiltConfig Config )
+void FiltFilt::initialise( FilterConfig Config )
 {
     m_ord = Config.ord;
     m_filterConfig.ord = Config.ord;

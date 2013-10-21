@@ -68,7 +68,7 @@ private:
     double* m_filtScratchIn;
     double* m_filtScratchOut;
 
-    FiltFiltConfig m_FilterConfigParams;
+    FilterConfig m_FilterConfigParams;
 
     FiltFilt* m_FiltFilt;
 

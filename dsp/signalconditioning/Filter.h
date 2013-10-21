@@ -20,12 +20,21 @@
 #define NULL 0
 #endif
 
+/**
+ * Filter specification. For a filter of order ord, the ACoeffs and
+ * BCoeffs arrays must point to ord+1 values each. ACoeffs provides
+ * the denominator and BCoeffs the numerator coefficients of the
+ * filter.
+ */
 struct FilterConfig{
     unsigned int ord;
     double* ACoeffs;
     double* BCoeffs;
 };
 
+/**
+ * Digital filter specified through FilterConfig structure.
+ */
 class Filter  
 {
 public:
@@ -35,7 +44,6 @@ public:
     void reset();
 
     void process( double *src, double *dst, unsigned int length );
-	
 
 private:
     void initialise( FilterConfig Config );
