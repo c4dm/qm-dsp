@@ -1,6 +1,6 @@
 
 TEMPLATE = lib
-CONFIG += staticlib warn_on debug
+CONFIG += staticlib warn_on release
 CONFIG -= qt
 OBJECTS_DIR = tmp_obj
 MOC_DIR = tmp_moc
@@ -12,7 +12,7 @@ QMAKE_CXXFLAGS += -Dkiss_fft_scalar=double
 INCLUDEPATH += ./ext/kissfft/tools ./ext/kissfft
 
 linux-g++* {
-    QMAKE_CXXFLAGS_RELEASE += -DNDEBUG -O3 -fno-exceptions -fPIC -ffast-math -msse -mfpmath=sse -ftree-vectorize -fomit-frame-pointer
+    QMAKE_CXXFLAGS_RELEASE += -DNDEBUG -O3 -fPIC -ffast-math -msse -mfpmath=sse -ftree-vectorize -fomit-frame-pointer
     DEFINES += USE_PTHREADS
     INCLUDEPATH += ../vamp-plugin-sdk ../qm-dsp
     LIBPATH += ../vamp-plugin-sdk/vamp-sdk ../qm-dsp
