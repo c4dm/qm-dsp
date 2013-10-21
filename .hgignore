@@ -3,3 +3,7 @@ syntax: glob
 *~
 *.orig
 *.a
+doc/html/
+tests/test-*
+*.rej
+
