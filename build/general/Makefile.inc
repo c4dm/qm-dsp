@@ -5,11 +5,13 @@ CC	?= gcc
 AR	?= ar
 RANLIB	?= ranlib
 
-CFLAGS	:= $(CFLAGS) -I.
-CXXFLAGS	:= $(CXXFLAGS) -I.
+CFLAGS	:= $(CFLAGS) -I. -Iext/kissfft -Iext/kissfft/tools -Dkiss_fft_scalar=double
+CXXFLAGS	:= $(CXXFLAGS) -I. -Iext/kissfft -Iext/kissfft/tools -Dkiss_fft_scalar=double
 
 HEADERS := base/Pitch.h \
            base/Window.h \
+           base/KaiserWindow.h \
+           base/SincWindow.h \
            dsp/chromagram/Chromagram.h \
            dsp/chromagram/ConstantQ.h \
            dsp/keydetection/GetKeyMode.h \
@@ -18,6 +20,7 @@ HEADERS := base/Pitch.h \
            dsp/onsets/PeakPicking.h \
            dsp/phasevocoder/PhaseVocoder.h \
            dsp/rateconversion/Decimator.h \
+           dsp/rateconversion/Resampler.h \
            dsp/rhythm/BeatSpectrum.h \
            dsp/segmentation/cluster_melt.h \
            dsp/segmentation/ClusterMeltSegmenter.h \
@@ -46,9 +49,13 @@ HEADERS := base/Pitch.h \
            maths/pca/pca.h \
            thread/AsynchronousTask.h \
            thread/BlockAllocator.h \
-           thread/Thread.h
+           thread/Thread.h \
+           ext/kissfft/kiss_fft.h \
+           ext/kissfft/tools/kiss_fftr.h
 
 SOURCES := base/Pitch.cpp \
+           base/KaiserWindow.cpp \
+           base/SincWindow.cpp \
            dsp/chromagram/Chromagram.cpp \
            dsp/chromagram/ConstantQ.cpp \
            dsp/keydetection/GetKeyMode.cpp \
@@ -57,6 +64,7 @@ SOURCES := base/Pitch.cpp \
            dsp/onsets/PeakPicking.cpp \
            dsp/phasevocoder/PhaseVocoder.cpp \
            dsp/rateconversion/Decimator.cpp \
+           dsp/rateconversion/Resampler.cpp \
            dsp/rhythm/BeatSpectrum.cpp \
            dsp/segmentation/cluster_melt.c \
            dsp/segmentation/ClusterMeltSegmenter.cpp \
@@ -80,7 +88,9 @@ SOURCES := base/Pitch.cpp \
            maths/KLDivergence.cpp \
            maths/MathUtilities.cpp \
            maths/pca/pca.c \
-           thread/Thread.cpp
+           thread/Thread.cpp \
+           ext/kissfft/kiss_fft.c \
+           ext/kissfft/tools/kiss_fftr.c
 
 OBJECTS := $(SOURCES:.cpp=.o)
 OBJECTS := $(OBJECTS:.c=.o)
@@ -90,7 +100,7 @@ $(LIBRARY):	$(OBJECTS)
 		$(RANLIB) $@
 
 clean:		
-		rm $(OBJECTS)
+		rm -f $(OBJECTS)
 
 distclean:	clean
-		rm $(LIBRARY)
+		rm -f $(LIBRARY)
