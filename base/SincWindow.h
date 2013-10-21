@@ -16,6 +16,10 @@
 
 #include <vector>
 
+/**
+ * A window containing values of the sinc function, i.e. sin(x)/x with
+ * sinc(0) == 1, with x == 0 at the centre.
+ */
 class SincWindow
 {
 public:

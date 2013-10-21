@@ -17,6 +17,11 @@
 #include <vector>
 #include <cmath>
 
+/**
+ * Kaiser window: A windower whose bandwidth and sidelobe height
+ * (signal-noise ratio) can be specified. These parameters are traded
+ * off against the window length.
+ */
 class KaiserWindow
 {
 public:

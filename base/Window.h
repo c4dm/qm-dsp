@@ -30,6 +30,10 @@ enum WindowType {
     LastWindow = BlackmanWindow
 };
 
+/**
+ * Various shaped windows for sample frame conditioning, including
+ * cosine windows (Hann etc) and triangular and rectangular windows.
+ */
 template <typename T>
 class Window
 {
