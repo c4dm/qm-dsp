@@ -119,6 +119,18 @@ BOOST_AUTO_TEST_CASE(blackman)
     };
     testWindow<10>(BlackmanWindow, e10);
 }
+    
+BOOST_AUTO_TEST_CASE(blackmanHarris)
+{
+    double e1[] = { 1 };
+    testWindow<1>(BlackmanHarrisWindow, e1);
+
+    double e10[] = {
+        0.0001, 0.0110, 0.1030, 0.3859, 0.7938,
+        1.0000, 0.7938, 0.3859, 0.1030, 0.0110,
+    };
+    testWindow<10>(BlackmanHarrisWindow, e10);
+}
 
 BOOST_AUTO_TEST_CASE(kaiser_4_10)
 {

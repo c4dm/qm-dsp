@@ -18,6 +18,7 @@
 #include <cmath>
 #include <iostream>
 #include <map>
+#include <vector>
 
 enum WindowType {
     RectangularWindow,
@@ -25,9 +26,10 @@ enum WindowType {
     HammingWindow,
     HanningWindow,
     BlackmanWindow,
+    BlackmanHarrisWindow,
 
     FirstWindow = RectangularWindow,
-    LastWindow = BlackmanWindow
+    LastWindow = BlackmanHarrisWindow
 };
 
 /**
@@ -45,7 +47,7 @@ public:
      * than symmetrical. (A window of size N is equivalent to a
      * symmetrical window of size N+1 with the final element missing.)
      */
-    Window(WindowType type, size_t size) : m_type(type), m_size(size) { encache(); }
+    Window(WindowType type, int size) : m_type(type), m_size(size) { encache(); }
     Window(const Window &w) : m_type(w.m_type), m_size(w.m_size) { encache(); }
     Window &operator=(const Window &w) {
 	if (&w == this) return *this;
@@ -58,15 +60,23 @@ public:
     
     void cut(T *src) const { cut(src, src); }
     void cut(const T *src, T *dst) const {
-	for (size_t i = 0; i < m_size; ++i) dst[i] = src[i] * m_cache[i];
+	for (int i = 0; i < m_size; ++i) dst[i] = src[i] * m_cache[i];
     }
 
     WindowType getType() const { return m_type; }
-    size_t getSize() const { return m_size; }
+    int getSize() const { return m_size; }
+
+    std::vector<T> getWindowData() const {
+        std::vector<T> d;
+        for (int i = 0; i < m_size; ++i) {
+            d.push_back(m_cache[i]);
+        }
+        return d;
+    }
 
 protected:
     WindowType m_type;
-    size_t m_size;
+    int m_size;
     T *m_cache;
     
     void encache();
@@ -75,9 +85,9 @@ protected:
 template <typename T>
 void Window<T>::encache()
 {
-    size_t n = m_size;
+    int n = m_size;
     T *mult = new T[n];
-    size_t i;
+    int i;
     for (i = 0; i < n; ++i) mult[i] = 1.0;
 
     switch (m_type) {
@@ -123,6 +133,17 @@ void Window<T>::encache()
             for (i = 0; i < n; ++i) {
                 mult[i] = mult[i] * (0.42 - 0.50 * cos(2 * M_PI * i / n)
                                      + 0.08 * cos(4 * M_PI * i / n));
+            }
+	}
+	break;
+	    
+    case BlackmanHarrisWindow:
+        if (n > 1) {
+            for (i = 0; i < n; ++i) {
+                mult[i] = mult[i] * (0.35875
+                                     - 0.48829 * cos(2 * M_PI * i / n)
+                                     + 0.14128 * cos(4 * M_PI * i / n)
+                                     - 0.01168 * cos(6 * M_PI * i / n));
             }
 	}
 	break;
