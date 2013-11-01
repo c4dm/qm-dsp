@@ -121,6 +121,29 @@ BOOST_AUTO_TEST_CASE(r_dc)
     COMPARE_ARRAY(back, in);
 }
 
+BOOST_AUTO_TEST_CASE(c_dc)
+{
+    // DC-only signal. The DC bin is purely real
+    double rin[] = { 1, 1, 1, 1 };
+    double iin[] = { 1, 1, 1, 1 };
+    double re[] = { 999, 999, 999, 999 };
+    double im[] = { 999, 999, 999, 999 };
+    FFT(4).process(false, rin, iin, re, im);
+    BOOST_CHECK_EQUAL(re[0], 4.0);
+    BOOST_CHECK_EQUAL(re[1], 0.0);
+    BOOST_CHECK_EQUAL(re[2], 0.0);
+    BOOST_CHECK_EQUAL(re[3], 0.0);
+    BOOST_CHECK_EQUAL(im[0], 4.0);
+    BOOST_CHECK_EQUAL(im[1], 0.0);
+    BOOST_CHECK_EQUAL(im[2], 0.0);
+    BOOST_CHECK_EQUAL(im[3], 0.0);
+    double back[4];
+    double backim[4];
+    FFT(4).process(true, re, im, back, backim);
+    COMPARE_ARRAY(back, rin);
+    COMPARE_ARRAY(backim, iin);
+}
+
 BOOST_AUTO_TEST_CASE(sine)
 {
     // Sine. Output is purely imaginary
@@ -198,6 +221,29 @@ BOOST_AUTO_TEST_CASE(r_cosine)
     FFTReal(4).inverse(re, im, back);
     COMPARE_ARRAY(back, in);
 }
+
+BOOST_AUTO_TEST_CASE(c_cosine)
+{
+    // Cosine. Output is purely real
+    double rin[] = { 1, 0, -1, 0 };
+    double iin[] = { 1, 0, -1, 0 };
+    double re[] = { 999, 999, 999, 999 };
+    double im[] = { 999, 999, 999, 999 };
+    FFT(4).process(false, rin, iin, re, im);
+    BOOST_CHECK_EQUAL(re[0], 0.0);
+    BOOST_CHECK_EQUAL(re[1], 2.0);
+    BOOST_CHECK_EQUAL(re[2], 0.0);
+    BOOST_CHECK_EQUAL(re[3], 2.0);
+    BOOST_CHECK_EQUAL(im[0], 0.0);
+    BOOST_CHECK_EQUAL(im[1], 2.0);
+    BOOST_CHECK_EQUAL(im[2], 0.0);
+    BOOST_CHECK_EQUAL(im[3], 2.0);
+    double back[4];
+    double backim[4];
+    FFT(4).process(true, re, im, back, backim);
+    COMPARE_ARRAY(back, rin);
+    COMPARE_ARRAY(backim, iin);
+}
 	
 BOOST_AUTO_TEST_CASE(sineCosine)
 {
@@ -242,6 +288,25 @@ BOOST_AUTO_TEST_CASE(r_sineCosine)
     im[3] = 999;
     FFTReal(4).inverse(re, im, back);
     COMPARE_ARRAY(back, in);
+}
+	
+BOOST_AUTO_TEST_CASE(c_sineCosine)
+{
+    double rin[] = { 1, 0, -1, 0 };
+    double iin[] = { 0, 1, 0, -1 };
+    double re[] = { 999, 999, 999, 999 };
+    double im[] = { 999, 999, 999, 999 };
+    FFT(4).process(false, rin, iin, re, im);
+    BOOST_CHECK_EQUAL(re[0], 0.0);
+    BOOST_CHECK_EQUAL(re[1], 4.0);
+    BOOST_CHECK_EQUAL(re[2], 0.0);
+    BOOST_CHECK_EQUAL(re[3], 0.0);
+    COMPARE_CONST(im, 0.0);
+    double back[4];
+    double backim[4];
+    FFT(4).process(true, re, im, back, backim);
+    COMPARE_ARRAY(back, rin);
+    COMPARE_ARRAY(backim, iin);
 }
 
 BOOST_AUTO_TEST_CASE(nyquist)
