@@ -50,7 +50,7 @@ Resampler::~Resampler()
 }
 
 // peakToPole -> length -> beta -> window
-static map<int, map<int, map<double, vector<double> > > >
+static map<double, map<int, map<double, vector<double> > > >
 knownFilters;
 
 static Mutex
@@ -63,11 +63,15 @@ Resampler::initialise(double snr, double bandwidth)
     int lower = std::min(m_sourceRate, m_targetRate);
 
     m_gcd = MathUtilities::gcd(lower, higher);
+    m_peakToPole = higher / m_gcd;
 
-    int peakToPole = higher / m_gcd;
+    if (m_targetRate < m_sourceRate) {
+        // antialiasing filter, should be slightly below nyquist
+        m_peakToPole = m_peakToPole / (1.0 - bandwidth/2.0);
+    }
 
     KaiserWindow::Parameters params =
-	KaiserWindow::parametersForBandwidth(snr, bandwidth, peakToPole);
+	KaiserWindow::parametersForBandwidth(snr, bandwidth, higher / m_gcd);
 
     params.length =
 	(params.length % 2 == 0 ? params.length + 1 : params.length);
@@ -80,21 +84,21 @@ Resampler::initialise(double snr, double bandwidth)
     vector<double> filter;
     knownFilterMutex.lock();
 
-    if (knownFilters[peakToPole][m_filterLength].find(params.beta) ==
-	knownFilters[peakToPole][m_filterLength].end()) {
+    if (knownFilters[m_peakToPole][m_filterLength].find(params.beta) ==
+	knownFilters[m_peakToPole][m_filterLength].end()) {
 
 	KaiserWindow kw(params);
-	SincWindow sw(m_filterLength, peakToPole * 2);
+	SincWindow sw(m_filterLength, m_peakToPole * 2);
 
 	filter = vector<double>(m_filterLength, 0.0);
 	for (int i = 0; i < m_filterLength; ++i) filter[i] = 1.0;
 	sw.cut(filter.data());
 	kw.cut(filter.data());
 
-	knownFilters[peakToPole][m_filterLength][params.beta] = filter;
+	knownFilters[m_peakToPole][m_filterLength][params.beta] = filter;
     }
 
-    filter = knownFilters[peakToPole][m_filterLength][params.beta];
+    filter = knownFilters[m_peakToPole][m_filterLength][params.beta];
     knownFilterMutex.unlock();
 
     int inputSpacing = m_targetRate / m_gcd;
@@ -309,10 +313,7 @@ Resampler::process(const double *src, double *dst, int n)
     std::cerr << "process: buf siz " << m_buffer.size() << " filt siz for phase " << m_phase << " " << m_phaseData[m_phase].filter.size() << std::endl;
 #endif
 
-    double scaleFactor = 1.0;
-    if (m_targetRate < m_sourceRate) {
-	scaleFactor = double(m_targetRate) / double(m_sourceRate);
-    }
+    double scaleFactor = (double(m_targetRate) / m_gcd) / m_peakToPole;
 
     while (outidx < maxout &&
 	   m_buffer.size() >= m_phaseData[m_phase].filter.size() + m_bufferOrigin) {

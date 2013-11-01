@@ -197,9 +197,9 @@ testSpectrum(int inrate, int outrate)
 	outSpectrum[i] /= outrate;
     }
 
-    // Don't compare bins any higher than 99% of Nyquist freq of lower sr
+    // Don't compare bins any higher than 96% of Nyquist freq of lower sr
     int lengthOfInterest = (inrate < outrate ? inrate : outrate) / 2;
-    lengthOfInterest = lengthOfInterest - (lengthOfInterest / 100);
+    lengthOfInterest = lengthOfInterest - (lengthOfInterest / 25);
 
     for (int i = 0; i < lengthOfInterest; ++i) {
 	BOOST_CHECK_SMALL(inSpectrum[i] - outSpectrum[i], 1e-7);

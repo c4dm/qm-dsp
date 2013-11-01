@@ -75,6 +75,7 @@ private:
     int m_filterLength;
     int m_bufferLength;
     int m_latency;
+    double m_peakToPole;
     
     struct Phase {
         int nextPhase;
