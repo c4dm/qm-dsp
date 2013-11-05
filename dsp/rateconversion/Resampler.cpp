@@ -328,6 +328,17 @@ Resampler::process(const double *src, double *dst, int n)
 }
     
 std::vector<double>
+Resampler::process(const double *src, int n)
+{
+    int maxout = int(ceil(double(n) * m_targetRate / m_sourceRate));
+    std::vector<double> out(maxout, 0.0);
+    int got = process(src, out.data(), n);
+    assert(got <= maxout);
+    if (got < maxout) out.resize(got);
+    return out;
+}
+
+std::vector<double>
 Resampler::resample(int sourceRate, int targetRate, const double *data, int n)
 {
     Resampler r(sourceRate, targetRate);

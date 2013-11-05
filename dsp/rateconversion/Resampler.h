@@ -55,6 +55,12 @@ public:
     int process(const double *src, double *dst, int n);
 
     /**
+     * Read n input samples from src and return resampled data by
+     * value.
+     */
+    std::vector<double> process(const double *src, int n);
+
+    /**
      * Return the number of samples of latency at the output due by
      * the filter. (That is, the output will be delayed by this number
      * of samples relative to the input.)
