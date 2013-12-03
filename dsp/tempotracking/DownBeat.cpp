@@ -44,7 +44,10 @@ DownBeat::DownBeat(float originalSampleRate,
     // 16x decimation, which is our expected normal situation)
     m_beatframesize = MathUtilities::nextPowerOfTwo
         (int((m_rate / decimationFactor) * 1.3));
-//    std::cerr << "rate = " << m_rate << ", bfs = " << m_beatframesize << std::endl;
+    if (m_beatframesize < 2) {
+        m_beatframesize = 2;
+    }
+//    std::cerr << "rate = " << m_rate << ", dec = " << decimationFactor << ", bfs = " << m_beatframesize << std::endl;
     m_beatframe = new double[m_beatframesize];
     m_fftRealOut = new double[m_beatframesize];
     m_fftImagOut = new double[m_beatframesize];
