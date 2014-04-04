@@ -46,6 +46,7 @@ HEADERS := base/Pitch.h \
            maths/KLDivergence.h \
            maths/MathAliases.h \
            maths/MathUtilities.h \
+	   maths/MedianFilter.h \
            maths/Polyfit.h \
            maths/pca/pca.h \
            thread/AsynchronousTask.h \
