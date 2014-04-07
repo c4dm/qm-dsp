@@ -92,6 +92,85 @@ BOOST_AUTO_TEST_CASE(even75)
     BOOST_CHECK_EQUAL(f.get(), 7);
 }
 
+BOOST_AUTO_TEST_CASE(oddStandalone)
+{
+    // The standalone (static filter() method) function is intended to
+    // match e.g. MATLAB median filter, filtering a row at once
+    // assuming the values beyond its edges are zeroes. This basically
+    // just means it needs to compensate for the latency in the raw
+    // filter:
+    //
+    // Raw filter
+    //    1 3 5 7   ->   0 1 3 5    (N=3)
+    // (because at each step only the values up to that step are
+    // available)
+    //
+    // Standalone function:
+    //    1 3 5 7   ->   1 3 5 5    (N=3)
+    
+    std::vector<double> in;
+    in.push_back(1);
+    in.push_back(3);
+    in.push_back(5);
+    in.push_back(7);
+
+    std::vector<double> out = MedianFilter<double>::filter(3, in);
+    BOOST_CHECK_EQUAL(out[0], 1);
+    BOOST_CHECK_EQUAL(out[1], 3);
+    BOOST_CHECK_EQUAL(out[2], 5);
+    BOOST_CHECK_EQUAL(out[3], 5);
+}
+
+BOOST_AUTO_TEST_CASE(evenStandalone)
+{
+    // See above. But note that the even length does not match the
+    // MATLAB because it doesn't halve the middle, as MATLAB does
+
+    std::vector<double> in;
+    in.push_back(1);
+    in.push_back(3);
+    in.push_back(5);
+    in.push_back(7);
+
+    std::vector<double> out = MedianFilter<double>::filter(4, in);
+    BOOST_CHECK_EQUAL(out[0], 3);
+    BOOST_CHECK_EQUAL(out[1], 5);
+    BOOST_CHECK_EQUAL(out[2], 5);
+    BOOST_CHECK_EQUAL(out[3], 5);
+}
+
+BOOST_AUTO_TEST_CASE(standaloneEmpty)
+{
+    std::vector<double> in;
+    std::vector<double> out1 = MedianFilter<double>::filter(3, in);
+    BOOST_CHECK_EQUAL(out1.size(), 0);
+    std::vector<double> out2 = MedianFilter<double>::filter(4, in);
+    BOOST_CHECK_EQUAL(out2.size(), 0);
+}
+
+BOOST_AUTO_TEST_CASE(types)
+{
+    MedianFilter<double> dfilt(3);
+    dfilt.push(1.2);
+    BOOST_CHECK_EQUAL(dfilt.get(), 0.0);
+    dfilt.push(2.4);
+    BOOST_CHECK_EQUAL(dfilt.get(), 1.2);
+    dfilt.push(1e-6);
+    BOOST_CHECK_EQUAL(dfilt.get(), 1.2);
+    dfilt.push(1e6);
+    BOOST_CHECK_EQUAL(dfilt.get(), 2.4);
+
+    MedianFilter<int> ifilt(3);
+    ifilt.push(1);
+    BOOST_CHECK_EQUAL(ifilt.get(), 0);
+    ifilt.push(2);
+    BOOST_CHECK_EQUAL(ifilt.get(), 1);
+    ifilt.push(0);
+    BOOST_CHECK_EQUAL(ifilt.get(), 1);
+    ifilt.push(1000);
+    BOOST_CHECK_EQUAL(ifilt.get(), 2);
+}
+
 BOOST_AUTO_TEST_SUITE_END()
 
     

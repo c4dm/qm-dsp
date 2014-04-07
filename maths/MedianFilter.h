@@ -20,6 +20,7 @@
 #include <cassert>
 #include <cmath>
 #include <iostream>
+#include <vector>
 
 template <typename T>
 class MedianFilter
@@ -68,6 +69,21 @@ public:
     void reset() {
 	for (int i = 0; i < m_size; ++i) m_frame[i] = 0;
 	for (int i = 0; i < m_size; ++i) m_sorted[i] = 0;
+    }
+
+    static std::vector<T> filter(int size, const std::vector<T> &in) {
+        std::vector<T> out;
+        MedianFilter<T> f(size);
+        for (int i = 0; i < int(in.size()); ++i) {
+            f.push(in[i]);
+            T median = f.get();
+            if (i >= size/2) out.push_back(median);
+        }
+        while (out.size() < in.size()) {
+            f.push(T());
+            out.push_back(f.get());
+        }
+        return out;
     }
 
 private:
