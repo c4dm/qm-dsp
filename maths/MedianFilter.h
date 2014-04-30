@@ -59,6 +59,10 @@ public:
 	return m_sorted[m_index];
     }
 
+    int getSize() const {
+        return m_size; 
+    }
+
     T getAt(float percentile) {
 	int ix = int((m_size * percentile) / 100.f);
         if (ix >= m_size) ix = m_size-1;
