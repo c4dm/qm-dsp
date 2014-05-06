@@ -47,7 +47,10 @@ public:
     }
 
     void push(T value) {
-        if (value != value) return; // nan
+        if (value != value) {
+            std::cerr << "WARNING: MedianFilter::push: attempt to push NaN" << std::endl;
+            return; // nan
+        }
 	drop(m_frame[0]);
 	const int sz1 = m_size-1;
 	for (int i = 0; i < sz1; ++i) m_frame[i] = m_frame[i+1];
