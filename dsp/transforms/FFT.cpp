@@ -147,7 +147,10 @@ public:
 
     void inverse(const double *ri, const double *ii, double *ro) {
 
-        for (int i = 0; i < m_n; ++i) {
+        // kiss_fftr.h says
+        // "input freqdata has nfft/2+1 complex points"
+
+        for (int i = 0; i < m_n/2 + 1; ++i) {
             m_c[i].r = ri[i];
             m_c[i].i = ii[i];
         }

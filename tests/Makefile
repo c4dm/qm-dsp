@@ -7,7 +7,7 @@ LIBS := ../libqm-dsp.a
 
 TESTS	:= test-mathutilities test-window test-fft test-pvoc test-resampler test-medianfilter
 
-#VG	:= valgrind
+VG	:= valgrind -q
 
 all: $(TESTS)
 	for t in $(TESTS); do echo "Running $$t"; $(VG) ./"$$t" || exit 1; done

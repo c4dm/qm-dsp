@@ -25,9 +25,15 @@ BOOST_AUTO_TEST_SUITE(TestFFT)
 
 BOOST_AUTO_TEST_CASE(forwardArrayBounds)
 {
-    // initialise bins to something recognisable, so we can tell
-    // if they haven't been written
-    double in[] = { 1, 1, -1, -1 };
+    // initialise bins to something recognisable, so we can tell if
+    // they haven't been written; and allocate the inputs on the heap
+    // so that, if running under valgrind, we get warnings about
+    // overruns
+    double *in = new double[4];
+    in[0] = 1;
+    in[1] = 1;
+    in[2] = -1;
+    in[3] = -1;
     double re[] = { 999, 999, 999, 999, 999, 999 };
     double im[] = { 999, 999, 999, 999, 999, 999 };
     FFT(4).process(false, in, 0, re+1, im+1);
@@ -36,13 +42,20 @@ BOOST_AUTO_TEST_CASE(forwardArrayBounds)
     BOOST_CHECK_EQUAL(im[0], 999.0);
     BOOST_CHECK_EQUAL(re[5], 999.0);
     BOOST_CHECK_EQUAL(im[5], 999.0);
+    delete[] in;
 }
 
 BOOST_AUTO_TEST_CASE(r_forwardArrayBounds)
 {
-    // initialise bins to something recognisable, so we can tell
-    // if they haven't been written
-    double in[] = { 1, 1, -1, -1 };
+    // initialise bins to something recognisable, so we can tell if
+    // they haven't been written; and allocate the inputs on the heap
+    // so that, if running under valgrind, we get warnings about
+    // overruns
+    double *in = new double[4];
+    in[0] = 1;
+    in[1] = 1;
+    in[2] = -1;
+    in[3] = -1;
     double re[] = { 999, 999, 999, 999, 999, 999 };
     double im[] = { 999, 999, 999, 999, 999, 999 };
     FFTReal(4).forward(in, re+1, im+1);
@@ -51,14 +64,25 @@ BOOST_AUTO_TEST_CASE(r_forwardArrayBounds)
     BOOST_CHECK_EQUAL(im[0], 999.0);
     BOOST_CHECK_EQUAL(re[5], 999.0);
     BOOST_CHECK_EQUAL(im[5], 999.0);
+    delete[] in;
 }
 
 BOOST_AUTO_TEST_CASE(inverseArrayBounds)
 {
-    // initialise bins to something recognisable, so we can tell
-    // if they haven't been written
-    double re[] = { 0, 1, 0, 1 };
-    double im[] = { 0, -2, 0, 2 };
+    // initialise bins to something recognisable, so we can tell if
+    // they haven't been written; and allocate the inputs on the heap
+    // so that, if running under valgrind, we get warnings about
+    // overruns
+    double *re = new double[4];
+    double *im = new double[4];
+    re[0] = 0;
+    re[1] = 1;
+    re[2] = 0;
+    re[3] = 1;
+    im[0] = 0;
+    im[1] = -2;
+    im[2] = 0;
+    im[3] = 2;
     double outre[] = { 999, 999, 999, 999, 999, 999 };
     double outim[] = { 999, 999, 999, 999, 999, 999 };
     FFT(4).process(true, re, im, outre+1, outim+1);
@@ -67,19 +91,31 @@ BOOST_AUTO_TEST_CASE(inverseArrayBounds)
     BOOST_CHECK_EQUAL(outim[0], 999.0);
     BOOST_CHECK_EQUAL(outre[5], 999.0);
     BOOST_CHECK_EQUAL(outim[5], 999.0);
+    delete[] re;
+    delete[] im;
 }
 
 BOOST_AUTO_TEST_CASE(r_inverseArrayBounds)
 {
-    // initialise bins to something recognisable, so we can tell
-    // if they haven't been written
-    double re[] = { 0, 1, 0 };
-    double im[] = { 0, -2, 0 };
+    // initialise bins to something recognisable, so we can tell if
+    // they haven't been written; and allocate the inputs on the heap
+    // so that, if running under valgrind, we get warnings about
+    // overruns
+    double *re = new double[3];
+    double *im = new double[3];
+    re[0] = 0;
+    re[1] = 1;
+    re[2] = 0;
+    im[0] = 0;
+    im[1] = -2;
+    im[2] = 0;
     double outre[] = { 999, 999, 999, 999, 999, 999 };
     FFTReal(4).inverse(re, im, outre+1);
     // And check we haven't overrun the arrays
     BOOST_CHECK_EQUAL(outre[0], 999.0);
     BOOST_CHECK_EQUAL(outre[5], 999.0);
+    delete[] re;
+    delete[] im;
 }
 
 BOOST_AUTO_TEST_CASE(dc)
