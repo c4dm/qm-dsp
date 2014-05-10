@@ -28,6 +28,7 @@ using std::vector;
 using std::map;
 
 //#define DEBUG_RESAMPLER 1
+//#define DEBUG_RESAMPLER_VERBOSE
 
 Resampler::Resampler(int sourceRate, int targetRate) :
     m_sourceRate(sourceRate),
@@ -373,6 +374,8 @@ Resampler::resample(int sourceRate, int targetRate, const double *data, int n)
 
 #ifdef DEBUG_RESAMPLER
     std::cerr << "resample: " << n << " in, " << got << " out" << std::endl;
+#endif
+#ifdef DEBUG_RESAMPLER_VERBOSE
     std::cerr << "first 10 in:" << std::endl;
     for (int i = 0; i < 10; ++i) {
         std::cerr << data[i] << " ";
@@ -387,7 +390,7 @@ Resampler::resample(int sourceRate, int targetRate, const double *data, int n)
     vector<double> sliced(out.begin() + latency, 
 			  out.begin() + latency + toReturn);
 
-#ifdef DEBUG_RESAMPLER
+#ifdef DEBUG_RESAMPLER_VERBOSE
     std::cerr << "all out (after latency compensation), length " << sliced.size() << ":";
     for (int i = 0; i < sliced.size(); ++i) {
 	if (i % 5 == 0) std::cerr << std::endl << i << "... ";
