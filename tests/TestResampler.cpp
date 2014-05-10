@@ -150,6 +150,88 @@ BOOST_AUTO_TEST_CASE(decimatedSine)
     testResamplerOneShot(16, 8, 2000, in, 200, out, 256);
 }
 
+double
+measureSinFreq(const vector<double> &v, int rate, int countCycles)
+{
+    int n = v.size();
+    int firstCrossing = -1;
+    int lastCrossing = -1;
+    int nCrossings = 0;
+    // count -ve -> +ve transitions
+    for (int i = 0; i + 1 < n; ++i) {
+        if (v[i] <= 0.0 && v[i+1] > 0.0) {
+            if (firstCrossing < 0) firstCrossing = i;
+            lastCrossing = i;
+            ++nCrossings;
+            if (nCrossings == countCycles) break;
+        }
+    }
+    int nCycles = nCrossings - 1;
+    if (nCycles <= 0) return 0.0;
+    cout << "lastCrossing = " << lastCrossing << ", firstCrossing = " << firstCrossing << ", dist = " << lastCrossing - firstCrossing << ", nCycles = " << nCycles << endl;
+    double cycle = double(lastCrossing - firstCrossing) / nCycles;
+    return rate / cycle;
+}
+
+void
+testSinFrequency(int freq,
+                 int sourceRate,
+                 int targetRate)
+{
+    // Resampling a sinusoid and then resampling back should give us a
+    // sinusoid of the same frequency as we started with. Let's start
+    // with a few thousand cycles of it
+
+    int nCycles = 5000;
+
+    int duration = int(nCycles * float(sourceRate) / float(freq));
+    cout << "freq = " << freq << ", sourceRate = " << sourceRate << ", targetRate = " << targetRate << ", duration = " << duration << endl;
+
+    vector<double> in(duration, 0);
+    for (int i = 0; i < duration; ++i) {
+        in[i] = sin(i * M_PI * 2.0 * freq / sourceRate);
+    }
+
+    vector<double> out = Resampler::resample(sourceRate, targetRate,
+                                             in.data(), in.size());
+
+    vector<double> back = Resampler::resample(targetRate, sourceRate,
+                                              out.data(), out.size());
+
+    BOOST_CHECK_EQUAL(in.size(), back.size());
+
+    double inFreq = measureSinFreq(in, sourceRate, nCycles - 2);
+    double backFreq = measureSinFreq(back, sourceRate, nCycles - 2);
+    
+    cout << "inFreq = " << inFreq << ", backFreq = " << backFreq << endl;
+
+    BOOST_CHECK_SMALL(inFreq - backFreq, 1e-8);
+
+    //    for (int i = 0; i < int(in.size()); ++i) {
+//	BOOST_CHECK_SMALL(in[i] - back[i], 1e-6);
+//    }
+}
+
+BOOST_AUTO_TEST_CASE(downUp2)
+{
+    testSinFrequency(440, 44100, 22050);
+}
+
+BOOST_AUTO_TEST_CASE(downUp16)
+{
+    testSinFrequency(440, 48000, 3000);
+}
+
+BOOST_AUTO_TEST_CASE(upDown2)
+{
+    testSinFrequency(440, 44100, 88200);
+}
+
+BOOST_AUTO_TEST_CASE(upDown16)
+{
+    testSinFrequency(440, 3000, 48000);
+}
+
 vector<double>
 squareWave(int rate, double freq, int n)
 {
