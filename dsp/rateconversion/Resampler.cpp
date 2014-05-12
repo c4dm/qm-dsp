@@ -26,9 +26,11 @@
 
 using std::vector;
 using std::map;
+using std::cerr;
+using std::endl;
 
 //#define DEBUG_RESAMPLER 1
-//#define DEBUG_RESAMPLER_VERBOSE
+//#define DEBUG_RESAMPLER_VERBOSE 1
 
 Resampler::Resampler(int sourceRate, int targetRate) :
     m_sourceRate(sourceRate),
@@ -106,10 +108,10 @@ Resampler::initialise(double snr, double bandwidth)
     int outputSpacing = m_sourceRate / m_gcd;
 
 #ifdef DEBUG_RESAMPLER
-    std::cerr << "resample " << m_sourceRate << " -> " << m_targetRate
+    cerr << "resample " << m_sourceRate << " -> " << m_targetRate
 	      << ": inputSpacing " << inputSpacing << ", outputSpacing "
 	      << outputSpacing << ": filter length " << m_filterLength
-	      << std::endl;
+	      << endl;
 #endif
 
     // Now we have a filter of (odd) length flen in which the lower
@@ -205,6 +207,19 @@ Resampler::initialise(double snr, double bandwidth)
 	m_phaseData[phase] = p;
     }
 
+#ifdef DEBUG_RESAMPLER
+    int cp = 0;
+    int totDrop = 0;
+    for (int i = 0; i < inputSpacing; ++i) {
+        cerr << "phase = " << cp << ", drop = " << m_phaseData[cp].drop
+             << ", filter length = " << m_phaseData[cp].filter.size()
+             << ", next phase = " << m_phaseData[cp].nextPhase << endl;
+        totDrop += m_phaseData[cp].drop;
+        cp = m_phaseData[cp].nextPhase;
+    }
+    cerr << "total drop = " << totDrop << endl;
+#endif
+
     // The May implementation of this uses a pull model -- we ask the
     // resampler for a certain number of output samples, and it asks
     // its source stream for as many as it needs to calculate
@@ -266,8 +281,8 @@ Resampler::initialise(double snr, double bandwidth)
     m_bufferOrigin = 0;
 
 #ifdef DEBUG_RESAMPLER
-    std::cerr << "initial phase " << m_phase << " (as " << (m_filterLength/2) << " % " << inputSpacing << ")"
-	      << ", latency " << m_latency << std::endl;
+    cerr << "initial phase " << m_phase << " (as " << (m_filterLength/2) << " % " << inputSpacing << ")"
+	      << ", latency " << m_latency << endl;
 #endif
 }
 
@@ -283,12 +298,12 @@ Resampler::reconstructOne()
     const double *const __restrict__ buf = m_buffer.data() + m_bufferOrigin;
     const double *const __restrict__ filt = pd.filter.data();
 
-//    std::cerr << "phase = " << m_phase << ", drop = " << pd.drop << ", buffer for reconstruction starts...";
+//    cerr << "phase = " << m_phase << ", drop = " << pd.drop << ", buffer for reconstruction starts...";
 //    for (int i = 0; i < 20; ++i) {
-//        if (i % 5 == 0) std::cerr << "\n" << i << " ";
-//        std::cerr << buf[i] << " ";
+//        if (i % 5 == 0) cerr << "\n" << i << " ";
+//        cerr << buf[i] << " ";
 //    }
-//    std::cerr << std::endl;
+//    cerr << endl;
 
     for (int i = 0; i < n; ++i) {
 	// NB gcc can only vectorize this with -ffast-math
@@ -311,7 +326,7 @@ Resampler::process(const double *src, double *dst, int n)
     int outidx = 0;
 
 #ifdef DEBUG_RESAMPLER
-    std::cerr << "process: buf siz " << m_buffer.size() << " filt siz for phase " << m_phase << " " << m_phaseData[m_phase].filter.size() << std::endl;
+    cerr << "process: buf siz " << m_buffer.size() << " filt siz for phase " << m_phase << " " << m_phaseData[m_phase].filter.size() << endl;
 #endif
 
     double scaleFactor = (double(m_targetRate) / m_gcd) / m_peakToPole;
@@ -328,18 +343,18 @@ Resampler::process(const double *src, double *dst, int n)
     return outidx;
 }
     
-std::vector<double>
+vector<double>
 Resampler::process(const double *src, int n)
 {
     int maxout = int(ceil(double(n) * m_targetRate / m_sourceRate));
-    std::vector<double> out(maxout, 0.0);
+    vector<double> out(maxout, 0.0);
     int got = process(src, out.data(), n);
     assert(got <= maxout);
     if (got < maxout) out.resize(got);
     return out;
 }
 
-std::vector<double>
+vector<double>
 Resampler::resample(int sourceRate, int targetRate, const double *data, int n)
 {
     Resampler r(sourceRate, targetRate);
@@ -364,24 +379,28 @@ Resampler::resample(int sourceRate, int targetRate, const double *data, int n)
 
     int m = int(ceil((double(n) * targetRate) / sourceRate));
     
-//    std::cerr << "n = " << n << ", sourceRate = " << sourceRate << ", targetRate = " << targetRate << ", m = " << m << ", latency = " << latency << ", inputPad = " << inputPad << ", m1 = " << m1 << ", n1 = " << n1 << ", n1 - n = " << n1 - n << std::endl;
+#ifdef DEBUG_RESAMPLER
+    cerr << "n = " << n << ", sourceRate = " << sourceRate << ", targetRate = " << targetRate << ", m = " << m << ", latency = " << latency << ", inputPad = " << inputPad << ", m1 = " << m1 << ", n1 = " << n1 << ", n1 - n = " << n1 - n << endl;
+#endif
 
     vector<double> pad(n1 - n, 0.0);
     vector<double> out(m1 + 1, 0.0);
 
-    int got = r.process(data, out.data(), n);
-    got += r.process(pad.data(), out.data() + got, pad.size());
-
+    int gotData = r.process(data, out.data(), n);
+    int gotPad = r.process(pad.data(), out.data() + gotData, pad.size());
+    int got = gotData + gotPad;
+    
 #ifdef DEBUG_RESAMPLER
-    std::cerr << "resample: " << n << " in, " << got << " out" << std::endl;
+    cerr << "resample: " << n << " in, " << pad.size() << " padding, " << got << " out (" << gotData << " data, " << gotPad << " padding, latency = " << latency << ")" << endl;
 #endif
 #ifdef DEBUG_RESAMPLER_VERBOSE
-    std::cerr << "first 10 in:" << std::endl;
-    for (int i = 0; i < 10; ++i) {
-        std::cerr << data[i] << " ";
-        if (i == 5) std::cerr << std::endl;
+    int printN = 50;
+    cerr << "first " << printN << " in:" << endl;
+    for (int i = 0; i < printN && i < n; ++i) {
+	if (i % 5 == 0) cerr << endl << i << "... ";
+        cerr << data[i] << " ";
     }
-    std::cerr << std::endl;
+    cerr << endl;
 #endif
 
     int toReturn = got - latency;
@@ -391,12 +410,12 @@ Resampler::resample(int sourceRate, int targetRate, const double *data, int n)
 			  out.begin() + latency + toReturn);
 
 #ifdef DEBUG_RESAMPLER_VERBOSE
-    std::cerr << "all out (after latency compensation), length " << sliced.size() << ":";
-    for (int i = 0; i < sliced.size(); ++i) {
-	if (i % 5 == 0) std::cerr << std::endl << i << "... ";
-	std::cerr << sliced[i] << " ";
+    cerr << "first " << printN << " out (after latency compensation), length " << sliced.size() << ":";
+    for (int i = 0; i < printN && i < sliced.size(); ++i) {
+	if (i % 5 == 0) cerr << endl << i << "... ";
+	cerr << sliced[i] << " ";
     }
-    std::cerr << std::endl;
+    cerr << endl;
 #endif
 
     return sliced;
