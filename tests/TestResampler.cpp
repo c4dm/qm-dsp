@@ -183,8 +183,7 @@ testSinFrequency(int freq,
                  int targetRate)
 {
     // Resampling a sinusoid and then resampling back should give us a
-    // sinusoid of the same frequency as we started with. Let's start
-    // with a few thousand cycles of it
+    // sinusoid of the same frequency as we started with
 
     int nCycles = 500;
 
