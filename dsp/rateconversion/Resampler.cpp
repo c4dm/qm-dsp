@@ -109,9 +109,9 @@ Resampler::initialise(double snr, double bandwidth)
 
 #ifdef DEBUG_RESAMPLER
     cerr << "resample " << m_sourceRate << " -> " << m_targetRate
-	      << ": inputSpacing " << inputSpacing << ", outputSpacing "
-	      << outputSpacing << ": filter length " << m_filterLength
-	      << endl;
+         << ": inputSpacing " << inputSpacing << ", outputSpacing "
+         << outputSpacing << ": filter length " << m_filterLength
+         << endl;
 #endif
 
     // Now we have a filter of (odd) length flen in which the lower
