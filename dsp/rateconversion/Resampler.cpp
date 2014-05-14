@@ -298,13 +298,6 @@ Resampler::reconstructOne()
     const double *const __restrict__ buf = m_buffer.data() + m_bufferOrigin;
     const double *const __restrict__ filt = pd.filter.data();
 
-//    cerr << "phase = " << m_phase << ", drop = " << pd.drop << ", buffer for reconstruction starts...";
-//    for (int i = 0; i < 20; ++i) {
-//        if (i % 5 == 0) cerr << "\n" << i << " ";
-//        cerr << buf[i] << " ";
-//    }
-//    cerr << endl;
-
     for (int i = 0; i < n; ++i) {
 	// NB gcc can only vectorize this with -ffast-math
 	v += buf[i] * filt[i];
