@@ -99,6 +99,7 @@ OBJECTS := $(SOURCES:.cpp=.o)
 OBJECTS := $(OBJECTS:.c=.o)
 
 $(LIBRARY):	$(OBJECTS)
+		rm -f $@
 		$(AR) cr $@ $^
 		$(RANLIB) $@
 
