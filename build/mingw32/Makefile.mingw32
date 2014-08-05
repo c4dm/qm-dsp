@@ -1,0 +1,14 @@
+
+TOOLPREFIX     ?= i586-mingw32msvc-
+CXX		= $(TOOLPREFIX)g++
+CC		= $(TOOLPREFIX)gcc
+LD		= $(TOOLPREFIX)g++
+AR		= $(TOOLPREFIX)ar
+RANLIB		= $(TOOLPREFIX)ranlib
+
+CFLAGS		:= -I../vamp-plugin-sdk -Ibuild/mingw32 -Iinclude -DNDEBUG -O3 -msse -msse2 -Wall -Wextra 
+CXXFLAGS	:= $(CFLAGS) 
+
+MAKEFILE_EXT := .mingw32
+
+include build/general/Makefile.inc
