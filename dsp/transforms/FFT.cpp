@@ -4,7 +4,6 @@
     QM DSP Library
 
     Centre for Digital Music, Queen Mary, University of London.
-    This file is based on Don Cross's public domain FFT implementation.
 */
 
 #include "FFT.h"
