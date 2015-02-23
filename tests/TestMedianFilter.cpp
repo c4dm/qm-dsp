@@ -3,6 +3,7 @@
 #include "maths/MedianFilter.h"
 
 #include <cmath>
+#include <cstdlib>
 
 #define BOOST_TEST_DYN_LINK
 #define BOOST_TEST_MAIN
@@ -169,6 +170,51 @@ BOOST_AUTO_TEST_CASE(types)
     BOOST_CHECK_EQUAL(ifilt.get(), 1);
     ifilt.push(1000);
     BOOST_CHECK_EQUAL(ifilt.get(), 2);
+}
+
+BOOST_AUTO_TEST_CASE(inf)
+{
+    // Inf and -Inf should behave normally
+    double pinf = strtod("Inf", 0);
+    double ninf = strtod("-Inf", 0);
+    MedianFilter<double> dfilt(3);
+    dfilt.push(1.0);
+    dfilt.push(2.0);
+    dfilt.push(pinf);
+    BOOST_CHECK_EQUAL(dfilt.get(), 2.0);
+    dfilt.push(pinf);
+    BOOST_CHECK_EQUAL(dfilt.get(), pinf);
+    dfilt.push(pinf);
+    BOOST_CHECK_EQUAL(dfilt.get(), pinf);
+    dfilt.push(2.0);
+    BOOST_CHECK_EQUAL(dfilt.get(), pinf);
+    dfilt.push(1.0);
+    BOOST_CHECK_EQUAL(dfilt.get(), 2.0);
+    dfilt.push(ninf);
+    BOOST_CHECK_EQUAL(dfilt.get(), 1.0);
+    dfilt.push(pinf);
+    BOOST_CHECK_EQUAL(dfilt.get(), 1.0);
+    dfilt.push(ninf);
+    BOOST_CHECK_EQUAL(dfilt.get(), ninf);
+}
+
+BOOST_AUTO_TEST_CASE(nan)
+{
+    // The filter should never accept a NaN, because it breaks sorting
+    // and comparison and that will break the filter. Instead it
+    // should insert 0.
+    double nan = strtod("NaN", 0);
+    MedianFilter<double> dfilt(3);
+    dfilt.push(1.0);
+    dfilt.push(2.0);
+    dfilt.push(nan);
+    BOOST_CHECK_EQUAL(dfilt.get(), 1.0);
+    dfilt.push(nan);
+    BOOST_CHECK_EQUAL(dfilt.get(), 0.0);
+    dfilt.push(-11.0);
+    BOOST_CHECK_EQUAL(dfilt.get(), 0.0);
+    dfilt.push(-1.0);
+    BOOST_CHECK_EQUAL(dfilt.get(), -1.0);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

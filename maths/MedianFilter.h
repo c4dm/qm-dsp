@@ -48,8 +48,9 @@ public:
 
     void push(T value) {
         if (value != value) {
-            std::cerr << "WARNING: MedianFilter::push: attempt to push NaN" << std::endl;
-            return; // nan
+            std::cerr << "WARNING: MedianFilter::push: attempt to push NaN, pushing zero instead" << std::endl;
+            // we do need to push something, to maintain the filter length
+            value = T();
         }
 	drop(m_frame[0]);
 	const int sz1 = m_size-1;
