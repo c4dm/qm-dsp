@@ -44,6 +44,7 @@ void DetectionFunction::initialise( DFConfig Config )
 
     m_DFType = Config.DFType;
     m_stepSize = Config.stepSize;
+    m_dbRise = Config.dbRise;
 
     m_whiten = Config.adaptiveWhitening;
     m_whitenRelaxCoeff = Config.whiteningRelaxCoeff;

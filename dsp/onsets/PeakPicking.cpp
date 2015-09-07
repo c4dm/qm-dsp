@@ -58,7 +58,7 @@ void PeakPicking::initialise( PPickParams Config )
     m_DFProcessingParams.winPost = Config.WinT.post; 
     m_DFProcessingParams.AlphaNormParam = Config.alpha;
     m_DFProcessingParams.isMedianPositive = false;
-    m_DFProcessingParams.Delta = Config.delta; //add the delta threshold as an adjustable parameter
+    m_DFProcessingParams.delta = Config.delta; //add the delta threshold as an adjustable parameter
 
     m_DFSmoothing = new DFProcess( m_DFProcessingParams );
 

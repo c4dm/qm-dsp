@@ -36,7 +36,20 @@ struct DFProcConfig{
     unsigned int winPost; 
     double AlphaNormParam;
     bool isMedianPositive;
-    float Delta; //delta threshold used as an offset when computing the smoothed detection function
+    float delta; //delta threshold used as an offset when computing the smoothed detection function
+
+    DFProcConfig() :
+        length(0),
+        LPOrd(0),
+        LPACoeffs(NULL),
+        LPBCoeffs(NULL),
+        winPre(0),
+        winPost(0),
+        AlphaNormParam(0),
+        isMedianPositive(false),
+        delta(0)
+    {
+    }
 };
 
 class DFProcess  
@@ -73,7 +86,7 @@ private:
     FiltFilt* m_FiltFilt;
 
     bool m_isMedianPositive;
-    float m_Delta; //add delta threshold
+    float m_delta; //add delta threshold
 };
 
 #endif

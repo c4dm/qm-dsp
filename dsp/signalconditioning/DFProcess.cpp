@@ -68,7 +68,7 @@ void DFProcess::initialise( DFProcConfig Config )
     m_FiltFilt = new FiltFilt( m_FilterConfigParams );
 	
     //add delta threshold
-    m_Delta = Config.Delta;
+    m_delta = Config.delta;
 }
 
 void DFProcess::deInitialise()
@@ -159,7 +159,7 @@ void DFProcess::medianFilter(double *src, double *dst)
     {
 	//add a delta threshold used as an offset when computing the smoothed detection function
 	//(helps to discard noise when detecting peaks)	
-	val = src[ i ] - scratch[ i ] - m_Delta;
+	val = src[ i ] - scratch[ i ] - m_delta;
 		
 	if( m_isMedianPositive )
 	{
