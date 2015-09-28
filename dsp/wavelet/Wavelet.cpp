@@ -1843,7 +1843,7 @@ Wavelet::createDecompositionFilters(Type wavelet,
         break;
     }
 
-    assert(flength == lpd.size());
-    assert(flength == hpd.size());
+    assert(flength == int(lpd.size()));
+    assert(flength == int(hpd.size()));
 }
 

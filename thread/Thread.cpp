@@ -438,7 +438,11 @@ Mutex::trylock()
     }
 }
 
-Condition::Condition(string name) :
+Condition::Condition(string
+#ifdef DEBUG_CONDITION
+                     name
+#endif
+    ) :
     m_locked(false)
 #ifdef DEBUG_CONDITION
     , m_name(name)

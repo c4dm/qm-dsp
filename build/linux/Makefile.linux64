@@ -1,6 +1,7 @@
 
-CFLAGS := -DNDEBUG -O3 -fPIC -ffast-math -msse -msse2 -mfpmath=sse -ftree-vectorize -DUSE_PTHREADS -Ibuild/linux/amd64
-#CFLAGS := -DDEBUG -g -fPIC -ffast-math -DUSE_PTHREADS -Ibuild/linux/amd64
+#CFLAGS := -DNDEBUG -O3 -fPIC -ffast-math -msse -msse2 -mfpmath=sse -ftree-vectorize -DUSE_PTHREADS -Ibuild/linux/amd64
+CFLAGS := -DDEBUG -g -Wall -Wextra -Werror -fPIC -ffast-math -DUSE_PTHREADS -Ibuild/linux/amd64
+
 CXXFLAGS := $(CFLAGS)
 
 include build/general/Makefile.inc

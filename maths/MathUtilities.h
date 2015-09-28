@@ -35,32 +35,32 @@ public:
      * Return through min and max pointers the highest and lowest
      * values in the given array of the given length.
      */
-    static void	  getFrameMinMax( const double* data, unsigned int len,  double* min, double* max );
+    static void	  getFrameMinMax( const double* data, int len,  double* min, double* max );
 
     /**
      * Return the mean of the given array of the given length.
      */
-    static double mean( const double* src, unsigned int len );
+    static double mean( const double* src, int len );
 
     /**
      * Return the mean of the subset of the given vector identified by
      * start and count.
      */
     static double mean( const std::vector<double> &data,
-                        unsigned int start, unsigned int count );
+                        int start, int count );
     
     /**
      * Return the sum of the values in the given array of the given
      * length.
      */
-    static double sum( const double* src, unsigned int len );
+    static double sum( const double* src, int len );
 
     /**
      * Return the median of the values in the given array of the given
      * length. If the array is even in length, the returned value will
      * be half-way between the two values adjacent to median.
      */
-    static double median( const double* src, unsigned int len );
+    static double median( const double* src, int len );
 
     /**
      * The principle argument function. Map the phase angle ang into
@@ -73,12 +73,12 @@ public:
      */
     static double mod( double x, double y);
 
-    static void	  getAlphaNorm(const double *data, unsigned int len, unsigned int alpha, double* ANorm);
-    static double getAlphaNorm(const std::vector <double> &data, unsigned int alpha );
+    static void	  getAlphaNorm(const double *data, int len, int alpha, double* ANorm);
+    static double getAlphaNorm(const std::vector <double> &data, int alpha );
 
     static void   circShift( double* data, int length, int shift);
 
-    static int	  getMax( double* data, unsigned int length, double* max = 0 );
+    static int	  getMax( double* data, int length, double* max = 0 );
     static int	  getMax( const std::vector<double> &data, double* max = 0 );
     static int    compareInt(const void * a, const void * b);
 

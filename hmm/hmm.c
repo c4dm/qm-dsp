@@ -264,19 +264,6 @@ void hmm_train(double** x, int T, model_t* model)
 	free(gauss_z);
 }
 
-void mlss_reestimate(double* p0, double** a, double** mu, double** cov, int N, int T, int L, int* q, double** x)
-{
-	/* fit a single Gaussian to observations in each state */
-	
-	/* calculate the mean observation in each state */
-	
-	/* calculate the overall covariance */
-	
-	/* count transitions */
-	
-	/* estimate initial probs from transitions (???) */
-}
-
 void baum_welch(double* p0, double** a, double** mu, double** cov, int N, int T, int L, double** x, double*** xi, double** gamma)
 {
 	int i, j, t;
@@ -749,7 +736,7 @@ void invert(double** cov, int L, double** icov, double* detcov)
 /* probability of multivariate Gaussian given mean, inverse and determinant of covariance */
 double gauss(double* x, int L, double* mu, double** icov, double detcov, double* y, double* z)
 {
-	int i, j;
+	int i;
 	double s = 0;
 	for (i = 0; i < L; i++)
 		y[i] = x[i] - mu[i];
@@ -770,7 +757,7 @@ double gauss(double* x, int L, double* mu, double** icov, double detcov, double*
 /* log probability of multivariate Gaussian given mean, inverse and determinant of covariance */
 double loggauss(double* x, int L, double* mu, double** icov, double detcov, double* y, double* z)
 {
-	int i, j;
+	int i;
 	double s = 0;
 	double ret;
 	for (i = 0; i < L; i++)

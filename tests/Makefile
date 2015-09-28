@@ -1,6 +1,6 @@
 
 CFLAGS := -I.. $(CFLAGS)
-CXXFLAGS := -I.. -Wall -g $(CXXFLAGS)
+CXXFLAGS := -I.. -Wall -Wextra -g $(CXXFLAGS)
 
 LDFLAGS := $(LDFLAGS) -lboost_unit_test_framework -lpthread
 LIBS := ../libqm-dsp.a

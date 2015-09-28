@@ -38,9 +38,9 @@ double MathUtilities::princarg(double ang)
     return ValOut;
 }
 
-void MathUtilities::getAlphaNorm(const double *data, unsigned int len, unsigned int alpha, double* ANorm)
+void MathUtilities::getAlphaNorm(const double *data, int len, int alpha, double* ANorm)
 {
-    unsigned int i;
+    int i;
     double temp = 0.0;
     double a=0.0;
 	
@@ -56,10 +56,10 @@ void MathUtilities::getAlphaNorm(const double *data, unsigned int len, unsigned 
     *ANorm = a;
 }
 
-double MathUtilities::getAlphaNorm( const std::vector <double> &data, unsigned int alpha )
+double MathUtilities::getAlphaNorm( const std::vector <double> &data, int alpha )
 {
-    unsigned int i;
-    unsigned int len = data.size();
+    int i;
+    int len = data.size();
     double temp = 0.0;
     double a=0.0;
 	
@@ -84,7 +84,7 @@ double MathUtilities::round(double x)
     }
 }
 
-double MathUtilities::median(const double *src, unsigned int len)
+double MathUtilities::median(const double *src, int len)
 {
     if (len == 0) return 0;
     
@@ -100,9 +100,9 @@ double MathUtilities::median(const double *src, unsigned int len)
     }
 }
 
-double MathUtilities::sum(const double *src, unsigned int len)
+double MathUtilities::sum(const double *src, int len)
 {
-    unsigned int i ;
+    int i ;
     double retVal =0.0;
 
     for(  i = 0; i < len; i++)
@@ -113,7 +113,7 @@ double MathUtilities::sum(const double *src, unsigned int len)
     return retVal;
 }
 
-double MathUtilities::mean(const double *src, unsigned int len)
+double MathUtilities::mean(const double *src, int len)
 {
     double retVal =0.0;
 
@@ -127,8 +127,8 @@ double MathUtilities::mean(const double *src, unsigned int len)
 }
 
 double MathUtilities::mean(const std::vector<double> &src,
-                           unsigned int start,
-                           unsigned int count)
+                           int start,
+                           int count)
 {
     double sum = 0.;
 	
@@ -142,9 +142,9 @@ double MathUtilities::mean(const std::vector<double> &src,
     return sum / count;
 }
 
-void MathUtilities::getFrameMinMax(const double *data, unsigned int len, double *min, double *max)
+void MathUtilities::getFrameMinMax(const double *data, int len, double *min, double *max)
 {
-    unsigned int i;
+    int i;
     double temp = 0.0;
 
     if (len == 0) {
@@ -171,10 +171,10 @@ void MathUtilities::getFrameMinMax(const double *data, unsigned int len, double 
     }
 }
 
-int MathUtilities::getMax( double* pData, unsigned int Length, double* pMax )
+int MathUtilities::getMax( double* pData, int Length, double* pMax )
 {
-	unsigned int index = 0;
-	unsigned int i;
+	int index = 0;
+	int i;
 	double temp = 0.0;
 	
 	double max = pData[0];
@@ -199,13 +199,13 @@ int MathUtilities::getMax( double* pData, unsigned int Length, double* pMax )
 
 int MathUtilities::getMax( const std::vector<double> & data, double* pMax )
 {
-	unsigned int index = 0;
-	unsigned int i;
+	int index = 0;
+	int i;
 	double temp = 0.0;
 	
 	double max = data[0];
 
-	for( i = 0; i < data.size(); i++)
+	for( i = 0; i < int(data.size()); i++)
 	{
 		temp = data[ i ];
 
