@@ -3,11 +3,14 @@
 #include "maths/MathUtilities.h"
 
 #include <cmath>
+#include <iostream>
 
 #define BOOST_TEST_DYN_LINK
 #define BOOST_TEST_MAIN
 
 #include <boost/test/unit_test.hpp>
+
+using namespace std;
 
 BOOST_AUTO_TEST_SUITE(TestMathUtilities)
 
@@ -34,7 +37,7 @@ BOOST_AUTO_TEST_CASE(mean)
     BOOST_CHECK_EQUAL(MathUtilities::mean(d0, 4), 1.5);
     double d1[] = { -2.6 };
     BOOST_CHECK_EQUAL(MathUtilities::mean(d1, 1), -2.6);
-    std::vector<double> v;
+    vector<double> v;
     v.push_back(0);
     v.push_back(4);
     v.push_back(3);
@@ -146,6 +149,98 @@ BOOST_AUTO_TEST_CASE(gcd)
     BOOST_CHECK_EQUAL(MathUtilities::gcd(27, 18), 9);
     BOOST_CHECK_EQUAL(MathUtilities::gcd(18, 36), 18);
     BOOST_CHECK_EQUAL(MathUtilities::gcd(37, 18), 1);
+}
+
+BOOST_AUTO_TEST_CASE(getAlphaNorm1)
+{
+    vector<double> in { -1, 1.5, 3, 5 };
+    double out = MathUtilities::getAlphaNorm(in, 1);
+    double expected = 2.6250;
+    double thresh = 1e-4;
+    BOOST_CHECK_SMALL(out - expected, thresh);
+}
+
+BOOST_AUTO_TEST_CASE(getAlphaNorm2)
+{
+    vector<double> in { -1, 1.5, 3, 5 };
+    double out = MathUtilities::getAlphaNorm(in, 2);
+    double expected = 3.0516;
+    double thresh = 1e-4;
+    BOOST_CHECK_SMALL(out - expected, thresh);
+}
+
+BOOST_AUTO_TEST_CASE(getL1Norm)
+{
+    vector<double> in { -1, 1.5, 3, 5 };
+    double out = MathUtilities::getLpNorm(in, 1);
+    // L1 norm is the sum of magnitudes
+    double expected = 10.5;
+    double thresh = 1e-5;
+    BOOST_CHECK_SMALL(out - expected, thresh);
+}
+
+BOOST_AUTO_TEST_CASE(getL2Norm)
+{
+    vector<double> in { -1, 1.5, 3, 5 };
+    double out = MathUtilities::getLpNorm(in, 2);
+    // L2 norm is the sqrt of sum of squared magnitudes
+    double expected = sqrt(37.25);
+    double thresh = 1e-5;
+    BOOST_CHECK_SMALL(out - expected, thresh);
+}
+
+BOOST_AUTO_TEST_CASE(getL3Norm)
+{
+    vector<double> in { -1, 1.5, 3, 5 };
+    double out = MathUtilities::getLpNorm(in, 3);
+    double expected = 5.3875;
+    double thresh = 1e-4;
+    BOOST_CHECK_SMALL(out - expected, thresh);
+}
+
+BOOST_AUTO_TEST_CASE(normaliseL1)
+{
+    vector<double> in { -1, 1.5, 3, 5 };
+    vector<double> expected { -0.095238, 0.142857, 0.285714, 0.476190 };
+    vector<double> out = MathUtilities::normaliseLp(in, 1);
+    double thresh = 1e-5;
+    for (int i = 0; i < int(out.size()); ++i) {
+        BOOST_CHECK_SMALL(out[i] - expected[i], thresh);
+    }
+    out = MathUtilities::normaliseLp({ 0, 0, 0, 0 }, 1);
+    for (int i = 0; i < int(out.size()); ++i) {
+        BOOST_CHECK_EQUAL(out[i], 0.25);
+    }
+}
+
+BOOST_AUTO_TEST_CASE(normaliseL2)
+{
+    vector<double> in { -1, 1.5, 3, 5 };
+    vector<double> expected { -0.16385, 0.24577, 0.49154, 0.81923 };
+    vector<double> out = MathUtilities::normaliseLp(in, 2);
+    double thresh = 1e-5;
+    for (int i = 0; i < int(out.size()); ++i) {
+        BOOST_CHECK_SMALL(out[i] - expected[i], thresh);
+    }
+    out = MathUtilities::normaliseLp({ 0, 0, 0, 0 }, 2);
+    for (int i = 0; i < int(out.size()); ++i) {
+        BOOST_CHECK_EQUAL(out[i], 0.5);
+    }
+}
+
+BOOST_AUTO_TEST_CASE(normaliseL3)
+{
+    vector<double> in { -1, 1.5, 3, 5 };
+    vector<double> expected { -0.18561, 0.27842, 0.55684, 0.92807 };
+    vector<double> out = MathUtilities::normaliseLp(in, 3);
+    double thresh = 1e-5;
+    for (int i = 0; i < int(out.size()); ++i) {
+        BOOST_CHECK_SMALL(out[i] - expected[i], thresh);
+    }
+    out = MathUtilities::normaliseLp({ 0, 0, 0, 0 }, 3);
+    for (int i = 0; i < int(out.size()); ++i) {
+        BOOST_CHECK_SMALL(out[i] - 0.62996, 1e-5);
+    }
 }
 
 BOOST_AUTO_TEST_SUITE_END()
