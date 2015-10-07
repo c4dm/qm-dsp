@@ -5,5 +5,7 @@ syntax: glob
 *.a
 doc/html/
 tests/test-*
+tests/test.log
 *.rej
+ext/uncertain/
 

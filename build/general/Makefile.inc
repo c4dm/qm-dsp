@@ -38,6 +38,7 @@ HEADERS := base/Pitch.h \
            dsp/tonal/ChangeDetectionFunction.h \
            dsp/tonal/TCSgram.h \
            dsp/tonal/TonalEstimator.h \
+           dsp/transforms/DCT.h \
            dsp/transforms/FFT.h \
            dsp/wavelet/Wavelet.h \
            hmm/hmm.h \
@@ -83,6 +84,7 @@ SOURCES := base/Pitch.cpp \
            dsp/tonal/ChangeDetectionFunction.cpp \
            dsp/tonal/TCSgram.cpp \
            dsp/tonal/TonalEstimator.cpp \
+           dsp/transforms/DCT.cpp \
            dsp/transforms/FFT.cpp \
            dsp/wavelet/Wavelet.cpp \
            hmm/hmm.c \
