@@ -5,7 +5,7 @@ CXXFLAGS := -I.. -Wall -Wextra -std=c++11 -g $(CXXFLAGS)
 LDFLAGS := $(LDFLAGS) -lboost_unit_test_framework -lpthread
 LIBS := ../libqm-dsp.a
 
-TESTS	:= test-mathutilities test-window test-fft test-dct test-pvoc test-resampler test-medianfilter
+TESTS	:= test-mathutilities test-window test-filter test-fft test-dct test-pvoc test-resampler test-medianfilter
 
 VG	:= valgrind -q
 
@@ -19,6 +19,9 @@ test-mathutilities: TestMathUtilities.o $(LIBS)
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 test-window: TestWindow.o $(LIBS)
+	$(CXX) -o $@ $^ $(LDFLAGS)
+
+test-filter: TestFilter.o $(LIBS)
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 test-fft: TestFFT.o $(LIBS)
@@ -36,6 +39,7 @@ test-resampler: TestResampler.o $(LIBS)
 TestMathUtilities.o: $(LIBS)
 TestMedianFilter.o: $(LIBS)
 TestWindow.o: $(LIBS)
+TestFilter.o: $(LIBS)
 TestFFT.o: $(LIBS)
 TestDCT.o: $(LIBS)
 TestPhaseVocoder.o: $(LIBS)
