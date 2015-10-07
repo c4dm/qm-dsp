@@ -28,8 +28,7 @@ BOOST_AUTO_TEST_CASE(iir)
     vector<double> b(iir_b);
     vector<double> expected(iir_expected);
 
-    FilterConfig config { a.size()-1, a.data(), b.data() };
-    Filter f(config);
+    Filter f({ a, b });
     
     int n = expected.size();
     vector<double> out(n, 0.0);
@@ -49,8 +48,7 @@ BOOST_AUTO_TEST_CASE(iir_chunked)
     vector<double> b(iir_b);
     vector<double> expected(iir_expected);
 
-    FilterConfig config { a.size()-1, a.data(), b.data() };
-    Filter f(config);
+    Filter f({ a, b });
     
     int n = expected.size();
     vector<double> out(n, 0.0);
@@ -77,12 +75,10 @@ BOOST_AUTO_TEST_CASE(iir_chunked)
 
 BOOST_AUTO_TEST_CASE(fir)
 {
-    vector<double> a(fir_b.size(), 0.0); //!!!
     vector<double> b(fir_b);
     vector<double> expected(fir_expected);
 
-    FilterConfig config { b.size()-1, a.data(), b.data() };
-    Filter f(config);
+    Filter f({ {}, b });
     
     int n = expected.size();
     vector<double> out(n, 0.0);
