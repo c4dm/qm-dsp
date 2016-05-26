@@ -1,9 +1,9 @@
 
-ARCHFLAGS	?= -mmacosx-version-min=10.6 -arch x86_64 -arch i386
+ARCHFLAGS	?= -mmacosx-version-min=10.7 -arch x86_64 -stdlib=libc++
 
-CFLAGS 		:= $(ARCHFLAGS) -O3 -ftree-vectorize -DUSE_PTHREADS -Iinclude
+CFLAGS 		:= $(ARCHFLAGS) -Wall -O3 -ftree-vectorize -DUSE_PTHREADS -Iinclude
 
-CXXFLAGS  	:= $(CFLAGS)
+CXXFLAGS  	:= $(CFLAGS) -std=c++11
 
 include build/general/Makefile.inc
 
