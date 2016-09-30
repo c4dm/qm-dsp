@@ -1843,6 +1843,9 @@ Wavelet::createDecompositionFilters(Type wavelet,
         break;
     }
 
+    // avoid compiler warning for unused value if assert is not compiled in:
+    (void)flength;
+
     assert(flength == int(lpd.size()));
     assert(flength == int(hpd.size()));
 }
