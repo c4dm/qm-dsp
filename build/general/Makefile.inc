@@ -5,8 +5,45 @@ CC	?= gcc
 AR	?= ar
 RANLIB	?= ranlib
 
-CFLAGS	:= $(CFLAGS) -I. -Iext/kissfft -Iext/kissfft/tools -Dkiss_fft_scalar=double
-CXXFLAGS	:= $(CXXFLAGS) -I. -Iext/kissfft -Iext/kissfft/tools -Dkiss_fft_scalar=double
+KISSFFT_CFLAGS	:= -Iext/kissfft -Iext/kissfft/tools -Dkiss_fft_scalar=double
+
+CFLAGS		:= $(CFLAGS) -I. -DNO_BLAS_WRAP -DADD_ -Iext/clapack/include -Iext/cblas/include $(KISSFFT_CFLAGS)
+CXXFLAGS	:= $(CXXFLAGS) -I. $(KISSFFT_CFLAGS)
+
+CLAPACK_SRC := ext/clapack/src/dgetrf.c \
+	       ext/clapack/src/dgetri.c \
+	       ext/clapack/src/dgetf2.c \
+	       ext/clapack/src/xerbla.c \
+	       ext/clapack/src/dlaswp.c \
+	       ext/clapack/src/dtrtri.c \
+	       ext/clapack/src/ilaenv.c \
+	       ext/clapack/src/iparmq.c \
+	       ext/clapack/src/s_cat.c \
+	       ext/clapack/src/s_copy.c \
+	       ext/clapack/src/s_cmp.c \
+	       ext/clapack/src/pow_di.c \
+	       ext/clapack/src/ieeeck.c \
+	       ext/clapack/src/i_nint.c \
+	       ext/clapack/src/dtrti2.c \
+	       ext/clapack/src/f77_aloc.c \
+	       ext/clapack/src/exit_.c 
+
+CBLAS_SRC := ext/cblas/src/dgemm.c \
+	     ext/cblas/src/ddot.c \
+	     ext/cblas/src/dgemv.c \
+	     ext/cblas/src/dswap.c \
+	     ext/cblas/src/dtrsm.c \
+	     ext/cblas/src/dger.c \
+	     ext/cblas/src/idamax.c \
+	     ext/cblas/src/dscal.c \
+	     ext/cblas/src/dtrmm.c \
+	     ext/cblas/src/lsame.c \
+	     ext/cblas/src/dlamch.c \
+	     ext/cblas/src/dtrmv.c \
+	     ext/cblas/src/cblas_globals.c \
+	     ext/cblas/src/cblas_dgemm.c \
+	     ext/cblas/src/cblas_ddot.c \
+	     ext/cblas/src/cblas_xerbla.c
 
 HEADERS := base/Pitch.h \
            base/Window.h \
@@ -95,7 +132,9 @@ SOURCES := base/Pitch.cpp \
            maths/pca/pca.c \
            thread/Thread.cpp \
            ext/kissfft/kiss_fft.c \
-           ext/kissfft/tools/kiss_fftr.c
+           ext/kissfft/tools/kiss_fftr.c \
+           $(CLAPACK_SRC) \
+           $(CBLAS_SRC)
 
 OBJECTS := $(SOURCES:.cpp=.o)
 OBJECTS := $(OBJECTS:.c=.o)
@@ -208,7 +247,7 @@ dsp/transforms/FFT.o: dsp/transforms/FFT.h maths/MathUtilities.h
 dsp/transforms/FFT.o: maths/nan-inf.h ext/kissfft/kiss_fft.h
 dsp/transforms/FFT.o: ext/kissfft/tools/kiss_fftr.h
 dsp/wavelet/Wavelet.o: dsp/wavelet/Wavelet.h
-hmm/hmm.o: ./include/clapack.h maths/nan-inf.h ./include/cblas.h hmm/hmm.h
+hmm/hmm.o: maths/nan-inf.h hmm/hmm.h
 maths/Correlation.o: maths/Correlation.h
 maths/CosineDistance.o: maths/CosineDistance.h
 maths/KLDivergence.o: maths/KLDivergence.h

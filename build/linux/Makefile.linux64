@@ -1,8 +1,8 @@
 
-#CFLAGS := -DNDEBUG -O3 -fPIC -ffast-math -msse -msse2 -mfpmath=sse -ftree-vectorize -DUSE_PTHREADS -Ibuild/linux/amd64
-CFLAGS := -DDEBUG -g -Wall -Wextra -Werror -fPIC -ffast-math -DUSE_PTHREADS -Ibuild/linux/amd64
+#CFLAGS := -DNDEBUG -Wall -Wextra -Werror=implicit-function-declaration -O3 -fPIC -ffast-math -msse -msse2 -mfpmath=sse -ftree-vectorize -DUSE_PTHREADS
+CFLAGS := -DDEBUG -g -Wall -Wextra -Werror=implicit-function-declaration -fPIC -ffast-math -DUSE_PTHREADS
 
-CXXFLAGS := $(CFLAGS)
+CXXFLAGS := $(CFLAGS) -Werror
 
 include build/general/Makefile.inc
 
