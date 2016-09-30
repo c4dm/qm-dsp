@@ -292,7 +292,7 @@ bool TPolyFit::GaussJordan2(Matrix &b,
     double big, t;
     double pivot;
     double determ;
-    int irow, icol;
+    int irow = 0, icol = 0;
     int ncol(b.size());
     int nv = 1;                  // single constant vector
     for(int i = 0; i < ncol; ++i)
