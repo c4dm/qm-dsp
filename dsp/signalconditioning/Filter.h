@@ -15,6 +15,8 @@
 #ifndef FILTER_H
 #define FILTER_H
 
+#include "base/Restrict.h"
+
 #include <vector>
 
 class Filter
@@ -42,8 +44,8 @@ public:
      * write the resulting \arg n samples into \arg out. There must be
      * enough room in \arg out for \arg n samples to be written.
      */
-    void process(const double *const __restrict__ in,
-                 double *const __restrict__ out,
+    void process(const double *const QM_R__ in,
+                 double *const QM_R__ out,
                  const int n);
 
     int getOrder() const { return m_order; }

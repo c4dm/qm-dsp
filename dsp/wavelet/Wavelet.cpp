@@ -71,8 +71,8 @@ Wavelet::getWaveletName(Type wavelet)
 
 void
 Wavelet::createDecompositionFilters(Type wavelet,
-                                    std::vector<float> &lpd,
-                                    std::vector<float> &hpd)
+                                    std::vector<double> &lpd,
+                                    std::vector<double> &hpd)
 {
     lpd.clear();
     hpd.clear();
