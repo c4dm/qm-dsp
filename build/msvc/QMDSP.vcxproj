@@ -140,7 +140,7 @@
     <ClCompile Include="..\..\dsp\tonal\TCSgram.cpp" />
     <ClCompile Include="..\..\dsp\tonal\TonalEstimator.cpp" />
     <ClCompile Include="..\..\dsp\transforms\DCT.cpp" />
-    <ClCompile Include="..\..\dsp\transforms\FFTqm.cpp" />
+    <ClCompile Include="..\..\dsp\transforms\FFT.cpp" />
     <ClCompile Include="..\..\dsp\wavelet\Wavelet.cpp" />
     <ClCompile Include="..\..\ext\cblas\src\cblas_ddot.c" />
     <ClCompile Include="..\..\ext\cblas\src\cblas_dgemm.c" />
