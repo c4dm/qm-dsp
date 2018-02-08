@@ -25,6 +25,8 @@
 #include "maths/MathUtilities.h"
 
 #include <cstring>
+#include <algorithm>
+
 
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
