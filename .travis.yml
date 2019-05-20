@@ -16,6 +16,7 @@ addons:
       - wget
       - libsndfile-dev
       - libboost-all-dev
+      - valgrind
       
 script:
   - make -f build/linux/Makefile.linux64
