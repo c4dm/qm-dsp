@@ -1,6 +1,5 @@
 
-CFLAGS := -DNDEBUG -Wall -Wextra -Werror=implicit-function-declaration -O3 -fPIC -ffast-math -msse -msse2 -mfpmath=sse -ftree-vectorize -DUSE_PTHREADS
-#CFLAGS := -DDEBUG -g -Wall -Wextra -Werror=implicit-function-declaration -fPIC -ffast-math -DUSE_PTHREADS
+CFLAGS := -DNDEBUG -Wall -Wextra -Werror=implicit-function-declaration -O3 -fPIC -msse -msse2 -mfpmath=sse -ftree-vectorize -DUSE_PTHREADS
 
 CXXFLAGS := $(CFLAGS)
 
