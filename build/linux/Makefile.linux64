@@ -1,7 +1,7 @@
 
 CFLAGS := -DNDEBUG -Wall -Wextra -Werror=implicit-function-declaration -O3 -fPIC -msse -msse2 -mfpmath=sse -ftree-vectorize -DUSE_PTHREADS
 
-CXXFLAGS := $(CFLAGS)
+CXXFLAGS := $(CFLAGS) -std=c++98
 
 include build/general/Makefile.inc
 
