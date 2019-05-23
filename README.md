@@ -6,12 +6,12 @@ This is a C++ library of functions for Digital Signal Processing and
 Music Informatics purposes developed at Queen Mary, University of
 London.
 
-Despite the name "qm-dsp", it is not "the official QM DSP library",
-just a library for DSP that happens to have been written at QM. It got
-this name by being released publicly first.
-
 It is used by [QM Vamp Plugins](http://isophonics.net/QMVampPlugins)
 amongst other things.
+
+Despite the assertive name "qm-dsp", it is not "the official QM DSP
+library", just one library for DSP that happens to have been written
+at QM. It got this name because nothing else was using it at the time.
 
 
 Compiling the library
@@ -28,7 +28,7 @@ Make invocation, e.g. `make -f build/linux/Makefile.linux64
 test`. Tests require the Boost library.
 
 
-License
+Licence
 -------
 
 This program is free software; you can redistribute it and/or modify

@@ -2,17 +2,17 @@
 Contributing
 ============
 
-The qm-dsp library is currently maintained in a Github repository at
+The qm-dsp library is maintained in a Github repository at
 https://github.com/c4dm/qm-dsp.
 
 
 Reporting bugs
 --------------
 
-Please use the Github repo issue tracker for bug reports. Try to make
-them as specific as possible, for example by including some input that
-triggers a particular behaviour, and describing how that behaviour
-differs from what you expected.
+Please use Github issues for bug reports. Try to make them as specific
+as possible. For example, describe an input that triggers some
+particular behaviour, and tell us how that behaviour differs from what
+you expected.
 
 If your bug can be reproduced by processing an audio file using one of
 the QM Vamp Plugins (https://github.com/c4dm/qm-vamp-plugins), which
@@ -59,11 +59,11 @@ be reviewed or integrated.
 Code style
 ----------
 
- * The C++ standard used is C++98, except for the unit test code which
-   may use up to C++14
+ * C++ code must compile with the C++98 standard, except for the unit
+   tests which are C++14
 
- * Classes are named `LikeThis`; functions, methods, and local
-   variables `likeThis`; class member variables `m_likeThis`
+ * Classes are named `LikeThis` - functions, methods, and local
+   variables `likeThis` - class member variables `m_likeThis`
 
  * Indentation is four spaces at a time (no tabs)
 
@@ -71,9 +71,9 @@ Code style
    at the start of a function or class definition where it gets a line
    of its own
 
- * Always use braces around any conditional block that occupies its
-   own line
+ * Please use braces around any conditional or loop block that
+   occupies its own line
 
-Some older or contributed code in this library does not follow these
+Some of the older code in this library does not follow these
 guidelines - usually this means the code needs to be updated.
 
