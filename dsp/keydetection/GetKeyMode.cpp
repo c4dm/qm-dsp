@@ -53,7 +53,6 @@ GetKeyMode::GetKeyMode( int sampleRate, float tuningFrequency,
     m_MeanHPCP(0),
     m_MajCorr(0),
     m_MinCorr(0),
-    m_Keys(0),
     m_MedianFilterBuffer(0),
     m_SortedBuffer(0),
     m_keyStrengths(0)
@@ -104,7 +103,6 @@ GetKeyMode::GetKeyMode( int sampleRate, float tuningFrequency,
     
     m_MajCorr = new double[kBinsPerOctave];
     m_MinCorr = new double[kBinsPerOctave];
-    m_Keys  = new double[2*kBinsPerOctave];
     
     m_MedianFilterBuffer = new int[ m_MedianWinsize ];
     memset( m_MedianFilterBuffer, 0, sizeof(int)*m_MedianWinsize);
@@ -127,11 +125,9 @@ GetKeyMode::~GetKeyMode()
     delete [] m_MeanHPCP;
     delete [] m_MajCorr;
     delete [] m_MinCorr;
-    delete [] m_Keys;
     delete [] m_MedianFilterBuffer;
     delete [] m_SortedBuffer;
-
-    delete[] m_keyStrengths;
+    delete [] m_keyStrengths;
 }
 
 double GetKeyMode::krumCorr(double *pData1, double *pData2, unsigned int length)
@@ -223,26 +219,30 @@ int GetKeyMode::process(double *PCMData)
         MathUtilities::circShift( MinProfile, kBinsPerOctave, 1 );
     }
 
-    for( k = 0; k < kBinsPerOctave; k++ ) {
-        m_Keys[k] = m_MajCorr[k];
-        m_Keys[k+kBinsPerOctave] = m_MinCorr[k];
-    }
-
 /*
   std::cout << "raw keys: ";
-  for (int ii = 0; ii < 2*kBinsPerOctave; ++ii) {
+  for (int ii = 0; ii < kBinsPerOctave; ++ii) {
       if (ii % (kBinsPerOctave/12) == 0) std::cout << "\n";
-      std::cout << m_Keys[ii] << " ";
+      std::cout << m_MajCorr[ii] << " ";
+  }
+  for (int ii = 0; ii < kBinsPerOctave; ++ii) {
+      if (ii % (kBinsPerOctave/12) == 0) std::cout << "\n";
+      std::cout << m_MinCorr[ii] << " ";
   }
   std::cout << std::endl;
 */
 
-    double dummy;
-    // m_Keys[1] is C center  1 / 3 + 1 = 1
-    // m_Keys[4] is D center  4 / 3 + 1 = 2
+    // m_MajCorr[1] is C center  1 / 3 + 1 = 1
+    // m_MajCorr[4] is D center  4 / 3 + 1 = 2
     // '+ 1' because we number keys 1-24, not 0-23.
-    key = MathUtilities::getMax( m_Keys, 2* kBinsPerOctave, &dummy ) / 3 + 1;
+    double maxMaj;
+    int maxMajBin = MathUtilities::getMax( m_MajCorr, kBinsPerOctave, &maxMaj );
+    double maxMin;
+    int maxMinBin = MathUtilities::getMax( m_MinCorr, kBinsPerOctave, &maxMin );
+    int maxBin = (maxMaj > maxMin) ? maxMajBin : (maxMinBin + kBinsPerOctave);
+    key = maxBin / 3 + 1;
 
+//    std::cout << "fractional key pre-sorting: " << (maxBin + 2) / 3.0 << std::endl;
 //    std::cout << "key pre-sorting: " << key << std::endl;
 
 

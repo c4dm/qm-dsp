@@ -79,7 +79,6 @@ protected:
 
 	double* m_MajCorr;
 	double* m_MinCorr;
-	double* m_Keys;
 	int* m_MedianFilterBuffer;
 	int* m_SortedBuffer;
 
