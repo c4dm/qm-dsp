@@ -3,7 +3,8 @@ QM-DSP library
 ==============
 
 This is a C++ library of functions for Digital Signal Processing and
-Music Informatics purposes developed at Queen Mary, University of
+Music Informatics purposes developed in the [Centre for Digital
+Music](http://c4dm.eecs.qmul.ac.uk) at Queen Mary, University of
 London.
 
 It is used by [QM Vamp Plugins](http://isophonics.net/QMVampPlugins)
