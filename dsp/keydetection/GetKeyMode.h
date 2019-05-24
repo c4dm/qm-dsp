@@ -27,7 +27,8 @@ public:
 
 	int process( double* PCMData );
 
-	double krumCorr( double* pData1, double* pData2, unsigned int length );
+	double krumCorr( const double *pDataNorm, const double *pProfileNorm, 
+                         int shiftProfile, unsigned int length );
 
 	unsigned int getBlockSize() { return m_ChromaFrameSize*m_DecimationFactor; }
 	unsigned int getHopSize() { return m_ChromaHopSize*m_DecimationFactor; }
@@ -77,6 +78,8 @@ protected:
 	double* m_ChromaBuffer;
 	double* m_MeanHPCP;
 
+	double* m_MajProfileNorm;
+	double* m_MinProfileNorm;
 	double* m_MajCorr;
 	double* m_MinCorr;
 	int* m_MedianFilterBuffer;

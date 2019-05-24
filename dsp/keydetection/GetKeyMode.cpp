@@ -61,12 +61,12 @@ GetKeyMode::GetKeyMode( int sampleRate, float tuningFrequency,
         
     // Chromagram configuration parameters
     m_ChromaConfig.normalise = MathUtilities::NormaliseUnitMax;
-    m_ChromaConfig.FS = lrint(sampleRate/(double)m_DecimationFactor);
+    m_ChromaConfig.FS = sampleRate/(double)m_DecimationFactor;
     if (m_ChromaConfig.FS < 1) {
         m_ChromaConfig.FS = 1;
     }
 
-    // Set C (= MIDI #12) as our base :
+    // Set C3 (= MIDI #48) as our base:
     // This implies that key = 1 => Cmaj, key = 12 => Bmaj, key = 13 => Cmin, etc.
     m_ChromaConfig.min = Pitch::getFrequencyForPitch( 48, 0, tuningFrequency );
     m_ChromaConfig.max = Pitch::getFrequencyForPitch( 96, 0, tuningFrequency );
@@ -104,6 +104,17 @@ GetKeyMode::GetKeyMode( int sampleRate, float tuningFrequency,
     m_MajCorr = new double[kBinsPerOctave];
     m_MinCorr = new double[kBinsPerOctave];
     
+    m_MajProfileNorm = new double[kBinsPerOctave];
+    m_MinProfileNorm = new double[kBinsPerOctave];
+
+    double mMaj = MathUtilities::mean( MajProfile, kBinsPerOctave );
+    double mMin = MathUtilities::mean( MinProfile, kBinsPerOctave );
+
+    for( unsigned int i = 0; i < kBinsPerOctave; i++ ) {
+        m_MajProfileNorm[i] = MajProfile[i] - mMaj;
+        m_MinProfileNorm[i] = MinProfile[i] - mMin;
+    }
+
     m_MedianFilterBuffer = new int[ m_MedianWinsize ];
     memset( m_MedianFilterBuffer, 0, sizeof(int)*m_MedianWinsize);
     
@@ -125,30 +136,33 @@ GetKeyMode::~GetKeyMode()
     delete [] m_MeanHPCP;
     delete [] m_MajCorr;
     delete [] m_MinCorr;
+    delete [] m_MajProfileNorm;
+    delete [] m_MinProfileNorm;
     delete [] m_MedianFilterBuffer;
     delete [] m_SortedBuffer;
     delete [] m_keyStrengths;
 }
 
-double GetKeyMode::krumCorr(double *pData1, double *pData2, unsigned int length)
+double GetKeyMode::krumCorr( const double *pDataNorm, const double *pProfileNorm, 
+                             int shiftProfile, unsigned int length)
 {
     double retVal= 0.0;
     
     double num = 0;
     double den = 0;
-    double mX = MathUtilities::mean( pData1, length );
-    double mY = MathUtilities::mean( pData2, length );
-    
     double sum1 = 0;
     double sum2 = 0;
     
-    for( unsigned int i = 0; i <length; i++ ) {
-        num += ( pData1[i] - mX ) * ( pData2[i] - mY );
+    for( unsigned int i = 0; i <length; i++ )
+    {
+        int k = (i - shiftProfile + length) % length;
 
-        sum1 += ( (pData1[i]-mX) * (pData1[i]-mX) );
-        sum2 += ( (pData2[i]-mY) * (pData2[i]-mY) );
+        num += pDataNorm[i] * pProfileNorm[k];
+
+        sum1 += ( pDataNorm[i] * pDataNorm[i] );
+        sum2 += ( pProfileNorm[k] * pProfileNorm[k] );
     }
-
+	
     den = sqrt(sum1 * sum2);
 
     if( den>0 ) {
@@ -170,11 +184,6 @@ int GetKeyMode::process(double *PCMData)
 
     m_ChrPointer = m_Chroma->process( m_DecimatedBuffer );
 
-    // The Cromagram has the center of C at bin 0, while the major
-    // and minor profiles have the center of C at 1. We want to have
-    // the correlation for C result also at 1.
-    // To achieve this we have to shift two times:
-    MathUtilities::circShift( m_ChrPointer, kBinsPerOctave, 2);
 /*
     std::cout << "raw chroma: ";
     for (int ii = 0; ii < kBinsPerOctave; ++ii) {
@@ -210,13 +219,22 @@ int GetKeyMode::process(double *PCMData)
         m_MeanHPCP[k] = mnVal/(double)m_ChromaBufferFilling;
     }
 
+    // Normalize for zero average
+    double mHPCP = MathUtilities::mean( m_MeanHPCP, kBinsPerOctave );
+    for( k = 0; k < kBinsPerOctave; k++ )
+    {
+        m_MeanHPCP[k] -= mHPCP;
+    }
 
-    for( k = 0; k < kBinsPerOctave; k++ ) {
-        m_MajCorr[k] = krumCorr( m_MeanHPCP, MajProfile, kBinsPerOctave );
-        m_MinCorr[k] = krumCorr( m_MeanHPCP, MinProfile, kBinsPerOctave );
 
-        MathUtilities::circShift( MajProfile, kBinsPerOctave, 1 );
-        MathUtilities::circShift( MinProfile, kBinsPerOctave, 1 );
+    for( k = 0; k < kBinsPerOctave; k++ )
+    {
+        // The Cromagram has the center of C at bin 0, while the major
+        // and minor profiles have the center of C at 1. We want to have
+        // the correlation for C result also at 1.
+        // To achieve this we have to shift two times:
+        m_MajCorr[k] = krumCorr( m_MeanHPCP, m_MajProfileNorm, (int)k - 2, kBinsPerOctave );
+        m_MinCorr[k] = krumCorr( m_MeanHPCP, m_MinProfileNorm, (int)k - 2, kBinsPerOctave );
     }
 
 /*
