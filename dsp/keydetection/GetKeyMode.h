@@ -33,7 +33,7 @@ public:
 	unsigned int getHopSize() { return m_ChromaHopSize*m_DecimationFactor; }
 
 	double* getChroma() { return m_ChrPointer; }
-	unsigned int getChromaSize() { return m_BPO; }
+	unsigned int getChromaSize();
 
 	double* getMeanHPCP() { return m_MeanHPCP; }
 
@@ -63,8 +63,6 @@ protected:
 	unsigned int m_ChromaFrameSize;
 	//Hop
 	unsigned int m_ChromaHopSize;
-	//Bins per octave
-	unsigned int m_BPO;
 
 
 	unsigned int m_ChromaBuffersize;

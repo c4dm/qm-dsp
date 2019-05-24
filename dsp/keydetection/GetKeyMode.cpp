@@ -22,14 +22,16 @@
 #include <cstring>
 #include <cstdlib>
 
+static const int kBinsPerOctave = 36;
+
 // Chords profile
-static double MajProfile[36] = {
+static double MajProfile[kBinsPerOctave] = {
     0.0384, 0.0629, 0.0258, 0.0121, 0.0146, 0.0106, 0.0364, 0.0610, 0.0267,
     0.0126, 0.0121, 0.0086, 0.0364, 0.0623, 0.0279, 0.0275, 0.0414, 0.0186, 
     0.0173, 0.0248, 0.0145, 0.0364, 0.0631, 0.0262, 0.0129, 0.0150, 0.0098,
     0.0312, 0.0521, 0.0235, 0.0129, 0.0142, 0.0095, 0.0289, 0.0478, 0.0239};
 
-static double MinProfile[36] = { 
+static double MinProfile[kBinsPerOctave] = { 
     0.0375, 0.0682, 0.0299, 0.0119, 0.0138, 0.0093, 0.0296, 0.0543, 0.0257,
     0.0292, 0.0519, 0.0246, 0.0159, 0.0234, 0.0135, 0.0291, 0.0544, 0.0248,
     0.0137, 0.0176, 0.0104, 0.0352, 0.0670, 0.0302, 0.0222, 0.0349, 0.0164,
@@ -70,7 +72,7 @@ GetKeyMode::GetKeyMode( int sampleRate, float tuningFrequency,
     m_ChromaConfig.min = Pitch::getFrequencyForPitch( 48, 0, tuningFrequency );
     m_ChromaConfig.max = Pitch::getFrequencyForPitch( 96, 0, tuningFrequency );
 
-    m_ChromaConfig.BPO = 36;
+    m_ChromaConfig.BPO = kBinsPerOctave;
     m_ChromaConfig.CQThresh = 0.0054;
 
     // Chromagram inst.
@@ -80,7 +82,6 @@ GetKeyMode::GetKeyMode( int sampleRate, float tuningFrequency,
     m_ChromaFrameSize = m_Chroma->getFrameSize();
     // override hopsize for this application
     m_ChromaHopSize = m_ChromaFrameSize;
-    m_BPO = m_ChromaConfig.BPO;
 
 //    std::cerr << "chroma frame size = " << m_ChromaFrameSize << ", decimation factor = " << m_DecimationFactor << " therefore block size = " << getBlockSize() << std::endl;
 
@@ -96,14 +97,14 @@ GetKeyMode::GetKeyMode( int sampleRate, float tuningFrequency,
     // Spawn objectc/arrays
     m_DecimatedBuffer = new double[m_ChromaFrameSize];
     
-    m_ChromaBuffer = new double[m_BPO * m_ChromaBuffersize];
-    memset( m_ChromaBuffer, 0, sizeof(double) * m_BPO * m_ChromaBuffersize);
+    m_ChromaBuffer = new double[kBinsPerOctave * m_ChromaBuffersize];
+    memset( m_ChromaBuffer, 0, sizeof(double) * kBinsPerOctave * m_ChromaBuffersize);
     
-    m_MeanHPCP = new double[m_BPO];
+    m_MeanHPCP = new double[kBinsPerOctave];
     
-    m_MajCorr = new double[m_BPO];
-    m_MinCorr = new double[m_BPO];
-    m_Keys  = new double[2*m_BPO];
+    m_MajCorr = new double[kBinsPerOctave];
+    m_MinCorr = new double[kBinsPerOctave];
+    m_Keys  = new double[2*kBinsPerOctave];
     
     m_MedianFilterBuffer = new int[ m_MedianWinsize ];
     memset( m_MedianFilterBuffer, 0, sizeof(int)*m_MedianWinsize);
@@ -177,19 +178,19 @@ int GetKeyMode::process(double *PCMData)
     // and minor profiles have the center of C at 1. We want to have
     // the correlation for C result also at 1.
     // To achieve this we have to shift two times:
-    MathUtilities::circShift( m_ChrPointer, m_BPO, 2);
+    MathUtilities::circShift( m_ChrPointer, kBinsPerOctave, 2);
 /*
     std::cout << "raw chroma: ";
-    for (int ii = 0; ii < m_BPO; ++ii) {
-      if (ii % (m_BPO/12) == 0) std::cout << "\n";
+    for (int ii = 0; ii < kBinsPerOctave; ++ii) {
+      if (ii % (kBinsPerOctave/12) == 0) std::cout << "\n";
         std::cout << m_ChrPointer[ii] << " ";
     }
     std::cout << std::endl;
 */
     // populate hpcp values;
     int cbidx;
-    for( j = 0; j < m_BPO; j++ ) {
-        cbidx = (m_bufferindex * m_BPO) + j;
+    for( j = 0; j < kBinsPerOctave; j++ ) {
+        cbidx = (m_bufferindex * kBinsPerOctave) + j;
         m_ChromaBuffer[ cbidx ] = m_ChrPointer[j];
     }
 
@@ -204,47 +205,47 @@ int GetKeyMode::process(double *PCMData)
     }
 
     //calculate mean
-    for( k = 0; k < m_BPO; k++ ) {
+    for( k = 0; k < kBinsPerOctave; k++ ) {
         double mnVal = 0.0;
         for( j = 0; j < m_ChromaBufferFilling; j++ ) {
-            mnVal += m_ChromaBuffer[ k + (j*m_BPO) ];
+            mnVal += m_ChromaBuffer[ k + (j*kBinsPerOctave) ];
         }
 
         m_MeanHPCP[k] = mnVal/(double)m_ChromaBufferFilling;
     }
 
 
-    for( k = 0; k < m_BPO; k++ ) {
-        m_MajCorr[k] = krumCorr( m_MeanHPCP, MajProfile, m_BPO );
-        m_MinCorr[k] = krumCorr( m_MeanHPCP, MinProfile, m_BPO );
+    for( k = 0; k < kBinsPerOctave; k++ ) {
+        m_MajCorr[k] = krumCorr( m_MeanHPCP, MajProfile, kBinsPerOctave );
+        m_MinCorr[k] = krumCorr( m_MeanHPCP, MinProfile, kBinsPerOctave );
 
-        MathUtilities::circShift( MajProfile, m_BPO, 1 );
-        MathUtilities::circShift( MinProfile, m_BPO, 1 );
+        MathUtilities::circShift( MajProfile, kBinsPerOctave, 1 );
+        MathUtilities::circShift( MinProfile, kBinsPerOctave, 1 );
     }
 
-    for( k = 0; k < m_BPO; k++ ) {
+    for( k = 0; k < kBinsPerOctave; k++ ) {
         m_Keys[k] = m_MajCorr[k];
-        m_Keys[k+m_BPO] = m_MinCorr[k];
+        m_Keys[k+kBinsPerOctave] = m_MinCorr[k];
     }
 
     for (k = 0; k < 24; ++k) {
         m_keyStrengths[k] = 0;
     }
 
-    for( k = 0; k < m_BPO*2; k++ ) {
-        int idx = k / (m_BPO/12);
-        int rem = k % (m_BPO/12);
+    for( k = 0; k < kBinsPerOctave*2; k++ ) {
+        int idx = k / (kBinsPerOctave/12);
+        int rem = k % (kBinsPerOctave/12);
         if (rem == 0 || m_Keys[k] > m_keyStrengths[idx]) {
             m_keyStrengths[idx] = m_Keys[k];
         }
 
-//        m_keyStrengths[k/(m_BPO/12)] += m_Keys[k];
+//        m_keyStrengths[k/(kBinsPerOctave/12)] += m_Keys[k];
     }
 
 /*
   std::cout << "raw keys: ";
-  for (int ii = 0; ii < 2*m_BPO; ++ii) {
-      if (ii % (m_BPO/12) == 0) std::cout << "\n";
+  for (int ii = 0; ii < 2*kBinsPerOctave; ++ii) {
+      if (ii % (kBinsPerOctave/12) == 0) std::cout << "\n";
       std::cout << m_Keys[ii] << " ";
   }
   std::cout << std::endl;
@@ -260,7 +261,7 @@ int GetKeyMode::process(double *PCMData)
     // m_Keys[1] is C center  1 / 3 + 1 = 1
     // m_Keys[4] is D center  4 / 3 + 1 = 2
     // '+ 1' because we number keys 1-24, not 0-23.
-    key = MathUtilities::getMax( m_Keys, 2* m_BPO, &dummy ) / 3 + 1;
+    key = MathUtilities::getMax( m_Keys, 2* kBinsPerOctave, &dummy ) / 3 + 1;
 
 //    std::cout << "key pre-sorting: " << key << std::endl;
 
@@ -317,4 +318,9 @@ int GetKeyMode::process(double *PCMData)
 bool GetKeyMode::isModeMinor( int key )
 { 
     return (key > 12);
+}
+
+unsigned int getChromaSize() 
+{ 
+    return kBinsPerOctave; 
 }
