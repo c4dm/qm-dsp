@@ -228,20 +228,6 @@ int GetKeyMode::process(double *PCMData)
         m_Keys[k+kBinsPerOctave] = m_MinCorr[k];
     }
 
-    for (k = 0; k < 24; ++k) {
-        m_keyStrengths[k] = 0;
-    }
-
-    for( k = 0; k < kBinsPerOctave*2; k++ ) {
-        int idx = k / (kBinsPerOctave/12);
-        int rem = k % (kBinsPerOctave/12);
-        if (rem == 0 || m_Keys[k] > m_keyStrengths[idx]) {
-            m_keyStrengths[idx] = m_Keys[k];
-        }
-
-//        m_keyStrengths[k/(kBinsPerOctave/12)] += m_Keys[k];
-    }
-
 /*
   std::cout << "raw keys: ";
   for (int ii = 0; ii < 2*kBinsPerOctave; ++ii) {
@@ -249,14 +235,8 @@ int GetKeyMode::process(double *PCMData)
       std::cout << m_Keys[ii] << " ";
   }
   std::cout << std::endl;
-
-  std::cout << "key strengths: ";
-  for (int ii = 0; ii < 24; ++ii) {
-      if (ii % 6 == 0) std::cout << "\n";
-      std::cout << m_keyStrengths[ii] << " ";
-  }
-  std::cout << std::endl;
 */
+
     double dummy;
     // m_Keys[1] is C center  1 / 3 + 1 = 1
     // m_Keys[4] is D center  4 / 3 + 1 = 2
@@ -323,4 +303,41 @@ bool GetKeyMode::isModeMinor( int key )
 unsigned int getChromaSize() 
 { 
     return kBinsPerOctave; 
+}
+
+double* GetKeyMode::getKeyStrengths() {
+    unsigned int k;
+
+    for (k = 0; k < 24; ++k) {
+        m_keyStrengths[k] = 0;
+    }
+
+    for( k = 0; k < kBinsPerOctave; k++ )
+    {
+        int idx = k / (kBinsPerOctave/12);
+        int rem = k % (kBinsPerOctave/12);
+        if (rem == 0 || m_MajCorr[k] > m_keyStrengths[idx]) {
+            m_keyStrengths[idx] = m_MajCorr[k];
+        }
+    }
+
+    for( k = 0; k < kBinsPerOctave; k++ )
+    {
+        int idx = (k + kBinsPerOctave) / (kBinsPerOctave/12);
+        int rem = k % (kBinsPerOctave/12);
+        if (rem == 0 || m_MinCorr[k] > m_keyStrengths[idx]) {
+            m_keyStrengths[idx] = m_MinCorr[k];
+        }
+    }
+
+/*
+    std::cout << "key strengths: ";
+    for (int ii = 0; ii < 24; ++ii) {
+        if (ii % 6 == 0) std::cout << "\n";
+        std::cout << m_keyStrengths[ii] << " ";
+    }
+    std::cout << std::endl;
+*/
+
+    return m_keyStrengths;
 }

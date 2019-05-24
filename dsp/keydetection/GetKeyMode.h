@@ -37,7 +37,7 @@ public:
 
 	double* getMeanHPCP() { return m_MeanHPCP; }
 
-	double *getKeyStrengths() { return m_keyStrengths; }
+	double* getKeyStrengths();
 
 	bool isModeMinor( int key ); 
 
