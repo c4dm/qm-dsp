@@ -36,8 +36,9 @@ vector<double> generateSinusoid(double frequency,
     vector<double> buffer;
     buffer.reserve(length);
     for (int i = 0; i < length; ++i) {
-        buffer.push_back(sin(i * M_PI * 2.0 * frequency / sampleRate));
+        buffer.push_back(sin((i * M_PI * 2.0 * frequency) / sampleRate));
     }
+
     return buffer;
 }
 
@@ -63,7 +64,7 @@ BOOST_AUTO_TEST_CASE(sinusoid_12tET)
     
     Chromagram chroma(config);
     
-    for (int midiPitch = 48; midiPitch < 96; ++midiPitch) {
+    for (int midiPitch = 36; midiPitch < 108; ++midiPitch) {
 
         cout << endl;
 
@@ -84,7 +85,7 @@ BOOST_AUTO_TEST_CASE(sinusoid_12tET)
         vector<double> signal = generateSinusoid(frequency,
                                                  sampleRate,
                                                  blockSize);
-
+        
         double *output = chroma.process(signal.data());
 
         int peakBin = -1;
