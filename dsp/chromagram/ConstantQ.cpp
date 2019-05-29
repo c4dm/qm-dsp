@@ -293,7 +293,7 @@ void ConstantQ::initialise( CQConfig Config )
     m_CQThresh = Config.CQThresh;// ConstantQ threshold for kernel generation
 
     m_dQ = 1/(pow(2,(1/(double)m_BPO))-1);	// Work out Q value for Filter bank
-    m_uK = (unsigned int) ceil(m_BPO * log(m_FMax/m_FMin)/log(2.0));	// No. of constant Q bins
+    m_uK = m_BPO * int(ceil(log(m_FMax/m_FMin)/log(2.0)));	// No. of constant Q bins, extended to a full octave
 
 //    std::cerr << "ConstantQ::initialise: rate = " << m_FS << ", fmin = " << m_FMin << ", fmax = " << m_FMax << ", bpo = " << m_BPO << ", K = " << m_uK << ", Q = " << m_dQ << std::endl;
 
