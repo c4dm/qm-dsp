@@ -1,7 +1,12 @@
 /* -*- c-basic-offset: 4 indent-tabs-mode: nil -*-  vi:set ts=8 sts=4 sw=4: */
 /*
-    Copyright (c) 2005 Centre for Digital Music ( C4DM )
-                       Queen Mary Univesrity of London
+    QM DSP Library
+
+    Centre for Digital Music, Queen Mary, University of London.
+    This file 2005-2006 Christian Landone and Katy Noland.
+
+    Fixes to correct chroma offsets and for thread safety contributed
+    by Daniel Schürmann.
 
     This program is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License as
@@ -9,9 +14,6 @@
     License, or (at your option) any later version.  See the file
     COPYING included with this distribution for more information.
 */
-// GetKeyMode.cpp: implementation of the CGetKeyMode class.
-//
-//////////////////////////////////////////////////////////////////////
 
 #include "GetKeyMode.h"
 #include "maths/MathUtilities.h"
