@@ -30,7 +30,7 @@ string midiPitchName(int midiPitch)
 }
 
 vector<double> generateSinusoid(double frequency,
-                                int sampleRate,
+                                double sampleRate,
                                 int length)
 {
     vector<double> buffer;
@@ -50,7 +50,7 @@ double frequencyForPitch(int midiPitch, double concertA)
 BOOST_AUTO_TEST_CASE(sinusoid_12tET)
 {
     double concertA = 440.0;
-    int sampleRate = 44100;
+    double sampleRate = 44100;
     int bpo = 60;
 
     ChromaConfig config {

@@ -20,8 +20,8 @@
 #include "base/Window.h"
 #include "ConstantQ.h"
 
-struct ChromaConfig{
-    int FS;
+struct ChromaConfig {
+    double FS;
     double min;
     double max;
     int BPO;
