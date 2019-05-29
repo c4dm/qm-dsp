@@ -34,11 +34,9 @@ vector<double> generateSinusoid(double frequency,
                                 int length)
 {
     vector<double> buffer;
-    buffer.reserve(length);
     for (int i = 0; i < length; ++i) {
         buffer.push_back(sin((i * M_PI * 2.0 * frequency) / sampleRate));
     }
-
     return buffer;
 }
 
@@ -50,7 +48,7 @@ double frequencyForPitch(int midiPitch, double concertA)
 BOOST_AUTO_TEST_CASE(sinusoid_12tET)
 {
     double concertA = 440.0;
-    double sampleRate = 44100;
+    double sampleRate = 44100.0;
     int bpo = 60;
 
     ChromaConfig config {
@@ -85,7 +83,7 @@ BOOST_AUTO_TEST_CASE(sinusoid_12tET)
         vector<double> signal = generateSinusoid(frequency,
                                                  sampleRate,
                                                  blockSize);
-        
+
         double *output = chroma.process(signal.data());
 
         int peakBin = -1;
@@ -107,6 +105,11 @@ BOOST_AUTO_TEST_CASE(sinusoid_12tET)
 
         if (peakBin != expectedPeakBin) {
             cout << "NOTE: peak bin " << peakBin << " does not match expected " << expectedPeakBin << endl;
+            cout << "bin values are: ";
+            for (int i = 0; i < bpo; ++i) {
+                cout << i << ": " << output[i] << "   ";
+            }
+            cout << endl;
         }
     }
 }

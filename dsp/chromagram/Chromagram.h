@@ -35,10 +35,35 @@ class Chromagram
 public:	
     Chromagram( ChromaConfig Config );
     ~Chromagram();
-	
-    double* process( const double *data ); // time domain
-    double* process( const double *real, const double *imag ); // frequency domain
-    void unityNormalise( double* src );
+
+    /**
+     * Process a time-domain input signal of length equal to
+     * getFrameSize().
+     * 
+     * The returned buffer contains the chromagram values indexed by
+     * bin, with the number of values corresponding to the BPO field
+     * in the ChromaConfig supplied at construction. It is owned by
+     * the Chromagram object and is reused from one process call to
+     * the next.
+     */
+    double *process(const double *data);
+    
+    /**
+     * Process a frequency-domain input signal generated from a
+     * time-domain signal of length equal to getFrameSize() that has
+     * been windowed and "fftshifted" to place the zero index in the
+     * centre of the frame. The real and imag buffers must each
+     * contain the full getFrameSize() frequency bins.
+     * 
+     * The returned buffer contains the chromagram values indexed by
+     * bin, with the number of values corresponding to the BPO field
+     * in the ChromaConfig supplied at construction. It is owned by
+     * the Chromagram object and is reused from one process call to
+     * the next.
+     */
+    double *process(const double *real, const double *imag);
+    
+    void unityNormalise(double* src);
 
     // Complex arithmetic
     double kabs( double real, double imag );

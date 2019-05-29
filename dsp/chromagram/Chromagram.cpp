@@ -121,7 +121,7 @@ void Chromagram::unityNormalise(double *src)
 }
 
 
-double* Chromagram::process( const double *data )
+double *Chromagram::process(const double *data)
 {
     if (!m_skGenerated) {
         // Generate CQ Kernel 
@@ -139,12 +139,20 @@ double* Chromagram::process( const double *data )
     }
     m_window->cut(m_windowbuf);
 
+    // The frequency-domain version expects pre-fftshifted input - so
+    // we must do the same here
+    for (int i = 0; i < m_frameSize/2; ++i) {
+        double tmp = m_windowbuf[i];
+        m_windowbuf[i] = m_windowbuf[i + m_frameSize/2];
+        m_windowbuf[i + m_frameSize/2] = tmp;
+    }
+
     m_FFT->forward(m_windowbuf, m_FFTRe, m_FFTIm);
 
     return process(m_FFTRe, m_FFTIm);
 }
 
-double* Chromagram::process( const double *real, const double *imag )
+double *Chromagram::process(const double *real, const double *imag)
 {
     if (!m_skGenerated) {
         // Generate CQ Kernel 
