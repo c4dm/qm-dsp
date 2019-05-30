@@ -71,8 +71,10 @@ Code style
    at the start of a function or class definition where it gets a line
    of its own
 
- * Please use braces around any conditional or loop block that
-   occupies its own line
+ * Please use braces around any conditional or loop block that is not
+   on the same line as the test
+
+ * Please keep lines to no more than 80 characters in length
 
 Some of the older code in this library does not follow these
 guidelines - usually this means the code needs to be updated.
