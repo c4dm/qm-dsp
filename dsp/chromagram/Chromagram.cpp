@@ -33,8 +33,9 @@ int Chromagram::initialise( ChromaConfig Config )
     m_BPO  = Config.BPO;		// bins per octave
     m_normalise = Config.normalise;     // if frame normalisation is required
 
-    // No. of constant Q bins, extended to a full octave
-    m_uK = m_BPO * int(ceil(log(m_FMax/m_FMin)/log(2.0)));
+    // Extend range to a full octave
+    double octaves = log(m_FMax / m_FMin) / log(2.0);
+    m_FMax = m_FMin * pow(2.0, ceil(octaves));
 
     // Create array for chroma result
     m_chromadata = new double[ m_BPO ];
@@ -52,6 +53,9 @@ int Chromagram::initialise( ChromaConfig Config )
 	
     // Initialise ConstantQ operator
     m_ConstantQ = new ConstantQ( ConstantQConfig );
+
+    // No. of constant Q bins
+    m_uK = m_ConstantQ->getK();
 
     // Initialise working arrays
     m_frameSize = m_ConstantQ->getfftlength();
