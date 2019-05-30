@@ -13,12 +13,12 @@ BOOST_AUTO_TEST_SUITE(TestFFT)
 
 #define COMPARE_CONST(a, n) \
     for (int cmp_i = 0; cmp_i < (int)(sizeof(a)/sizeof(a[0])); ++cmp_i) { \
-        BOOST_CHECK_SMALL(a[cmp_i] - n, 1e-14);				\
+        BOOST_CHECK_SMALL(a[cmp_i] - n, 1e-14);                         \
     }
 
-#define COMPARE_ARRAY(a, b)						\
+#define COMPARE_ARRAY(a, b)                                             \
     for (int cmp_i = 0; cmp_i < (int)(sizeof(a)/sizeof(a[0])); ++cmp_i) { \
-        BOOST_CHECK_SMALL(a[cmp_i] - b[cmp_i], 1e-14);			\
+        BOOST_CHECK_SMALL(a[cmp_i] - b[cmp_i], 1e-14);                  \
     }
 
 //!!! need at least one test with complex time-domain signal
@@ -280,7 +280,7 @@ BOOST_AUTO_TEST_CASE(c_cosine)
     COMPARE_ARRAY(back, rin);
     COMPARE_ARRAY(backim, iin);
 }
-	
+        
 BOOST_AUTO_TEST_CASE(sineCosine)
 {
     // Sine and cosine mixed
@@ -302,7 +302,7 @@ BOOST_AUTO_TEST_CASE(sineCosine)
     COMPARE_ARRAY(back, in);
     COMPARE_CONST(backim, 0.0);
 }
-	
+        
 BOOST_AUTO_TEST_CASE(r_sineCosine)
 {
     // Sine and cosine mixed
@@ -325,7 +325,7 @@ BOOST_AUTO_TEST_CASE(r_sineCosine)
     FFTReal(4).inverse(re, im, back);
     COMPARE_ARRAY(back, in);
 }
-	
+        
 BOOST_AUTO_TEST_CASE(c_sineCosine)
 {
     double rin[] = { 1, 0, -1, 0 };

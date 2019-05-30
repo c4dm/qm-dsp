@@ -106,13 +106,13 @@ BOOST_AUTO_TEST_CASE(nonU4)
     d.forward(in.data(), out.data());
     
     for (int i = 0; i < n; ++i) {
-	BOOST_CHECK_SMALL(expected[i] - out[i], thresh);
+        BOOST_CHECK_SMALL(expected[i] - out[i], thresh);
     }
 
     d.inverse(out.data(), inv.data());
 
     for (int i = 0; i < n; ++i) {
-	BOOST_CHECK_SMALL(in[i] - inv[i], thresh);
+        BOOST_CHECK_SMALL(in[i] - inv[i], thresh);
     }
     
     // do it again, just in case some internal state was modified in inverse
@@ -120,7 +120,7 @@ BOOST_AUTO_TEST_CASE(nonU4)
     d.forward(in.data(), out.data());
     
     for (int i = 0; i < n; ++i) {
-	BOOST_CHECK_SMALL(expected[i] - out[i], thresh);
+        BOOST_CHECK_SMALL(expected[i] - out[i], thresh);
     }
 }
 
@@ -140,13 +140,13 @@ BOOST_AUTO_TEST_CASE(u4)
     d.forwardUnitary(in.data(), out.data());
     
     for (int i = 0; i < n; ++i) {
-	BOOST_CHECK_SMALL(expected[i] - out[i], thresh);
+        BOOST_CHECK_SMALL(expected[i] - out[i], thresh);
     }
 
     d.inverseUnitary(out.data(), inv.data());
 
     for (int i = 0; i < n; ++i) {
-	BOOST_CHECK_SMALL(in[i] - inv[i], thresh);
+        BOOST_CHECK_SMALL(in[i] - inv[i], thresh);
     }
     
     // do it again, just in case some internal state was modified in inverse
@@ -154,7 +154,7 @@ BOOST_AUTO_TEST_CASE(u4)
     d.forwardUnitary(in.data(), out.data());
     
     for (int i = 0; i < n; ++i) {
-	BOOST_CHECK_SMALL(expected[i] - out[i], thresh);
+        BOOST_CHECK_SMALL(expected[i] - out[i], thresh);
     }
 }
 
@@ -174,13 +174,13 @@ BOOST_AUTO_TEST_CASE(u5)
     d.forwardUnitary(in.data(), out.data());
     
     for (int i = 0; i < n; ++i) {
-	BOOST_CHECK_SMALL(expected[i] - out[i], thresh);
+        BOOST_CHECK_SMALL(expected[i] - out[i], thresh);
     }
 
     d.inverseUnitary(out.data(), inv.data());
 
     for (int i = 0; i < n; ++i) {
-	BOOST_CHECK_SMALL(in[i] - inv[i], thresh);
+        BOOST_CHECK_SMALL(in[i] - inv[i], thresh);
     }
     
     // do it again, just in case some internal state was modified in inverse
@@ -188,7 +188,7 @@ BOOST_AUTO_TEST_CASE(u5)
     d.forwardUnitary(in.data(), out.data());
     
     for (int i = 0; i < n; ++i) {
-	BOOST_CHECK_SMALL(expected[i] - out[i], thresh);
+        BOOST_CHECK_SMALL(expected[i] - out[i], thresh);
     }
 }
 

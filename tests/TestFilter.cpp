@@ -38,7 +38,7 @@ BOOST_AUTO_TEST_CASE(iir)
     double thresh = 1e-12;
     
     for (int i = 0; i < n; ++i) {
-	BOOST_CHECK_SMALL(out[i] - expected[i], thresh);
+        BOOST_CHECK_SMALL(out[i] - expected[i], thresh);
     }
 }
 
@@ -56,20 +56,20 @@ BOOST_AUTO_TEST_CASE(iir_chunked)
     int j = 0;
     int i = 0;
     while (j < n) {
-	if (++i == 4) {
-	    i = 1;
-	}
-	if (j + i >= n) {
-	    i = n - j;
-	}
-	f.process(in.data() + j, out.data() + j, i);
-	j += i;
+        if (++i == 4) {
+            i = 1;
+        }
+        if (j + i >= n) {
+            i = n - j;
+        }
+        f.process(in.data() + j, out.data() + j, i);
+        j += i;
     }
     
     double thresh = 1e-12;
     
     for (int i = 0; i < n; ++i) {
-	BOOST_CHECK_SMALL(out[i] - expected[i], thresh);
+        BOOST_CHECK_SMALL(out[i] - expected[i], thresh);
     }
 }
 
@@ -88,7 +88,7 @@ BOOST_AUTO_TEST_CASE(fir)
     double thresh = 1e-4;
     
     for (int i = 0; i < n; ++i) {
-	BOOST_CHECK_SMALL(out[i] - expected[i], thresh);
+        BOOST_CHECK_SMALL(out[i] - expected[i], thresh);
     }
 }
 
