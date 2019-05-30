@@ -17,37 +17,6 @@
 
 #include <iostream>
 
-#ifdef NOT_DEFINED
-// see note in CQprecalc
-
-#include "CQprecalc.cpp"
-
-static bool push_precalculated(int uk, int fftlength,
-                               std::vector<unsigned> &is,
-                               std::vector<unsigned> &js,
-                               std::vector<double> &real,
-                               std::vector<double> &imag)
-{
-    if (uk == 76 && fftlength == 16384) {
-        push_76_16384(is, js, real, imag);
-        return true;
-    }
-    if (uk == 144 && fftlength == 4096) {
-        push_144_4096(is, js, real, imag);
-        return true;
-    }
-    if (uk == 65 && fftlength == 2048) {
-        push_65_2048(is, js, real, imag);
-        return true;
-    }
-    if (uk == 84 && fftlength == 65536) {
-        push_84_65536(is, js, real, imag);
-        return true;
-    }
-    return false;
-}
-#endif
-
 //---------------------------------------------------------------------------
 // nextpow2 returns the smallest integer n such that 2^n >= x.
 static double nextpow2(double x) {
@@ -78,15 +47,6 @@ void ConstantQ::sparsekernel()
 //    std::cerr << "ConstantQ: initialising sparse kernel, uK = " << m_uK << ", FFTLength = " << m_FFTLength << "...";
 
     SparseKernel *sk = new SparseKernel();
-
-#ifdef NOT_DEFINED
-    if (push_precalculated(m_uK, m_FFTLength,
-                           sk->is, sk->js, sk->real, sk->imag)) {
-//        std::cerr << "using precalculated kernel" << std::endl;
-        m_sparseKernel = sk;
-        return;
-    }
-#endif
 
     //generates spectral kernel matrix (upside down?)
     // initialise temporal kernel with zeros, twice length to deal w. complex numbers
@@ -178,71 +138,6 @@ void ConstantQ::sparsekernel()
     delete [] transfHammingWindowRe;
     delete [] transfHammingWindowIm;
 
-/*
-    using std::cout;
-    using std::endl;
-
-    cout.precision(28);
-
-    int n = sk->is.size();
-    int w = 8;
-    cout << "static unsigned int sk_i_" << m_uK << "_" << m_FFTLength << "[" << n << "] = {" << endl;
-    for (int i = 0; i < n; ++i) {
-        if (i % w == 0) cout << "    ";
-        cout << sk->is[i];
-        if (i + 1 < n) cout << ", ";
-        if (i % w == w-1) cout << endl;
-    };
-    if (n % w != 0) cout << endl;
-    cout << "};" << endl;
-
-    n = sk->js.size();
-    cout << "static unsigned int sk_j_" << m_uK << "_" << m_FFTLength << "[" << n << "] = {" << endl;
-    for (int i = 0; i < n; ++i) {
-        if (i % w == 0) cout << "    ";
-        cout << sk->js[i];
-        if (i + 1 < n) cout << ", ";
-        if (i % w == w-1) cout << endl;
-    };
-    if (n % w != 0) cout << endl;
-    cout << "};" << endl;
-
-    w = 2;
-    n = sk->real.size();
-    cout << "static double sk_real_" << m_uK << "_" << m_FFTLength << "[" << n << "] = {" << endl;
-    for (int i = 0; i < n; ++i) {
-        if (i % w == 0) cout << "    ";
-        cout << sk->real[i];
-        if (i + 1 < n) cout << ", ";
-        if (i % w == w-1) cout << endl;
-    };
-    if (n % w != 0) cout << endl;
-    cout << "};" << endl;
-
-    n = sk->imag.size();
-    cout << "static double sk_imag_" << m_uK << "_" << m_FFTLength << "[" << n << "] = {" << endl;
-    for (int i = 0; i < n; ++i) {
-        if (i % w == 0) cout << "    ";
-        cout << sk->imag[i];
-        if (i + 1 < n) cout << ", ";
-        if (i % w == w-1) cout << endl;
-    };
-    if (n % w != 0) cout << endl;
-    cout << "};" << endl;
-
-    cout << "static void push_" << m_uK << "_" << m_FFTLength << "(vector<unsigned int> &is, vector<unsigned int> &js, vector<double> &real, vector<double> &imag)" << endl;
-    cout << "{\n    is.reserve(" << n << ");\n";
-    cout << "    js.reserve(" << n << ");\n";
-    cout << "    real.reserve(" << n << ");\n";
-    cout << "    imag.reserve(" << n << ");\n";
-    cout << "    for (int i = 0; i < " << n << "; ++i) {" << endl;
-    cout << "        is.push_back(sk_i_" << m_uK << "_" << m_FFTLength << "[i]);" << endl;
-    cout << "        js.push_back(sk_j_" << m_uK << "_" << m_FFTLength << "[i]);" << endl;
-    cout << "        real.push_back(sk_real_" << m_uK << "_" << m_FFTLength << "[i]);" << endl;
-    cout << "        imag.push_back(sk_imag_" << m_uK << "_" << m_FFTLength << "[i]);" << endl;
-    cout << "    }" << endl;
-    cout << "}" << endl;
-*/
 //    std::cerr << "done\n -> is: " << sk->is.size() << ", js: " << sk->js.size() << ", reals: " << sk->real.size() << ", imags: " << sk->imag.size() << std::endl;
     
     m_sparseKernel = sk;
