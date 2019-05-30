@@ -70,19 +70,16 @@ BOOST_AUTO_TEST_CASE(sinusoid_12tET)
     
     for (int midiPitch = 48; midiPitch < 96; ++midiPitch) {
 
-        cout << endl;
-
         GetKeyMode gkm(sampleRate, concertA, 10, 10);
         int blockSize = gkm.getBlockSize();
         int hopSize = gkm.getHopSize();
-        cerr << "blockSize = " << blockSize
-             << ", hopSize = " << hopSize << endl;
 
         double frequency = concertA * pow(2.0, (midiPitch - 69.0) / 12.0);
+/*
         cout << "midiPitch = " << midiPitch
              << ", name = " << midiPitchName(midiPitch)
              << ", frequency = " << frequency << endl;
-
+*/
         int blocks = 4;
         int totalLength = blockSize * blocks;
         vector<double> signal = generateSinusoid(frequency, sampleRate,
@@ -105,8 +102,10 @@ BOOST_AUTO_TEST_CASE(sinusoid_12tET)
         int tonic = key;
         if (minor) tonic -= 12;
 
-        string name = keyName(tonic, minor);
-        cout << "key value = " << key << ", name = " << name << endl;
+        BOOST_CHECK_EQUAL(tonic, 1 + (midiPitch % 12));
+        
+//        string name = keyName(tonic, minor);
+//        cout << "key value = " << key << ", name = " << name << endl;
     }
 }
 

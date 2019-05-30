@@ -45,41 +45,43 @@ double frequencyForPitch(int midiPitch, double concertA)
     return concertA * pow(2.0, (midiPitch - 69.0) / 12.0);
 }
 
-BOOST_AUTO_TEST_CASE(sinusoid_12tET)
+void test_sinusoid_12tET(double concertA, double sampleRate, int bpo)
 {
-    double concertA = 440.0;
-    double sampleRate = 44100.0;
-    int bpo = 60;
+    int chromaMinPitch = 36;
+    int chromaMaxPitch = 108;
 
+    int probeMinPitch = 36;
+    int probeMaxPitch = 108;
+    
     ChromaConfig config {
         sampleRate,
-        frequencyForPitch(36, concertA),
-        frequencyForPitch(108, concertA),
+        frequencyForPitch(chromaMinPitch, concertA),
+        frequencyForPitch(chromaMaxPitch, concertA),
         bpo,
         0.0054,
         MathUtilities::NormaliseNone
     };
     
     Chromagram chroma(config);
-    
-    for (int midiPitch = 36; midiPitch < 108; ++midiPitch) {
 
-        cout << endl;
+    int binsPerSemi = bpo / 12;
+    
+    for (int midiPitch = probeMinPitch;
+         midiPitch < probeMaxPitch;
+         ++midiPitch) {
 
         int blockSize = chroma.getFrameSize();
-        int hopSize = chroma.getHopSize();
-        cerr << "blockSize = " << blockSize
-             << ", hopSize = " << hopSize << endl;
 
         double frequency = frequencyForPitch(midiPitch, concertA);
-        int expectedPeakBin = ((midiPitch - 36) * 5) % bpo;
-
+        int expectedPeakBin =
+            ((midiPitch - chromaMinPitch) * binsPerSemi) % bpo;
+/*
         cout << "midiPitch = " << midiPitch
              << ", name = " << midiPitchName(midiPitch)
              << ", frequency = " << frequency
              << ", expected peak bin = "
              << expectedPeakBin << endl;
-        
+*/        
         vector<double> signal = generateSinusoid(frequency,
                                                  sampleRate,
                                                  blockSize);
@@ -95,14 +97,13 @@ BOOST_AUTO_TEST_CASE(sinusoid_12tET)
                 peakBin = i;
             }
         }
-
+/*
         cout << "peak value = " << peakValue << " at bin " << peakBin << endl;
         cout << "(neighbouring values are "
              << (peakBin > 0 ? output[peakBin-1] : output[bpo-1])
              << " and "
              << (peakBin+1 < bpo ? output[peakBin+1] : output[0])
              << ")" << endl;
-
         if (peakBin != expectedPeakBin) {
             cout << "NOTE: peak bin " << peakBin << " does not match expected " << expectedPeakBin << endl;
             cout << "bin values are: ";
@@ -111,7 +112,30 @@ BOOST_AUTO_TEST_CASE(sinusoid_12tET)
             }
             cout << endl;
         }
+*/
+        
+        BOOST_CHECK_EQUAL(peakBin, expectedPeakBin);
     }
+}
+
+BOOST_AUTO_TEST_CASE(sinusoid_12tET_440_44100_36)
+{
+    test_sinusoid_12tET(440.0, 44100.0, 36);
+}
+    
+BOOST_AUTO_TEST_CASE(sinusoid_12tET_440_44100_60)
+{
+    test_sinusoid_12tET(440.0, 44100.0, 60);
+}
+
+BOOST_AUTO_TEST_CASE(sinusoid_12tET_397_44100_60)
+{
+    test_sinusoid_12tET(397.0, 44100.0, 60);
+}
+
+BOOST_AUTO_TEST_CASE(sinusoid_12tET_440_48000_60)
+{
+    test_sinusoid_12tET(440.0, 48000.0, 60);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
