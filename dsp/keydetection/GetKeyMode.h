@@ -20,72 +20,72 @@
 class GetKeyMode  
 {
 public:
-	GetKeyMode( int sampleRate, float tuningFrequency,
-		    double hpcpAverage, double medianAverage );
+    GetKeyMode( int sampleRate, float tuningFrequency,
+                double hpcpAverage, double medianAverage );
 
-	virtual ~GetKeyMode();
+    virtual ~GetKeyMode();
 
-	int process( double* PCMData );
+    int process( double* PCMData );
 
-	double krumCorr( const double *pDataNorm, const double *pProfileNorm, 
-                         int shiftProfile, unsigned int length );
+    double krumCorr( const double *pDataNorm, const double *pProfileNorm, 
+                     int shiftProfile, unsigned int length );
 
-	unsigned int getBlockSize() { return m_ChromaFrameSize*m_DecimationFactor; }
-	unsigned int getHopSize() { return m_ChromaHopSize*m_DecimationFactor; }
+    unsigned int getBlockSize() { return m_ChromaFrameSize*m_DecimationFactor; }
+    unsigned int getHopSize() { return m_ChromaHopSize*m_DecimationFactor; }
 
-	double* getChroma() { return m_ChrPointer; }
-	unsigned int getChromaSize();
+    double* getChroma() { return m_ChrPointer; }
+    unsigned int getChromaSize();
 
-	double* getMeanHPCP() { return m_MeanHPCP; }
+    double* getMeanHPCP() { return m_MeanHPCP; }
 
-	double* getKeyStrengths();
+    double* getKeyStrengths();
 
-	bool isModeMinor( int key ); 
+    bool isModeMinor( int key ); 
 
 protected:
 
-	double m_hpcpAverage;
-	double m_medianAverage;
-	unsigned int m_DecimationFactor;
+    double m_hpcpAverage;
+    double m_medianAverage;
+    unsigned int m_DecimationFactor;
 
-	//Decimator (fixed)
-	Decimator* m_Decimator;
+    //Decimator (fixed)
+    Decimator* m_Decimator;
 
-	//chroma configuration
-	ChromaConfig m_ChromaConfig;
+    //chroma configuration
+    ChromaConfig m_ChromaConfig;
 
-	//Chromagram object
-	Chromagram* m_Chroma;
+    //Chromagram object
+    Chromagram* m_Chroma;
 
-	//Chromagram output pointer
-	double* m_ChrPointer;
+    //Chromagram output pointer
+    double* m_ChrPointer;
 
-	//Framesize
-	unsigned int m_ChromaFrameSize;
-	//Hop
-	unsigned int m_ChromaHopSize;
+    //Framesize
+    unsigned int m_ChromaFrameSize;
+    //Hop
+    unsigned int m_ChromaHopSize;
 
 
-	unsigned int m_ChromaBuffersize;
-	unsigned int m_MedianWinsize;
-	
-	unsigned int m_bufferindex;
-	unsigned int m_ChromaBufferFilling;
-	unsigned int m_MedianBufferFilling;
-	
+    unsigned int m_ChromaBuffersize;
+    unsigned int m_MedianWinsize;
+        
+    unsigned int m_bufferindex;
+    unsigned int m_ChromaBufferFilling;
+    unsigned int m_MedianBufferFilling;
+        
 
-	double* m_DecimatedBuffer;
-	double* m_ChromaBuffer;
-	double* m_MeanHPCP;
+    double* m_DecimatedBuffer;
+    double* m_ChromaBuffer;
+    double* m_MeanHPCP;
 
-	double* m_MajProfileNorm;
-	double* m_MinProfileNorm;
-	double* m_MajCorr;
-	double* m_MinCorr;
-	int* m_MedianFilterBuffer;
-	int* m_SortedBuffer;
+    double* m_MajProfileNorm;
+    double* m_MinProfileNorm;
+    double* m_MajCorr;
+    double* m_MinCorr;
+    int* m_MedianFilterBuffer;
+    int* m_SortedBuffer;
 
-	double *m_keyStrengths;
+    double *m_keyStrengths;
 };
 
 #endif // !defined GETKEYMODE_H

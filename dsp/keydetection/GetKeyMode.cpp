@@ -155,8 +155,8 @@ double GetKeyMode::krumCorr( const double *pDataNorm, const double *pProfileNorm
     double sum1 = 0;
     double sum2 = 0;
     
-    for( unsigned int i = 0; i <length; i++ )
-    {
+    for( unsigned int i = 0; i <length; i++ ) {
+
         int k = (i - shiftProfile + length) % length;
 
         num += pDataNorm[i] * pProfileNorm[k];
@@ -164,7 +164,7 @@ double GetKeyMode::krumCorr( const double *pDataNorm, const double *pProfileNorm
         sum1 += ( pDataNorm[i] * pDataNorm[i] );
         sum2 += ( pProfileNorm[k] * pProfileNorm[k] );
     }
-	
+        
     den = sqrt(sum1 * sum2);
 
     if( den>0 ) {
@@ -181,19 +181,10 @@ int GetKeyMode::process(double *PCMData)
     int key;
     unsigned int j,k;
 
-    //////////////////////////////////////////////
     m_Decimator->process( PCMData, m_DecimatedBuffer);
 
     m_ChrPointer = m_Chroma->process( m_DecimatedBuffer );
 
-/*
-    std::cout << "raw chroma: ";
-    for (int ii = 0; ii < kBinsPerOctave; ++ii) {
-      if (ii % (kBinsPerOctave/12) == 0) std::cout << "\n";
-        std::cout << m_ChrPointer[ii] << " ";
-    }
-    std::cout << std::endl;
-*/
     // populate hpcp values;
     int cbidx;
     for( j = 0; j < kBinsPerOctave; j++ ) {
@@ -223,34 +214,18 @@ int GetKeyMode::process(double *PCMData)
 
     // Normalize for zero average
     double mHPCP = MathUtilities::mean( m_MeanHPCP, kBinsPerOctave );
-    for( k = 0; k < kBinsPerOctave; k++ )
-    {
+    for( k = 0; k < kBinsPerOctave; k++ ) {
         m_MeanHPCP[k] -= mHPCP;
     }
 
-
-    for( k = 0; k < kBinsPerOctave; k++ )
-    {
-        // The Cromagram has the center of C at bin 0, while the major
+    for( k = 0; k < kBinsPerOctave; k++ ) {
+        // The Chromagram has the center of C at bin 0, while the major
         // and minor profiles have the center of C at 1. We want to have
         // the correlation for C result also at 1.
         // To achieve this we have to shift two times:
         m_MajCorr[k] = krumCorr( m_MeanHPCP, m_MajProfileNorm, (int)k - 2, kBinsPerOctave );
         m_MinCorr[k] = krumCorr( m_MeanHPCP, m_MinProfileNorm, (int)k - 2, kBinsPerOctave );
     }
-
-/*
-  std::cout << "raw keys: ";
-  for (int ii = 0; ii < kBinsPerOctave; ++ii) {
-      if (ii % (kBinsPerOctave/12) == 0) std::cout << "\n";
-      std::cout << m_MajCorr[ii] << " ";
-  }
-  for (int ii = 0; ii < kBinsPerOctave; ++ii) {
-      if (ii % (kBinsPerOctave/12) == 0) std::cout << "\n";
-      std::cout << m_MinCorr[ii] << " ";
-  }
-  std::cout << std::endl;
-*/
 
     // m_MajCorr[1] is C center  1 / 3 + 1 = 1
     // m_MajCorr[4] is D center  4 / 3 + 1 = 2
@@ -261,10 +236,6 @@ int GetKeyMode::process(double *PCMData)
     int maxMinBin = MathUtilities::getMax( m_MinCorr, kBinsPerOctave, &maxMin );
     int maxBin = (maxMaj > maxMin) ? maxMajBin : (maxMinBin + kBinsPerOctave);
     key = maxBin / 3 + 1;
-
-//    std::cout << "fractional key pre-sorting: " << (maxBin + 2) / 3.0 << std::endl;
-//    std::cout << "key pre-sorting: " << key << std::endl;
-
 
     //Median filtering
 
@@ -291,25 +262,15 @@ int GetKeyMode::process(double *PCMData)
 
     qsort(m_SortedBuffer, m_MedianBufferFilling, sizeof(unsigned int),
           MathUtilities::compareInt);
-/*
-  std::cout << "sorted: ";
-  for (int ii = 0; ii < m_MedianBufferFilling; ++ii) {
-  std::cout << m_SortedBuffer[ii] << " ";
-  }
-  std::cout << std::endl;
-*/
+
     int sortlength = m_MedianBufferFilling;
     int midpoint = (int)ceil((double)sortlength/2);
-
-//  std::cout << "midpoint = " << midpoint << endl;
 
     if( midpoint <= 0 ) {
         midpoint = 1;
     }
 
     key = m_SortedBuffer[midpoint-1];
-
-// std::cout << "returning key = " << key << endl;
 
     return key;
 }
@@ -332,8 +293,7 @@ double* GetKeyMode::getKeyStrengths() {
         m_keyStrengths[k] = 0;
     }
 
-    for( k = 0; k < kBinsPerOctave; k++ )
-    {
+    for( k = 0; k < kBinsPerOctave; k++ ) {
         int idx = k / (kBinsPerOctave/12);
         int rem = k % (kBinsPerOctave/12);
         if (rem == 0 || m_MajCorr[k] > m_keyStrengths[idx]) {
@@ -341,23 +301,13 @@ double* GetKeyMode::getKeyStrengths() {
         }
     }
 
-    for( k = 0; k < kBinsPerOctave; k++ )
-    {
+    for( k = 0; k < kBinsPerOctave; k++ ) {
         int idx = (k + kBinsPerOctave) / (kBinsPerOctave/12);
         int rem = k % (kBinsPerOctave/12);
         if (rem == 0 || m_MinCorr[k] > m_keyStrengths[idx]) {
             m_keyStrengths[idx] = m_MinCorr[k];
         }
     }
-
-/*
-    std::cout << "key strengths: ";
-    for (int ii = 0; ii < 24; ++ii) {
-        if (ii % 6 == 0) std::cout << "\n";
-        std::cout << m_keyStrengths[ii] << " ";
-    }
-    std::cout << std::endl;
-*/
 
     return m_keyStrengths;
 }
