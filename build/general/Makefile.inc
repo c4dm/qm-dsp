@@ -144,6 +144,9 @@ $(LIBRARY):	$(OBJECTS)
 		$(AR) cr $@ $^
 		$(RANLIB) $@
 
+test:		$(LIBRARY)
+		$(MAKE) -C tests
+
 depend:
 		makedepend -fbuild/general/Makefile.inc -Y -- $(CFLAGS) -- $(SOURCES)
 

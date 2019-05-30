@@ -19,6 +19,5 @@ addons:
       - valgrind
       
 script:
-  - make -f build/linux/Makefile.linux64
-  - ( cd tests ; make )
+  - make -f build/linux/Makefile.linux64 test
   
