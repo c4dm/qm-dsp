@@ -31,29 +31,23 @@ struct CQConfig {
 class ConstantQ
 {
 public:
-    void process( const double* FFTRe, const double* FFTIm,
-                  double* CQRe, double* CQIm );
-
-    ConstantQ( CQConfig Config );
+    ConstantQ(CQConfig config);
     ~ConstantQ();
 
-    double* process( const double* FFTData );
+    void process(const double* FFTRe, const double* FFTIm,
+                 double* CQRe, double* CQIm);
+
+    double* process(const double* FFTData);
 
     void sparsekernel();
 
-    double hamming(int len, int n) {
-        double out = 0.54 - 0.46*cos(2*M_PI*n/len);
-        return(out);
-    }
-        
-    int getnumwin() { return m_numWin;}
-    double getQ() { return m_dQ;}
-    int getK() {return m_uK ;}
-    int getfftlength() { return m_FFTLength;}
-    int gethop() { return m_hop;}
+    double getQ() { return m_dQ; }
+    int getK() { return m_uK; }
+    int getFFTLength() { return m_FFTLength; }
+    int getHop() { return m_hop; }
 
 private:
-    void initialise( CQConfig Config );
+    void initialise(CQConfig config);
     void deInitialise();
         
     double* m_CQdata;
@@ -62,15 +56,14 @@ private:
     double m_FMax;
     double m_dQ;
     double m_CQThresh;
-    unsigned int m_numWin;
-    unsigned int m_hop;
-    unsigned int m_BPO;
-    unsigned int m_FFTLength;
-    unsigned int m_uK;
+    int m_hop;
+    int m_BPO;
+    int m_FFTLength;
+    int m_uK;
 
     struct SparseKernel {
-        std::vector<unsigned> is;
-        std::vector<unsigned> js;
+        std::vector<int> is;
+        std::vector<int> js;
         std::vector<double> imag;
         std::vector<double> real;
     };

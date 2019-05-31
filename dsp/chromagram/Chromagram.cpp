@@ -57,8 +57,8 @@ int Chromagram::initialise( ChromaConfig Config )
     m_uK = m_ConstantQ->getK();
 
     // Initialise working arrays
-    m_frameSize = m_ConstantQ->getfftlength();
-    m_hopSize = m_ConstantQ->gethop();
+    m_frameSize = m_ConstantQ->getFFTLength();
+    m_hopSize = m_ConstantQ->getHop();
 
     // Initialise FFT object    
     m_FFT = new FFTReal(m_frameSize);

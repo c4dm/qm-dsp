@@ -82,7 +82,7 @@ void ClusterMeltSegmenter::initialise(int fs)
         
         ncoeff = constq->getK();
 
-        fft = new FFTReal(constq->getfftlength());
+        fft = new FFTReal(constq->getFFTLength());
         
     } else if (featureType == FEATURE_TYPE_MFCC) {
 
@@ -156,7 +156,7 @@ void ClusterMeltSegmenter::extractFeaturesConstQ(const double* samples, int nsam
         return;
     }
 
-    int fftsize = constq->getfftlength();
+    int fftsize = constq->getFFTLength();
 
     if (!window || window->getSize() != fftsize) {
         delete window;
