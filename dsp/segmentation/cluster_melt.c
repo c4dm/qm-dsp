@@ -146,7 +146,7 @@ void cluster_melt(double *h, int m, int n, double *Bsched, int t, int k, int l, 
                                 
                 /* normalise responsibilities and add duration logprior */
                 logsumexp = log(sum);
-                for (j = 0; j < k; j++) {a
+                for (j = 0; j < k; j++) {
                     lp[i][j] -= logsumexp + lambda * nc[i][j];
                 }
             }
