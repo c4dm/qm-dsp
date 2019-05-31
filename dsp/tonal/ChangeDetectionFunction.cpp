@@ -15,10 +15,6 @@
 
 #include "ChangeDetectionFunction.h"
 
-#ifndef PI
-#define PI (3.14159265358979232846)
-#endif
-
 ChangeDetectionFunction::ChangeDetectionFunction(ChangeDFConfig config) :
     m_dFilterSigma(0.0), m_iFilterWidth(0)
 {
@@ -38,7 +34,7 @@ void ChangeDetectionFunction::setFilterWidth(const int iWidth)
     m_dFilterSigma = double(m_iFilterWidth) / double(2*2.3548);
     m_vaGaussian.resize(m_iFilterWidth);
         
-    double dScale = 1.0 / (m_dFilterSigma*sqrt(2*PI));
+    double dScale = 1.0 / (m_dFilterSigma*sqrt(2*M_PI));
         
     for (int x = -(m_iFilterWidth-1)/2; x <= (m_iFilterWidth-1)/2; x++) {
         double w = dScale * std::exp ( -(x*x)/(2*m_dFilterSigma*m_dFilterSigma) );
