@@ -60,7 +60,9 @@ public:
     
     void cut(T *src) const { cut(src, src); }
     void cut(const T *src, T *dst) const {
-        for (int i = 0; i < m_size; ++i) dst[i] = src[i] * m_cache[i];
+        for (int i = 0; i < m_size; ++i) {
+            dst[i] = src[i] * m_cache[i];
+        }
     }
 
     WindowType getType() const { return m_type; }
