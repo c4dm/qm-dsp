@@ -21,10 +21,13 @@
 
 #include "maths/MathUtilities.h"
 
+using std::vector;
+
 #define   EPS 0.0000008 // just some arbitrary small number
 
-TempoTrackV2::TempoTrackV2(float rate, size_t increment) :
-    m_rate(rate), m_increment(increment) { }
+TempoTrackV2::TempoTrackV2(float rate, int increment) :
+    m_rate(rate), m_increment(increment) {
+}
 
 TempoTrackV2::~TempoTrackV2() { }
 

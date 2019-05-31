@@ -24,10 +24,6 @@
 #include "maths/Correlation.h"
 #include "dsp/signalconditioning/Framer.h"
 
-
-
-using std::vector;
-
 struct WinThresh
 {
     int pre;
@@ -52,7 +48,8 @@ public:
     TempoTrack( TTParams Params );
     virtual ~TempoTrack();
 
-    vector<int> process( vector <double> DF, vector <double> *tempoReturn = 0);
+    std::vector<int> process( std::vector <double> DF,
+                              std::vector <double> *tempoReturn = 0);
 
         
 private:
@@ -76,7 +73,7 @@ private:
     double m_sigma;
     double m_DFWVNnorm;
 
-    vector<int>  m_beats; // Vector of detected beats
+    std::vector<int>  m_beats; // Vector of detected beats
 
     double m_lockedTempo;
 

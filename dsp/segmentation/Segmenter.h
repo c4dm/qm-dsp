@@ -20,9 +20,6 @@
 #include <vector>
 #include <iostream>
 
-using std::vector;
-using std::ostream;
-
 class Segment
 {
 public:
@@ -36,10 +33,10 @@ class Segmentation
 public:
     int nsegtypes;          // number of segment types, so possible types are {0,1,...,nsegtypes-1}
     int samplerate;
-    vector<Segment> segments;       
+    std::vector<Segment> segments;       
 };
 
-ostream& operator<<(ostream& os, const Segmentation& s);
+std::ostream& operator<<(std::ostream& os, const Segmentation& s);
 
 class Segmenter
 {
@@ -55,7 +52,7 @@ public:
     virtual void clear() { features.clear(); }
     const Segmentation& getSegmentation() const { return segmentation; } 
 protected:
-    vector<vector<double> > features;
+    std::vector<std::vector<double> > features;
     Segmentation segmentation;
     int samplerate;
 };

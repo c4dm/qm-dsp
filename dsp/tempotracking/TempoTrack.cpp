@@ -24,6 +24,8 @@
 #include <cmath>
 #include <cstdlib>
 
+using std::vector;
+
 //#define DEBUG_TEMPO_TRACK 1
 
 //////////////////////////////////////////////////////////////////////

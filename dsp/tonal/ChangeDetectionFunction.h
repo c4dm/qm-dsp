@@ -19,9 +19,8 @@
 #include "TCSgram.h"
 
 #include <valarray>
-using std::valarray;
 
-typedef valarray<double> ChangeDistance;
+typedef std::valarray<double> ChangeDistance;
 
 struct ChangeDFConfig
 {
@@ -38,7 +37,7 @@ private:
     void setFilterWidth(const int iWidth);
         
 private:
-    valarray<double> m_vaGaussian;
+    std::valarray<double> m_vaGaussian;
     double m_dFilterSigma;
     int m_iFilterWidth;
 };

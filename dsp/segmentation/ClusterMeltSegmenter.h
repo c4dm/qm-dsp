@@ -23,8 +23,6 @@
 #include "hmm/hmm.h"
 #include "base/Window.h"
 
-using std::vector;
-
 class Decimator;
 class ConstantQ;
 class MFCC;
@@ -68,7 +66,7 @@ public:
     virtual int getWindowsize();
     virtual int getHopsize();
     virtual void extractFeatures(const double* samples, int nsamples);
-    void setFeatures(const vector<vector<double> >& f);         // provide the features yourself
+    void setFeatures(const std::vector<std::vector<double> >& f);         // provide the features yourself
     virtual void segment();             // segment into default number of segment-types
     void segment(int m);                // segment into m segment-types
     int getNSegmentTypes() { return nclusters; }
@@ -85,7 +83,7 @@ protected:
     MFCC* mfcc;
     model_t* model;                             // the HMM
     int* q;                                     // the decoded HMM state sequence
-    vector<vector<double> > histograms; 
+    std::vector<std::vector<double> > histograms; 
     
     feature_types featureType;  
     double hopSize;             // in seconds

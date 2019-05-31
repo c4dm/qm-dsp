@@ -17,6 +17,8 @@
 
 #include "Segmenter.h"
 
+using std::ostream;
+
 ostream& operator<<(ostream& os, const Segmentation& s)
 {
     os << "structure_name : begin_time end_time\n";

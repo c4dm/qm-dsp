@@ -25,6 +25,8 @@
 #include "dsp/rateconversion/Decimator.h"
 #include "dsp/mfcc/MFCC.h"
 
+using std::vector;
+
 ClusterMeltSegmenter::ClusterMeltSegmenter(ClusterMeltSegmenterParams params) :
     window(NULL),
     fft(NULL),

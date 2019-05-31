@@ -23,6 +23,8 @@
 #include <iostream>
 #include <cstdlib>
 
+using std::vector;
+
 DownBeat::DownBeat(float originalSampleRate,
                    size_t decimationFactor,
                    size_t dfIncrement) :

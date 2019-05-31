@@ -18,15 +18,14 @@
 #include <vector>
 #include <math.h>
 
-using std::vector;
-
 class CosineDistance
 {
 public:
     CosineDistance() { }
     ~CosineDistance() { }
 
-    double distance(const vector<double> &v1, const vector<double> &v2);
+    double distance(const std::vector<double> &v1,
+                    const std::vector<double> &v2);
 
 protected:
     double dist, dDenTot, dDen1, dDen2, dSum1;
