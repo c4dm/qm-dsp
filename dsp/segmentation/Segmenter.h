@@ -1,6 +1,4 @@
-#ifndef _SEGMENTER_H
-#define _SEGMENTER_H
-
+/* -*- c-basic-offset: 4 indent-tabs-mode: nil -*-  vi:set ts=8 sts=4 sw=4: */
 /*
  *  Segmenter.h
  *  soundbite
@@ -15,6 +13,9 @@
     COPYING included with this distribution for more information.
  *
  */
+
+#ifndef _SEGMENTER_H
+#define _SEGMENTER_H
 
 #include <vector>
 #include <iostream>

@@ -1,3 +1,4 @@
+/* -*- c-basic-offset: 4 indent-tabs-mode: nil -*-  vi:set ts=8 sts=4 sw=4: */
 /*
     Copyright (c) 2005 Centre for Digital Music ( C4DM )
                        Queen Mary Univesrity of London
