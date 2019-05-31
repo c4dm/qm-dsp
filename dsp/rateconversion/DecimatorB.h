@@ -55,7 +55,7 @@ private:
 
     double m_a[7];
     double m_b[7];
-	
+        
     double *m_aaBuffer;
     double *m_tmpBuffer;
 };

@@ -65,7 +65,7 @@ private:
     double phaseDev(unsigned int length, double *srcPhase);
     double complexSD(unsigned int length, double *srcMagnitude, double *srcPhase);
     double broadband(unsigned int length, double *srcMagnitude);
-	
+        
 private:
     void initialise( DFConfig Config );
     void deInitialise();
@@ -90,7 +90,7 @@ private:
     double* m_unwrapped; // Unwrapped phase of analysis frame
 
     Window<double> *m_window;
-    PhaseVocoder* m_phaseVoc;	// Phase Vocoder
+    PhaseVocoder* m_phaseVoc;   // Phase Vocoder
 };
 
 #endif 

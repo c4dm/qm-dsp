@@ -56,10 +56,9 @@ void ConstantQ::sparsekernel()
     double* transfHammingWindowRe = new double [ m_FFTLength ];
     double* transfHammingWindowIm = new double [ m_FFTLength ];
 
-    for (unsigned u=0; u < m_FFTLength; u++) 
-    {
-	hammingWindowRe[u] = 0;
-	hammingWindowIm[u] = 0;
+    for (unsigned u=0; u < m_FFTLength; u++) {
+        hammingWindowRe[u] = 0;
+        hammingWindowIm[u] = 0;
     }
 
     // Here, fftleng*2 is a guess of the number of sparse cells in the matrix
@@ -69,39 +68,36 @@ void ConstantQ::sparsekernel()
     sk->js.reserve( m_FFTLength*2 );
     sk->real.reserve( m_FFTLength*2 );
     sk->imag.reserve( m_FFTLength*2 );
-	
+        
     // for each bin value K, calculate temporal kernel, take its fft to
     //calculate the spectral kernel then threshold it to make it sparse and 
     //add it to the sparse kernels matrix
     double squareThreshold = m_CQThresh * m_CQThresh;
 
     FFT m_FFT(m_FFTLength);
-	
-    for (unsigned k = m_uK; k--; ) 
-    {
-        for (unsigned u=0; u < m_FFTLength; u++) 
-        {
+        
+    for (unsigned k = m_uK; k--; ) {
+        for (unsigned u=0; u < m_FFTLength; u++) {
             hammingWindowRe[u] = 0;
             hammingWindowIm[u] = 0;
         }
         
-	// Computing a hamming window
-	const unsigned hammingLength = (int) ceil( m_dQ * m_FS / ( m_FMin * pow(2,((double)(k))/(double)m_BPO)));
+        // Computing a hamming window
+        const unsigned hammingLength = (int) ceil( m_dQ * m_FS / ( m_FMin * pow(2,((double)(k))/(double)m_BPO)));
 
 //        cerr << "k = " << k << ", q = " << m_dQ << ", m_FMin = " << m_FMin << ", hammingLength = " << hammingLength << " (rounded up from " << (m_dQ * m_FS / ( m_FMin * pow(2,((double)(k))/(double)m_BPO))) << ")" << endl;
         
 
         unsigned origin = m_FFTLength/2 - hammingLength/2;
 
-	for (unsigned i=0; i<hammingLength; i++) 
-	{
-	    const double angle = 2*PI*m_dQ*i/hammingLength;
-	    const double real = cos(angle);
-	    const double imag = sin(angle);
-	    const double absol = hamming(hammingLength, i)/hammingLength;
-	    hammingWindowRe[ origin + i ] = absol*real;
-	    hammingWindowIm[ origin + i ] = absol*imag;
-	}
+        for (unsigned i=0; i<hammingLength; i++) {
+            const double angle = 2*PI*m_dQ*i/hammingLength;
+            const double real = cos(angle);
+            const double imag = sin(angle);
+            const double absol = hamming(hammingLength, i)/hammingLength;
+            hammingWindowRe[ origin + i ] = absol*real;
+            hammingWindowIm[ origin + i ] = absol*imag;
+        }
 
         for (unsigned i = 0; i < m_FFTLength/2; ++i) {
             double temp = hammingWindowRe[i];
@@ -112,25 +108,22 @@ void ConstantQ::sparsekernel()
             hammingWindowIm[i + m_FFTLength/2] = temp;
         }
     
-	//do fft of hammingWindow
-	m_FFT.process( 0, hammingWindowRe, hammingWindowIm, transfHammingWindowRe, transfHammingWindowIm );
+        //do fft of hammingWindow
+        m_FFT.process( 0, hammingWindowRe, hammingWindowIm, transfHammingWindowRe, transfHammingWindowIm );
+                
+        for (unsigned j=0; j<( m_FFTLength ); j++) {
+            // perform thresholding
+            const double squaredBin = squaredModule( transfHammingWindowRe[ j ], transfHammingWindowIm[ j ]);
+            if (squaredBin <= squareThreshold) continue;
+                
+            // Insert non-zero position indexes
+            sk->is.push_back(j);
+            sk->js.push_back(k);
 
-		
-	for (unsigned j=0; j<( m_FFTLength ); j++) 
-	{
-	    // perform thresholding
-	    const double squaredBin = squaredModule( transfHammingWindowRe[ j ], transfHammingWindowIm[ j ]);
-	    if (squaredBin <= squareThreshold) continue;
-		
-	    // Insert non-zero position indexes
-	    sk->is.push_back(j);
-	    sk->js.push_back(k);
-
-	    // take conjugate, normalise and add to array sparkernel
-	    sk->real.push_back( transfHammingWindowRe[ j ]/m_FFTLength);
-	    sk->imag.push_back(-transfHammingWindowIm[ j ]/m_FFTLength);
-	}
-
+            // take conjugate, normalise and add to array sparkernel
+            sk->real.push_back( transfHammingWindowRe[ j ]/m_FFTLength);
+            sk->imag.push_back(-transfHammingWindowIm[ j ]/m_FFTLength);
+        }
     }
 
     delete [] hammingWindowRe;
@@ -154,29 +147,27 @@ double* ConstantQ::process( const double* fftdata )
 
     SparseKernel *sk = m_sparseKernel;
 
-    for (unsigned row=0; row<2*m_uK; row++) 
-    {
-	m_CQdata[ row ] = 0;
-	m_CQdata[ row+1 ] = 0;
+    for (unsigned row=0; row<2*m_uK; row++) {
+        m_CQdata[ row ] = 0;
+        m_CQdata[ row+1 ] = 0;
     }
     const unsigned *fftbin = &(sk->is[0]);
     const unsigned *cqbin  = &(sk->js[0]);
     const double   *real   = &(sk->real[0]);
     const double   *imag   = &(sk->imag[0]);
     const unsigned int sparseCells = sk->real.size();
-	
-    for (unsigned i = 0; i<sparseCells; i++)
-    {
-	const unsigned row = cqbin[i];
-	const unsigned col = fftbin[i];
+        
+    for (unsigned i = 0; i<sparseCells; i++) {
+        const unsigned row = cqbin[i];
+        const unsigned col = fftbin[i];
         if (col == 0) continue;
-	const double & r1  = real[i];
-	const double & i1  = imag[i];
-	const double & r2  = fftdata[ (2*m_FFTLength) - 2*col - 2 ];
-	const double & i2  = fftdata[ (2*m_FFTLength) - 2*col - 2 + 1 ];
-	// add the multiplication
-	m_CQdata[ 2*row  ] += (r1*r2 - i1*i2);
-	m_CQdata[ 2*row+1] += (r1*i2 + i1*r2);
+        const double & r1  = real[i];
+        const double & i1  = imag[i];
+        const double & r2  = fftdata[ (2*m_FFTLength) - 2*col - 2 ];
+        const double & i2  = fftdata[ (2*m_FFTLength) - 2*col - 2 + 1 ];
+        // add the multiplication
+        m_CQdata[ 2*row  ] += (r1*r2 - i1*i2);
+        m_CQdata[ 2*row+1] += (r1*i2 + i1*r2);
     }
 
     return m_CQdata;
@@ -186,13 +177,13 @@ double* ConstantQ::process( const double* fftdata )
 void ConstantQ::initialise( CQConfig Config )
 {
     m_FS = Config.FS;
-    m_FMin = Config.min;		// min freq
-    m_FMax = Config.max;		// max freq
-    m_BPO = Config.BPO;		// bins per octave
+    m_FMin = Config.min;                // min freq
+    m_FMax = Config.max;                // max freq
+    m_BPO = Config.BPO;         // bins per octave
     m_CQThresh = Config.CQThresh;// ConstantQ threshold for kernel generation
 
-    m_dQ = 1/(pow(2,(1/(double)m_BPO))-1);	// Work out Q value for Filter bank
-    m_uK = (unsigned int) ceil(m_BPO * log(m_FMax/m_FMin)/log(2.0));	// No. of constant Q bins
+    m_dQ = 1/(pow(2,(1/(double)m_BPO))-1);      // Work out Q value for Filter bank
+    m_uK = (unsigned int) ceil(m_BPO * log(m_FMax/m_FMin)/log(2.0));    // No. of constant Q bins
 
 //    std::cerr << "ConstantQ::initialise: rate = " << m_FS << ", fmin = " << m_FMin << ", fmax = " << m_FMax << ", bpo = " << m_BPO << ", K = " << m_uK << ", Q = " << m_dQ << std::endl;
 
@@ -223,10 +214,9 @@ void ConstantQ::process(const double *FFTRe, const double* FFTIm,
 
     SparseKernel *sk = m_sparseKernel;
 
-    for (unsigned row=0; row<m_uK; row++) 
-    {
-	CQRe[ row ] = 0;
-	CQIm[ row ] = 0;
+    for (unsigned row=0; row<m_uK; row++) {
+        CQRe[ row ] = 0;
+        CQIm[ row ] = 0;
     }
 
     const unsigned *fftbin = &(sk->is[0]);
@@ -234,18 +224,17 @@ void ConstantQ::process(const double *FFTRe, const double* FFTIm,
     const double   *real   = &(sk->real[0]);
     const double   *imag   = &(sk->imag[0]);
     const unsigned int sparseCells = sk->real.size();
-	
-    for (unsigned i = 0; i<sparseCells; i++)
-    {
-	const unsigned row = cqbin[i];
-	const unsigned col = fftbin[i];
+        
+    for (unsigned i = 0; i<sparseCells; i++) {
+        const unsigned row = cqbin[i];
+        const unsigned col = fftbin[i];
         if (col == 0) continue;
-	const double & r1  = real[i];
-	const double & i1  = imag[i];
-	const double & r2  = FFTRe[ m_FFTLength - col ];
-	const double & i2  = FFTIm[ m_FFTLength - col ];
-	// add the multiplication
-	CQRe[ row ] += (r1*r2 - i1*i2);
-	CQIm[ row ] += (r1*i2 + i1*r2);
+        const double & r1  = real[i];
+        const double & i1  = imag[i];
+        const double & r2  = FFTRe[ m_FFTLength - col ];
+        const double & i2  = FFTIm[ m_FFTLength - col ];
+        // add the multiplication
+        CQRe[ row ] += (r1*r2 - i1*i2);
+        CQIm[ row ] += (r1*i2 + i1*r2);
     }
 }

@@ -70,10 +70,10 @@ Resampler::initialise(double snr, double bandwidth)
     }
 
     KaiserWindow::Parameters params =
-	KaiserWindow::parametersForBandwidth(snr, bandwidth, higher / m_gcd);
+        KaiserWindow::parametersForBandwidth(snr, bandwidth, higher / m_gcd);
 
     params.length =
-	(params.length % 2 == 0 ? params.length + 1 : params.length);
+        (params.length % 2 == 0 ? params.length + 1 : params.length);
     
     params.length =
         (params.length > 200001 ? 200001 : params.length);
@@ -174,23 +174,23 @@ Resampler::initialise(double snr, double bandwidth)
 
     for (int phase = 0; phase < inputSpacing; ++phase) {
 
-	Phase p;
+        Phase p;
 
-	p.nextPhase = phase - outputSpacing;
-	while (p.nextPhase < 0) p.nextPhase += inputSpacing;
-	p.nextPhase %= inputSpacing;
-	
-	p.drop = int(ceil(std::max(0.0, double(outputSpacing - phase))
-			  / inputSpacing));
+        p.nextPhase = phase - outputSpacing;
+        while (p.nextPhase < 0) p.nextPhase += inputSpacing;
+        p.nextPhase %= inputSpacing;
+        
+        p.drop = int(ceil(std::max(0.0, double(outputSpacing - phase))
+                          / inputSpacing));
 
-	int filtZipLength = int(ceil(double(m_filterLength - phase)
-				     / inputSpacing));
+        int filtZipLength = int(ceil(double(m_filterLength - phase)
+                                     / inputSpacing));
 
-	for (int i = 0; i < filtZipLength; ++i) {
-	    p.filter.push_back(filter[i * inputSpacing + phase]);
-	}
+        for (int i = 0; i < filtZipLength; ++i) {
+            p.filter.push_back(filter[i * inputSpacing + phase]);
+        }
 
-	m_phaseData[phase] = p;
+        m_phaseData[phase] = p;
     }
 
 #ifdef DEBUG_RESAMPLER
@@ -268,7 +268,7 @@ Resampler::initialise(double snr, double bandwidth)
 
 #ifdef DEBUG_RESAMPLER
     cerr << "initial phase " << m_phase << " (as " << (m_filterLength/2) << " % " << inputSpacing << ")"
-	      << ", latency " << m_latency << endl;
+              << ", latency " << m_latency << endl;
 #endif
 }
 
@@ -297,8 +297,8 @@ Resampler::reconstructOne()
     const double *const R__ filt(pd.filter.data());
 
     for (int i = 0; i < n; ++i) {
-	// NB gcc can only vectorize this with -ffast-math
-	v += buf[i] * filt[i];
+        // NB gcc can only vectorize this with -ffast-math
+        v += buf[i] * filt[i];
     }
 
     m_bufferOrigin += pd.drop;
@@ -321,9 +321,9 @@ Resampler::process(const double *src, double *dst, int n)
     double scaleFactor = (double(m_targetRate) / m_gcd) / m_peakToPole;
 
     while (outidx < maxout &&
-	   m_buffer.size() >= m_phaseData[m_phase].filter.size() + m_bufferOrigin) {
-	dst[outidx] = scaleFactor * reconstructOne();
-	outidx++;
+           m_buffer.size() >= m_phaseData[m_phase].filter.size() + m_bufferOrigin) {
+        dst[outidx] = scaleFactor * reconstructOne();
+        outidx++;
     }
 
     if (m_bufferOrigin > (int)m_buffer.size()) {
@@ -392,7 +392,7 @@ Resampler::resample(int sourceRate, int targetRate, const double *data, int n)
     int printN = 50;
     cerr << "first " << printN << " in:" << endl;
     for (int i = 0; i < printN && i < n; ++i) {
-	if (i % 5 == 0) cerr << endl << i << "... ";
+        if (i % 5 == 0) cerr << endl << i << "... ";
         cerr << data[i] << " ";
     }
     cerr << endl;
@@ -402,13 +402,13 @@ Resampler::resample(int sourceRate, int targetRate, const double *data, int n)
     if (toReturn > m) toReturn = m;
 
     vector<double> sliced(out.begin() + latency, 
-			  out.begin() + latency + toReturn);
+                          out.begin() + latency + toReturn);
 
 #ifdef DEBUG_RESAMPLER_VERBOSE
     cerr << "first " << printN << " out (after latency compensation), length " << sliced.size() << ":";
     for (int i = 0; i < printN && i < sliced.size(); ++i) {
-	if (i % 5 == 0) cerr << endl << i << "... ";
-	cerr << sliced[i] << " ";
+        if (i % 5 == 0) cerr << endl << i << "... ";
+        cerr << sliced[i] << " ";
     }
     cerr << endl;
 #endif

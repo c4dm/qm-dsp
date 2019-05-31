@@ -54,7 +54,7 @@ void DetectionFunction::initialise( DFConfig Config )
 
     m_magHistory = new double[ m_halfLength ];
     memset(m_magHistory,0, m_halfLength*sizeof(double));
-		
+                
     m_phaseHistory = new double[ m_halfLength ];
     memset(m_phaseHistory,0, m_halfLength*sizeof(double));
 
@@ -134,30 +134,30 @@ double DetectionFunction::runDF()
     switch( m_DFType )
     {
     case DF_HFC:
-	retVal = HFC( m_halfLength, m_magnitude);
-	break;
-	
+        retVal = HFC( m_halfLength, m_magnitude);
+        break;
+        
     case DF_SPECDIFF:
-	retVal = specDiff( m_halfLength, m_magnitude);
-	break;
-	
+        retVal = specDiff( m_halfLength, m_magnitude);
+        break;
+        
     case DF_PHASEDEV:
         // Using the instantaneous phases here actually provides the
         // same results (for these calculations) as if we had used
         // unwrapped phases, but without the possible accumulation of
         // phase error over time
-	retVal = phaseDev( m_halfLength, m_thetaAngle);
-	break;
-	
+        retVal = phaseDev( m_halfLength, m_thetaAngle);
+        break;
+        
     case DF_COMPLEXSD:
-	retVal = complexSD( m_halfLength, m_magnitude, m_thetaAngle);
-	break;
+        retVal = complexSD( m_halfLength, m_magnitude, m_thetaAngle);
+        break;
 
     case DF_BROADBAND:
         retVal = broadband( m_halfLength, m_magnitude);
         break;
     }
-	
+        
     return retVal;
 }
 
@@ -166,9 +166,8 @@ double DetectionFunction::HFC(unsigned int length, double *src)
     unsigned int i;
     double val = 0;
 
-    for( i = 0; i < length; i++)
-    {
-	val += src[ i ] * ( i + 1);
+    for( i = 0; i < length; i++) {
+        val += src[ i ] * ( i + 1);
     }
     return val;
 }
@@ -180,17 +179,17 @@ double DetectionFunction::specDiff(unsigned int length, double *src)
     double temp = 0.0;
     double diff = 0.0;
 
-    for( i = 0; i < length; i++)
-    {
-	temp = fabs( (src[ i ] * src[ i ]) - (m_magHistory[ i ] * m_magHistory[ i ]) );
-		
-	diff= sqrt(temp);
+    for( i = 0; i < length; i++) {
+        
+        temp = fabs( (src[ i ] * src[ i ]) - (m_magHistory[ i ] * m_magHistory[ i ]) );
+                
+        diff= sqrt(temp);
 
         // (See note in phaseDev below.)
 
         val += diff;
 
-	m_magHistory[ i ] = src[ i ];
+        m_magHistory[ i ] = src[ i ];
     }
 
     return val;
@@ -206,10 +205,9 @@ double DetectionFunction::phaseDev(unsigned int length, double *srcPhase)
 
     double dev = 0;
 
-    for( i = 0; i < length; i++)
-    {
-	tmpPhase = (srcPhase[ i ]- 2*m_phaseHistory[ i ]+m_phaseHistoryOld[ i ]);
-	dev = MathUtilities::princarg( tmpPhase );
+    for( i = 0; i < length; i++) {
+        tmpPhase = (srcPhase[ i ]- 2*m_phaseHistory[ i ]+m_phaseHistoryOld[ i ]);
+        dev = MathUtilities::princarg( tmpPhase );
 
         // A previous version of this code only counted the value here
         // if the magnitude exceeded 0.1.  My impression is that
@@ -218,14 +216,14 @@ double DetectionFunction::phaseDev(unsigned int length, double *srcPhase)
         // does significantly damage its ability to work with quieter
         // music, so I'm removing it and counting the result always.
         // Same goes for the spectral difference measure above.
-		
+                
         tmpVal  = fabs(dev);
         val += tmpVal ;
 
-	m_phaseHistoryOld[ i ] = m_phaseHistory[ i ] ;
-	m_phaseHistory[ i ] = srcPhase[ i ];
+        m_phaseHistoryOld[ i ] = m_phaseHistory[ i ] ;
+        m_phaseHistory[ i ] = srcPhase[ i ];
     }
-	
+        
     return val;
 }
 
@@ -242,21 +240,21 @@ double DetectionFunction::complexSD(unsigned int length, double *srcMagnitude, d
     ComplexData meas = ComplexData( 0, 0 );
     ComplexData j = ComplexData( 0, 1 );
 
-    for( i = 0; i < length; i++)
-    {
-	tmpPhase = (srcPhase[ i ]- 2*m_phaseHistory[ i ]+m_phaseHistoryOld[ i ]);
-	dev= MathUtilities::princarg( tmpPhase );
-		
-	meas = m_magHistory[i] - ( srcMagnitude[ i ] * exp( j * dev) );
+    for( i = 0; i < length; i++) {
+        
+        tmpPhase = (srcPhase[ i ]- 2*m_phaseHistory[ i ]+m_phaseHistoryOld[ i ]);
+        dev= MathUtilities::princarg( tmpPhase );
+                
+        meas = m_magHistory[i] - ( srcMagnitude[ i ] * exp( j * dev) );
 
-	tmpReal = real( meas );
-	tmpImag = imag( meas );
+        tmpReal = real( meas );
+        tmpImag = imag( meas );
 
-	val += sqrt( (tmpReal * tmpReal) + (tmpImag * tmpImag) );
-		
-	m_phaseHistoryOld[ i ] = m_phaseHistory[ i ] ;
-	m_phaseHistory[ i ] = srcPhase[ i ];
-	m_magHistory[ i ] = srcMagnitude[ i ];
+        val += sqrt( (tmpReal * tmpReal) + (tmpImag * tmpImag) );
+                
+        m_phaseHistoryOld[ i ] = m_phaseHistory[ i ] ;
+        m_phaseHistory[ i ] = srcPhase[ i ];
+        m_magHistory[ i ] = srcMagnitude[ i ];
     }
 
     return val;

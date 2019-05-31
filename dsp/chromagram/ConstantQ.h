@@ -28,9 +28,8 @@ struct CQConfig {
     double CQThresh;   // threshold
 };
 
-class ConstantQ {
-	
-//public functions incl. sparsekernel so can keep out of loop in main
+class ConstantQ
+{
 public:
     void process( const double* FFTRe, const double* FFTIm,
                   double* CQRe, double* CQIm );
@@ -43,10 +42,10 @@ public:
     void sparsekernel();
 
     double hamming(int len, int n) {
-	double out = 0.54 - 0.46*cos(2*PI*n/len);
-	return(out);
+        double out = 0.54 - 0.46*cos(2*PI*n/len);
+        return(out);
     }
-	
+        
     int getnumwin() { return m_numWin;}
     double getQ() { return m_dQ;}
     int getK() {return m_uK ;}
@@ -56,7 +55,7 @@ public:
 private:
     void initialise( CQConfig Config );
     void deInitialise();
-	
+        
     double* m_CQdata;
     double m_FS;
     double m_FMin;

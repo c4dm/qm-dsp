@@ -23,12 +23,12 @@ class Pitch
 {
 public:
     static float getFrequencyForPitch(int midiPitch,
-				      float centsOffset = 0,
-				      float concertA = 440.0);
+                                      float centsOffset = 0,
+                                      float concertA = 440.0);
 
     static int getPitchForFrequency(float frequency,
-				    float *centsOffsetReturn = 0,
-				    float concertA = 440.0);
+                                    float *centsOffsetReturn = 0,
+                                    float concertA = 440.0);
 };
 
 
