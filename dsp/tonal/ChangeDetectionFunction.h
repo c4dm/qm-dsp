@@ -16,33 +16,31 @@
 #ifndef _CHANGEDETECTIONFUNCTION_
 #define _CHANGEDETECTIONFUNCTION_
 
-//#define DEBUG_CHANGE_DETECTION_FUNCTION 1
-
 #include "TCSgram.h"
 
 #include <valarray>
 using std::valarray;
 
-typedef	valarray<double> ChangeDistance;
+typedef valarray<double> ChangeDistance;
 
 struct ChangeDFConfig
 {
-	int smoothingWidth;
+    int smoothingWidth;
 };
 
 class ChangeDetectionFunction
 {
 public:
-	ChangeDetectionFunction(ChangeDFConfig);
-	~ChangeDetectionFunction();
-	ChangeDistance process(const TCSGram& rTCSGram);
+    ChangeDetectionFunction(ChangeDFConfig);
+    ~ChangeDetectionFunction();
+    ChangeDistance process(const TCSGram& rTCSGram);
 private:
-	void setFilterWidth(const int iWidth);
-	
+    void setFilterWidth(const int iWidth);
+        
 private:
-	valarray<double> m_vaGaussian;
-	double m_dFilterSigma;
-	int m_iFilterWidth;
+    valarray<double> m_vaGaussian;
+    double m_dFilterSigma;
+    int m_iFilterWidth;
 };
 
 #endif // _CHANGDETECTIONFUNCTION_
