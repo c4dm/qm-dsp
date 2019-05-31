@@ -36,9 +36,9 @@ Web site:  www.satsignal.net
 E-mail:    davidtaylor@writeme.com
 }*/
 
- ///////////////////////////////////////////////////////////////////////////////
- // Modified by CLandone for VC6 Aug 2004
- ///////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
+// Modified by CLandone for VC6 Aug 2004
+///////////////////////////////////////////////////////////////////////////////
 
 #include <iostream>
 
@@ -58,7 +58,6 @@ private:
     TPolyFit &operator = (const TPolyFit &);   // disable assignment
     TPolyFit();                                // and instantiation
     TPolyFit(const TPolyFit&);                 // and copying
-
   
     static void Square (const Matrix &x,              // Matrix multiplication routine
                         const vector<double> &y,
@@ -82,17 +81,22 @@ private:
 
 struct NSUtility
 {
-    static void swap(double &a, double &b) {double t = a; a = b; b = t;}
+    static void swap(double &a, double &b) {
+        double t = a; a = b; b = t;
+    }
+    
     // fills a vector with zeros.
     static void zeroise(vector<double> &array, int n) { 
         array.clear();
         for(int j = 0; j < n; ++j) array.push_back(0);
     }
+    
     // fills a vector with zeros.
     static void zeroise(vector<int> &array, int n) {
         array.clear();
         for(int j = 0; j < n; ++j) array.push_back(0);
     }
+    
     // fills a (m by n) matrix with zeros.
     static void zeroise(vector<vector<double> > &matrix, int m, int n) {
         vector<double> zero;
@@ -100,6 +104,7 @@ struct NSUtility
         matrix.clear();
         for(int j = 0; j < m; ++j) matrix.push_back(zero);
     }
+    
     // fills a (m by n) matrix with zeros.
     static void zeroise(vector<vector<int> > &matrix, int m, int n) {
         vector<int> zero;
@@ -107,6 +112,7 @@ struct NSUtility
         matrix.clear();
         for(int j = 0; j < m; ++j) matrix.push_back(zero);
     }
+    
     static double sqr(const double &x) {return x * x;}
 };
 
@@ -142,8 +148,7 @@ double TPolyFit::PolyFit2 (const vector<double> &x,
         std::cerr << "ERROR: PolyFit called with x and y of unequal size" << std::endl;
         return 0;
     }
-    for(i = 0; i < npoints; ++i)
-    {
+    for(i = 0; i < npoints; ++i) {
         //      { setup x matrix }
         xi = x[i];
         xmatr[i][0] = 1.0;         //     { first column }
@@ -151,17 +156,18 @@ double TPolyFit::PolyFit2 (const vector<double> &x,
             xmatr[i][j] = xmatr [i][j - 1] * xi;
     }
     Square (xmatr, y, a, g, npoints, nterms);
-    if(!GaussJordan (a, g, coefs))
+    if(!GaussJordan (a, g, coefs)) {
         return -1;
+    }
     sum_y = 0.0;
     sum_y2 = 0.0;
     srs = 0.0;
-    for(i = 0; i < npoints; ++i)
-    {
+    for(i = 0; i < npoints; ++i) {
         yi = y[i];
         yc = 0.0;
-        for(j = 0; j < nterms; ++j)
+        for(j = 0; j < nterms; ++j) {
             yc += coefs [j] * xmatr [i][j];
+        }
         srs += NSUtility::sqr (yc - yi);
         sum_y += yi;
         sum_y2 += yi * yi;
@@ -170,12 +176,14 @@ double TPolyFit::PolyFit2 (const vector<double> &x,
     // If all Y values are the same, avoid dividing by zero
     correl_coef = sum_y2 - NSUtility::sqr (sum_y) / npoints;
     // Either return 0 or the correct value of correlation coefficient
-    if (correl_coef != 0)
+    if (correl_coef != 0) {
         correl_coef = srs / correl_coef;
-    if (correl_coef >= 1)
+    }
+    if (correl_coef >= 1) {
         correl_coef = 0.0;
-    else
+    } else {
         correl_coef = sqrt (1.0 - correl_coef);
+    }
     return correl_coef;
 }
 
@@ -196,21 +204,20 @@ void TPolyFit::Square (const Matrix &x,
                        const int ncol)
 {
     int i, k, l;
-    for(k = 0; k < ncol; ++k)
-    {
-        for(l = 0; l < k + 1; ++l)
-        {
+    for(k = 0; k < ncol; ++k) {
+        for(l = 0; l < k + 1; ++l) {
             a [k][l] = 0.0;
-            for(i = 0; i < nrow; ++i)
-            {
+            for(i = 0; i < nrow; ++i) {
                 a[k][l] += x[i][l] * x [i][k];
-                if(k != l)
+                if(k != l) {
                     a[l][k] = a[k][l];
+                }
             }
         }
         g[k] = 0.0;
-        for(i = 0; i < nrow; ++i)
+        for(i = 0; i < nrow; ++i) {
             g[k] += y[i] * x[i][k];
+        }
     }
 }
 //---------------------------------------------------------------------------------
@@ -246,35 +253,33 @@ bool TPolyFit::GaussJordan (Matrix &b,
     NSUtility::zeroise(w, ncol, ncol);
     NSUtility::zeroise(index, ncol, 3);
 
-    if(!GaussJordan2(b, y, w, index))
+    if (!GaussJordan2(b, y, w, index)) {
         return false;
+    }
 
     // Interchange columns
     int m;
-    for (int i = 0; i <  ncol; ++i)
-    {
+    for (int i = 0; i <  ncol; ++i) {
         m = ncol - i - 1;
-        if(index [m][0] != index [m][1])
-        {
+        if(index [m][0] != index [m][1]) {
             irow = index [m][0];
             icol = index [m][1];
-            for(int k = 0; k < ncol; ++k)
-                swap (b[k][irow], b[k][icol]);
+            for(int k = 0; k < ncol; ++k) {
+                NSUtility::swap (b[k][irow], b[k][icol]);
+            }
         }
     }
 
-    for(int k = 0; k < ncol; ++k)
-    {
-        if(index [k][2] != 0)
-        {
+    for(int k = 0; k < ncol; ++k) {
+        if(index [k][2] != 0) {
             std::cerr << "ERROR: Error in PolyFit::GaussJordan: matrix is singular" << std::endl;
             return false;
         }
     }
 
-    for( int i = 0; i < ncol; ++i)
+    for( int i = 0; i < ncol; ++i) {
         coef[i] = w[i][0];
- 
+    }
  
     return true;
 }   // end;     { procedure GaussJordan }
@@ -295,29 +300,27 @@ bool TPolyFit::GaussJordan2(Matrix &b,
     int irow = 0, icol = 0;
     int ncol(b.size());
     int nv = 1;                  // single constant vector
-    for(int i = 0; i < ncol; ++i)
-    {
+
+    for(int i = 0; i < ncol; ++i) {
         w[i][0] = y[i];      // copy constant vector
         index[i][2] = -1;
     }
+
     determ = 1.0;
-    for(int i = 0; i < ncol; ++i)
-    {
+
+    for (int i = 0; i < ncol; ++i) {
         // Search for largest element
         big = 0.0;
-        for(int j = 0; j < ncol; ++j)
-        {
-            if(index[j][2] != 0)
-            {
-                for(int k = 0; k < ncol; ++k)
-                {
-                    if(index[k][2] > 0) {
+
+        for (int j = 0; j < ncol; ++j) {
+            if (index[j][2] != 0) {
+                for (int k = 0; k < ncol; ++k) {
+                    if (index[k][2] > 0) {
                         std::cerr << "ERROR: Error in PolyFit::GaussJordan2: matrix is singular" << std::endl;
                         return false;
                     }
 
-                    if(index[k][2] < 0 && fabs(b[j][k]) > big)
-                    {
+                    if (index[k][2] < 0 && fabs(b[j][k]) > big) {
                         irow = j;
                         icol = k;
                         big = fabs(b[j][k]);
@@ -325,20 +328,23 @@ bool TPolyFit::GaussJordan2(Matrix &b,
                 } //   { k-loop }
             }
         }  // { j-loop }
+        
         index [icol][2] = index [icol][2] + 1;
         index [i][0] = irow;
         index [i][1] = icol;
 
         // Interchange rows to put pivot on diagonal
         // GJ3
-        if(irow != icol)
-        {
+        if (irow != icol) {
             determ = -determ;
-            for(int m = 0; m < ncol; ++m)
-                swap (b [irow][m], b[icol][m]);
-            if (nv > 0)
-                for (int m = 0; m < nv; ++m)
-                    swap (w[irow][m], w[icol][m]);
+            for (int m = 0; m < ncol; ++m) {
+                NSUtility::swap (b [irow][m], b[icol][m]);
+            }
+            if (nv > 0) {
+                for (int m = 0; m < nv; ++m) {
+                    NSUtility::swap (w[irow][m], w[icol][m]);
+                }
+            }
         } // end GJ3
 
         // divide pivot row by pivot column
@@ -346,27 +352,32 @@ bool TPolyFit::GaussJordan2(Matrix &b,
         determ *= pivot;
         b[icol][icol] = 1.0;
 
-        for(int m = 0; m < ncol; ++m)
+        for (int m = 0; m < ncol; ++m) {
             b[icol][m] /= pivot;
-        if(nv > 0)
-            for(int m = 0; m < nv; ++m)
+        }
+        if (nv > 0) {
+            for (int m = 0; m < nv; ++m) {
                 w[icol][m] /= pivot;
+            }
+        }
 
         // Reduce nonpivot rows
-        for(int n = 0; n < ncol; ++n)
-        {
-            if(n != icol)
-            {
+        for (int n = 0; n < ncol; ++n) {
+            if (n != icol) {
                 t = b[n][icol];
                 b[n][icol] = 0.0;
-                for(int m = 0; m < ncol; ++m)
+                for (int m = 0; m < ncol; ++m) {
                     b[n][m] -= b[icol][m] * t;
-                if(nv > 0)
-                    for(int m = 0; m < nv; ++m)
+                }
+                if (nv > 0) {
+                    for (int m = 0; m < nv; ++m) {
                         w[n][m] -= w[icol][m] * t;
+                    }
+                }
             }
         }
     } // { i-loop }
+    
     return true;
 }
 
