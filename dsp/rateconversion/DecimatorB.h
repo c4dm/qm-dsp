@@ -11,8 +11,8 @@
     COPYING included with this distribution for more information.
 */
 
-#ifndef DECIMATORB_H
-#define DECIMATORB_H
+#ifndef QM_DSP_DECIMATORB_H
+#define QM_DSP_DECIMATORB_H
 
 #include <vector>
 

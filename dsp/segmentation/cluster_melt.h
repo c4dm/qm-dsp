@@ -14,8 +14,8 @@
  *
  */
 
-#ifndef _CLUSTER_MELT_H
-#define _CLUSTER_MELT_H
+#ifndef QM_DSP_CLUSTER_MELT_H
+#define QM_DSP_CLUSTER_MELT_H
 
 #include <stdlib.h>
 #include <math.h>

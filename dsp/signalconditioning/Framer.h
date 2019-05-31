@@ -13,8 +13,8 @@
     COPYING included with this distribution for more information.
 */
 
-#ifndef FRAMER_H
-#define FRAMER_H
+#ifndef QM_DSP_FRAMER_H
+#define QM_DSP_FRAMER_H
 
 class Framer  
 {

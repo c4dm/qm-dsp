@@ -11,8 +11,8 @@
     COPYING included with this distribution for more information.
 */
 
-#ifndef SINC_WINDOW_H
-#define SINC_WINDOW_H
+#ifndef QM_DSP_SINC_WINDOW_H
+#define QM_DSP_SINC_WINDOW_H
 
 #include <vector>
 

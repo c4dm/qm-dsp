@@ -12,8 +12,8 @@
     COPYING included with this distribution for more information.
 */
 
-#ifndef DECIMATOR_H
-#define DECIMATOR_H
+#ifndef QM_DSP_DECIMATOR_H
+#define QM_DSP_DECIMATOR_H
 
 /**
  * Decimator carries out a fast downsample by a power-of-two

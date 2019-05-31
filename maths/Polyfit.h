@@ -1,8 +1,9 @@
 /* -*- c-basic-offset: 4 indent-tabs-mode: nil -*-  vi:set ts=8 sts=4 sw=4: */
 //---------------------------------------------------------------------------
 
-#ifndef PolyfitHPP
-#define PolyfitHPP
+#ifndef QM_DSP_POLYFIT_H
+#define QM_DSP_POLYFIT_H
+
 //---------------------------------------------------------------------------
 // Least-squares curve fitting class for arbitrary data types
 /*

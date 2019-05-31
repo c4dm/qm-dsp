@@ -1,5 +1,4 @@
 /* -*- c-basic-offset: 4 indent-tabs-mode: nil -*-  vi:set ts=8 sts=4 sw=4: */
-
 /*
     QM DSP Library
 
@@ -13,8 +12,8 @@
     COPYING included with this distribution for more information.
 */
 
-#ifndef KLDIVERGENCE_H
-#define KLDIVERGENCE_H
+#ifndef QM_DSP_KLDIVERGENCE_H
+#define QM_DSP_KLDIVERGENCE_H
 
 #include <vector>
 

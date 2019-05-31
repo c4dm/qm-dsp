@@ -21,8 +21,8 @@
     COPYING included with this distribution for more information.
 */
 
-#ifndef CDFPROCESS_H
-#define CDFPROCESS_H
+#ifndef QM_DSP_DFPROCESS_H
+#define QM_DSP_DFPROCESS_H
 
 #include <stdio.h>
 #include "FiltFilt.h"
@@ -59,7 +59,6 @@ public:
     virtual ~DFProcess();
 
     void process( double* src, double* dst );
-
         
 private:
     void initialise( DFProcConfig Config );

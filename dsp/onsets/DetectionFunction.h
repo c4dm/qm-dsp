@@ -13,8 +13,8 @@
     COPYING included with this distribution for more information.
 */
 
-#ifndef DETECTIONFUNCTION_H
-#define DETECTIONFUNCTION_H
+#ifndef QM_DSP_DETECTIONFUNCTION_H
+#define QM_DSP_DETECTIONFUNCTION_H
 
 #include "maths/MathUtilities.h"
 #include "maths/MathAliases.h"

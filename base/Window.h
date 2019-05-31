@@ -12,8 +12,8 @@
     COPYING included with this distribution for more information.
 */
 
-#ifndef _WINDOW_H_
-#define _WINDOW_H_
+#ifndef QM_DSP_WINDOW_H
+#define QM_DSP_WINDOW_H
 
 #include <cmath>
 #include <iostream>

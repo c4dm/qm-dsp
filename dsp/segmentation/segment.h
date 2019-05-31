@@ -13,8 +13,8 @@
  *
  */
 
-#ifndef _SEGMENT_H
-#define _SEGMENT_H
+#ifndef QM_DSP_SEGMENT_H
+#define QM_DSP_SEGMENT_H
 
 #ifdef __cplusplus
 extern "C" {

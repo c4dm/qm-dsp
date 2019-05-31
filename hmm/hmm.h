@@ -13,8 +13,8 @@
  *
  */
 
-#ifndef _HMM_H
-#define _HMM_H
+#ifndef QM_DSP_HMM_H
+#define QM_DSP_HMM_H
 
 #ifdef __cplusplus
 extern "C" {

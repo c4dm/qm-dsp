@@ -21,12 +21,8 @@
     COPYING included with this distribution for more information.
 */
 
-// PeakPicking.h: interface for the PeakPicking class.
-//
-//////////////////////////////////////////////////////////////////////
-
-#ifndef PEAKPICKING_H
-#define PEAKPICKING_H
+#ifndef QM_DSP_PEAKPICKING_H
+#define QM_DSP_PEAKPICKING_H
 
 #include "maths/MathUtilities.h"
 #include "maths/MathAliases.h"

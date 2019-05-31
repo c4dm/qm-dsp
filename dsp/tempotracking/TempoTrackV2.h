@@ -13,9 +13,8 @@
     COPYING included with this distribution for more information.
 */
 
-
-#ifndef TEMPOTRACKV2_H
-#define TEMPOTRACKV2_H
+#ifndef QM_DSP_TEMPOTRACKV2_H
+#define QM_DSP_TEMPOTRACKV2_H
 
 #include <vector>
 using namespace std;

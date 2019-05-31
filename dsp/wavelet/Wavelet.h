@@ -12,8 +12,8 @@
     COPYING included with this distribution for more information.
 */
 
-#ifndef _WAVELET_H_
-#define _WAVELET_H_
+#ifndef QM_DSP_WAVELET_H
+#define QM_DSP_WAVELET_H
 
 #include <string>
 #include <vector>

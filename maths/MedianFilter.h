@@ -1,5 +1,4 @@
 /* -*- c-basic-offset: 4 indent-tabs-mode: nil -*-  vi:set ts=8 sts=4 sw=4: */
-
 /*
     QM DSP Library
 
@@ -13,8 +12,8 @@
     COPYING included with this distribution for more information.
 */
 
-#ifndef MEDIAN_FILTER_H
-#define MEDIAN_FILTER_H
+#ifndef QM_DSP_MEDIAN_FILTER_H
+#define QM_DSP_MEDIAN_FILTER_H
 
 #include <algorithm>
 #include <cassert>

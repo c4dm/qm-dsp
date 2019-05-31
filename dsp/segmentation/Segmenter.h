@@ -14,8 +14,8 @@
  *
  */
 
-#ifndef _SEGMENTER_H
-#define _SEGMENTER_H
+#ifndef QM_DSP_SEGMENTER_H
+#define QM_DSP_SEGMENTER_H
 
 #include <vector>
 #include <iostream>

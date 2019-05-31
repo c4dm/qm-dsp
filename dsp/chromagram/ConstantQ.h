@@ -13,8 +13,8 @@
     COPYING included with this distribution for more information.
 */
 
-#ifndef CONSTANTQ_H
-#define CONSTANTQ_H
+#ifndef QM_DSP_CONSTANTQ_H
+#define QM_DSP_CONSTANTQ_H
 
 #include <vector>
 #include "maths/MathAliases.h"

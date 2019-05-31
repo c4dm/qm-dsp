@@ -12,8 +12,8 @@
     COPYING included with this distribution for more information.
 */
 
-#ifndef _PITCH_H_
-#define _PITCH_H_
+#ifndef QM_DSP_PITCH_H
+#define QM_DSP_PITCH_H
 
 /**
  * Convert between musical pitch (i.e. MIDI pitch number) and

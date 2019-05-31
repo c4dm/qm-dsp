@@ -13,8 +13,8 @@
     COPYING included with this distribution for more information.
 */
 
-#ifndef _TCSGram_
-#define _TCSGram_
+#ifndef QM_DSP_TCSGRAM_H
+#define QM_DSP_TCSGRAM_H
 
 #include <vector>
 #include <valarray>

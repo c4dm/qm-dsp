@@ -13,8 +13,8 @@
     COPYING included with this distribution for more information.
 */
 
-#ifndef _CHANGEDETECTIONFUNCTION_
-#define _CHANGEDETECTIONFUNCTION_
+#ifndef QM_DSP_CHANGEDETECTIONFUNCTION_H
+#define QM_DSP_CHANGEDETECTIONFUNCTION_H
 
 #include "TCSgram.h"
 

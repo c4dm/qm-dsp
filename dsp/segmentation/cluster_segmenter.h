@@ -14,8 +14,8 @@
  *
  */
 
-#ifndef _CLUSTER_SEGMENTER_H
-#define _CLUSTER_SEGMENTER_H
+#ifndef QM_DSP_CLUSTER_SEGMENTER_H
+#define QM_DSP_CLUSTER_SEGMENTER_H
 
 #include <stdio.h>
 #include <stdlib.h>

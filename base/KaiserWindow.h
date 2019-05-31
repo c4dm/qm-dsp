@@ -11,8 +11,8 @@
     COPYING included with this distribution for more information.
 */
 
-#ifndef KAISER_WINDOW_H
-#define KAISER_WINDOW_H
+#ifndef QM_DSP_KAISER_WINDOW_H
+#define QM_DSP_KAISER_WINDOW_H
 
 #include <vector>
 #include <cmath>

@@ -13,8 +13,8 @@
     COPYING included with this distribution for more information.
 */
 
-#ifndef TEMPOTRACK_H
-#define TEMPOTRACK_H
+#ifndef QM_DSP_TEMPOTRACK_H
+#define QM_DSP_TEMPOTRACK_H
 
 
 #include <stdio.h>

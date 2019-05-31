@@ -12,8 +12,8 @@
     COPYING included with this distribution for more information.
 */
 
-#ifndef CHROMAGRAM_H
-#define CHROMAGRAM_H
+#ifndef QM_DSP_CHROMAGRAM_H
+#define QM_DSP_CHROMAGRAM_H
 
 #include "dsp/transforms/FFT.h"
 #include "base/Window.h"

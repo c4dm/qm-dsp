@@ -13,8 +13,8 @@
     COPYING included with this distribution for more information.
 */
 
-#ifndef DOWNBEAT_H
-#define DOWNBEAT_H
+#ifndef QM_DSP_DOWNBEAT_H
+#define QM_DSP_DOWNBEAT_H
 
 #include <vector>
 #include <cstddef>

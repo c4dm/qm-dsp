@@ -1,5 +1,4 @@
 /* -*- c-basic-offset: 4 indent-tabs-mode: nil -*-  vi:set ts=8 sts=4 sw=4: */
-
 /*
     QM DSP Library
 
@@ -13,10 +12,8 @@
     COPYING included with this distribution for more information.
 */
 
-#ifndef CORRELATION_H
-#define CORRELATION_H
-
-#define  EPS  2.2204e-016
+#ifndef QM_DSP_CORRELATION_H
+#define QM_DSP_CORRELATION_H
 
 class Correlation  
 {

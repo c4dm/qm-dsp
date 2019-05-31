@@ -10,8 +10,8 @@
     COPYING included with this distribution for more information.
  */
 
-#ifndef GETKEYMODE_H
-#define GETKEYMODE_H
+#ifndef QM_DSP_GETKEYMODE_H
+#define QM_DSP_GETKEYMODE_H
 
 
 #include "dsp/rateconversion/Decimator.h"

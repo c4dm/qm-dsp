@@ -13,9 +13,8 @@
     COPYING included with this distribution for more information.
 */
 
-#ifndef _TONALESTIMATOR_
-#define _TONALESTIMATOR_
-
+#ifndef QM_DSP_TONALESTIMATOR_H
+#define QM_DSP_TONALESTIMATOR_H
 
 #include <valarray>
 #include <numeric>
