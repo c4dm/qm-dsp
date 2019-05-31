@@ -21,6 +21,7 @@
 #include <iostream>
 
 #include <cassert>
+#include <cmath>
 
 //#define DEBUG_TEMPO_TRACK 1
 
