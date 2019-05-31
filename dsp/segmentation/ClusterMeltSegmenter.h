@@ -13,6 +13,9 @@
     COPYING included with this distribution for more information.
  */
 
+#ifndef QM_DSP_CLUSTER_MELT_SEGMENTER_H
+#define QM_DSP_CLUSTER_MELT_SEGMENTER_H
+
 #include <vector>
 
 #include "segment.h"
@@ -107,3 +110,5 @@ protected:
 
     Decimator *decimator;
 };
+
+#endif
