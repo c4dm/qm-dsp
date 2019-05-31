@@ -627,7 +627,7 @@ double gauss(double* x, int L, double* mu, double** icov, double detcov, double*
 
     s = cblas_ddot(L, z, 1, y, 1);
 	
-    return exp(-s/2.0) / (pow(2*PI, L/2.0) * sqrt(detcov));
+    return exp(-s/2.0) / (pow(2 * M_PI, L/2.0) * sqrt(detcov));
 }
 
 /* log probability of multivariate Gaussian given mean, inverse and determinant of covariance */
@@ -647,7 +647,7 @@ double loggauss(double* x, int L, double* mu, double** icov, double detcov, doub
 
     s = cblas_ddot(L, z, 1, y, 1);
 	
-    ret = -0.5 * (s + L * log(2*PI) + log(detcov));
+    ret = -0.5 * (s + L * log(2 * M_PI) + log(detcov));
 	
     return ret;
 }

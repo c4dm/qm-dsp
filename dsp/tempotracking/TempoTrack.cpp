@@ -120,7 +120,7 @@ void TempoTrack::createCombFilter(double* Filter, int winLength, int /* TSig */,
         for( i = 0; i < winLength; i++ ) {
             double dlag = (double)(i+1) - beatLag;
             Filter[ i ] =  exp(-0.5 * pow(( dlag / m_sigma), 2.0) ) /
-                (sqrt( 2 * PI) * m_sigma);
+                (sqrt(TWO_PI) * m_sigma);
         }
     }
 }
@@ -519,7 +519,7 @@ void TempoTrack::createPhaseExtractor(double *Filter, int /* winLength */, doubl
         double temp = 0.0;
 
         for(  int i = 0; i < scratchLength; i++ ) {
-            phaseScratch[ i ] = exp( -0.5 * pow( ( i - mu ) / sigma, 2 ) ) / ( sqrt( 2*PI ) *sigma );
+            phaseScratch[ i ] = exp( -0.5 * pow( ( i - mu ) / sigma, 2 ) ) / ( sqrt(TWO_PI) *sigma );
         }
 
         MathUtilities::getFrameMinMax( phaseScratch, scratchLength, &PhaseMin, &PhaseMax );

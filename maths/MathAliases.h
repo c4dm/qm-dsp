@@ -19,17 +19,9 @@
 #include <cmath>
 #include <complex>
 
-using namespace std;
-typedef complex<double> ComplexData;
+#define TWO_PI          (2. * M_PI)
 
-
-#ifndef PI
-#define PI (3.14159265358979232846)
-#endif
-
-#define TWO_PI          (2. * PI)
-
-#define EPS 2.2204e-016
+#define EPS             2.2204e-016
 
 /* aliases to math.h functions */
 #define EXP                             exp
@@ -42,6 +34,8 @@ typedef complex<double> ComplexData;
 #define LOG                             logf
 #define FLOOR                   floorf
 #define TRUNC                   truncf
+
+typedef std::complex<double> ComplexData;
 
 /* aliases to complex.h functions */
 /** sample = EXPC(complex) */

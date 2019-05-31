@@ -20,10 +20,6 @@
 extern "C" {
 #endif
 
-#ifndef PI    
-#define PI 3.14159265358979323846264338327950288
-#endif 
-
 typedef struct _model_t {
     int N;          /* number of states */
     double* p0;     /* initial probs */

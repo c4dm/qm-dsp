@@ -91,7 +91,7 @@ void ConstantQ::sparsekernel()
         unsigned origin = m_FFTLength/2 - hammingLength/2;
 
         for (unsigned i=0; i<hammingLength; i++) {
-            const double angle = 2*PI*m_dQ*i/hammingLength;
+            const double angle = 2*M_PI*m_dQ*i/hammingLength;
             const double real = cos(angle);
             const double imag = sin(angle);
             const double absol = hamming(hammingLength, i)/hammingLength;
