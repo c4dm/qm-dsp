@@ -17,6 +17,7 @@
 #include "maths/MathUtilities.h"
 #include "base/KaiserWindow.h"
 #include "base/SincWindow.h"
+#include "base/Restrict.h"
 
 #include <iostream>
 #include <vector>
@@ -285,16 +286,8 @@ Resampler::reconstructOne()
         throw std::logic_error("n + m_bufferOrigin > m_buffer.size()");
     }
 
-#if defined(__MSVC__)
-#define R__ __restrict
-#elif defined(__GNUC__)
-#define R__ __restrict__
-#else
-#define R__
-#endif
-
-    const double *const R__ buf(m_buffer.data() + m_bufferOrigin);
-    const double *const R__ filt(pd.filter.data());
+    const double *const QM_R__ buf(m_buffer.data() + m_bufferOrigin);
+    const double *const QM_R__ filt(pd.filter.data());
 
     for (int i = 0; i < n; ++i) {
         // NB gcc can only vectorize this with -ffast-math
