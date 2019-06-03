@@ -52,7 +52,7 @@ void ConstantQ::sparsekernel()
 
     FFT fft(m_FFTLength);
         
-    for (int j = m_uK; j >= 0; --j) {
+    for (int j = m_uK - 1; j >= 0; --j) {
         
         for (int i = 0; i < m_FFTLength; ++i) {
             windowRe[i] = 0;
