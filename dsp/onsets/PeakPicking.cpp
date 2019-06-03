@@ -73,7 +73,7 @@ void PeakPicking::deInitialise()
     m_workBuffer = NULL;
 }
 
-void PeakPicking::process( double* src, unsigned int len, vector<int> &onsets )
+void PeakPicking::process( double* src, int len, vector<int> &onsets )
 {
     if (len < 4) return;
 
@@ -82,20 +82,20 @@ void PeakPicking::process( double* src, unsigned int len, vector<int> &onsets )
     // Signal conditioning 
     m_DFSmoothing->process( src, m_workBuffer );
         
-    for( unsigned int u = 0; u < len; u++) {
-        m_maxima.push_back( m_workBuffer[ u ] );                
+    for (int i = 0; i < len; i++) {
+        m_maxima.push_back( m_workBuffer[ i ] );                
     }
         
     quadEval( m_maxima, onsets );
 
-    for( int b = 0; b <  (int)m_maxima.size(); b++) {
+    for( int b = 0; b < (int)m_maxima.size(); b++) {
         src[ b ] = m_maxima[ b ];
     }
 }
 
 int PeakPicking::quadEval( vector<double> &src, vector<int> &idx )
 {
-    unsigned int maxLength;
+    int maxLength;
 
     vector <int> m_maxIndex;
     vector <int> m_onsetPosition;
@@ -108,21 +108,21 @@ int PeakPicking::quadEval( vector<double> &src, vector<int> &idx )
     m_poly.push_back(0);
     m_poly.push_back(0);
 
-    for(  int t = -2; t < 3; t++) {
+    for (int t = -2; t < 3; t++) {
         m_err.push_back( (double)t );
     }
 
-    for( unsigned int i = 2; i < src.size() - 2; i++) {
-        if( (src[i] > src[i-1]) && (src[i] > src[i+1]) && (src[i] > 0) ) {
+    for (int i = 2; i < int(src.size()) - 2; i++) {
+        if ((src[i] > src[i-1]) && (src[i] > src[i+1]) && (src[i] > 0) ) {
             m_maxIndex.push_back(i);
         }
     }
 
-    maxLength = m_maxIndex.size();
+    maxLength = int(m_maxIndex.size());
 
     double selMax = 0;
 
-    for( unsigned int j = 0; j < maxLength ; j++) {
+    for (int j = 0; j < maxLength ; j++) {
         for (int k = -2; k <= 2; ++k) {
             selMax = src[ m_maxIndex[j] + k ] ;
             m_maxFit.push_back(selMax);                 

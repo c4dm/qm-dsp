@@ -34,7 +34,7 @@ public:
      * is obtained through getHighestSupportedFactor(); for higher
      * factors, you will need to chain more than one decimator.
      */
-    Decimator( unsigned int inLength, unsigned int decFactor );
+    Decimator(int inLength, int decFactor);
     virtual ~Decimator();
 
     /**
@@ -60,13 +60,13 @@ public:
 
 private:
     void deInitialise();
-    void initialise( unsigned int inLength, unsigned int decFactor );
-    void doAntiAlias( const double* src, double* dst, unsigned int length );
-    void doAntiAlias( const float* src, double* dst, unsigned int length );
+    void initialise( int inLength, int decFactor );
+    void doAntiAlias( const double* src, double* dst, int length );
+    void doAntiAlias( const float* src, double* dst, int length );
 
-    unsigned int m_inputLength;
-    unsigned int m_outputLength;
-    unsigned int m_decFactor;
+    int m_inputLength;
+    int m_outputLength;
+    int m_decFactor;
 
     double Input;
     double Output ;

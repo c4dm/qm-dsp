@@ -18,10 +18,10 @@
 class Correlation  
 {
 public:
-    void doAutoUnBiased( double* src, double* dst, unsigned int length );
     Correlation();
     virtual ~Correlation();
 
+    void doAutoUnBiased( double* src, double* dst, int length );
 };
 
-#endif // 
+#endif

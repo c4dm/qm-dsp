@@ -24,7 +24,7 @@ struct CQConfig {
     double FS;         // samplerate
     double min;        // minimum frequency
     double max;        // maximum frequency
-    unsigned int BPO;  // bins per octave
+    int BPO;           // bins per octave
     double CQThresh;   // threshold
 };
 

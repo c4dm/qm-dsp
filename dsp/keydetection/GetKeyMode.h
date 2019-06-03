@@ -29,15 +29,15 @@ public:
     int process( double* PCMData );
 
     double krumCorr( const double *pDataNorm, const double *pProfileNorm, 
-                     int shiftProfile, unsigned int length );
+                     int shiftProfile, int length );
 
-    unsigned int getBlockSize() { return m_ChromaFrameSize*m_DecimationFactor; }
-    unsigned int getHopSize() { return m_ChromaHopSize*m_DecimationFactor; }
+    int getBlockSize() { return m_chromaFrameSize * m_decimationFactor; }
+    int getHopSize() { return m_chromaHopSize * m_decimationFactor; }
 
-    double* getChroma() { return m_ChrPointer; }
-    unsigned int getChromaSize();
+    double* getChroma() { return m_chrPointer; }
+    int getChromaSize();
 
-    double* getMeanHPCP() { return m_MeanHPCP; }
+    double* getMeanHPCP() { return m_meanHPCP; }
 
     double* getKeyStrengths();
 
@@ -47,46 +47,45 @@ protected:
 
     double m_hpcpAverage;
     double m_medianAverage;
-    unsigned int m_DecimationFactor;
+    int m_decimationFactor;
 
-    //Decimator (fixed)
-    Decimator* m_Decimator;
+    // Decimator (fixed)
+    Decimator* m_decimator;
 
-    //chroma configuration
-    ChromaConfig m_ChromaConfig;
+    // Chroma configuration
+    ChromaConfig m_chromaConfig;
 
-    //Chromagram object
-    Chromagram* m_Chroma;
+    // Chromagram object
+    Chromagram* m_chroma;
 
-    //Chromagram output pointer
-    double* m_ChrPointer;
+    // Chromagram output pointer
+    double* m_chrPointer;
 
-    //Framesize
-    unsigned int m_ChromaFrameSize;
-    //Hop
-    unsigned int m_ChromaHopSize;
+    // Framesize
+    int m_chromaFrameSize;
 
+    // Hop
+    int m_chromaHopSize;
 
-    unsigned int m_ChromaBuffersize;
-    unsigned int m_MedianWinsize;
+    int m_chromaBufferSize;
+    int m_medianWinSize;
         
-    unsigned int m_bufferindex;
-    unsigned int m_ChromaBufferFilling;
-    unsigned int m_MedianBufferFilling;
-        
+    int m_bufferIndex;
+    int m_chromaBufferFilling;
+    int m_medianBufferFilling;
 
-    double* m_DecimatedBuffer;
-    double* m_ChromaBuffer;
-    double* m_MeanHPCP;
+    double* m_decimatedBuffer;
+    double* m_chromaBuffer;
+    double* m_meanHPCP;
 
-    double* m_MajProfileNorm;
-    double* m_MinProfileNorm;
-    double* m_MajCorr;
-    double* m_MinCorr;
-    int* m_MedianFilterBuffer;
-    int* m_SortedBuffer;
+    double* m_majProfileNorm;
+    double* m_minProfileNorm;
+    double* m_majCorr;
+    double* m_minCorr;
+    int* m_medianFilterBuffer;
+    int* m_sortedBuffer;
 
     double *m_keyStrengths;
 };
 
-#endif // !defined GETKEYMODE_H
+#endif // !defined QM_DSP_GETKEYMODE_H

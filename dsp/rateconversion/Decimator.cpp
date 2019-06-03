@@ -21,7 +21,7 @@
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
 
-Decimator::Decimator( unsigned int inLength, unsigned int decFactor )
+Decimator::Decimator( int inLength, int decFactor )
 {
     m_inputLength = 0;
     m_outputLength = 0;
@@ -35,7 +35,7 @@ Decimator::~Decimator()
     deInitialise();
 }
 
-void Decimator::initialise( unsigned int inLength, unsigned int decFactor)
+void Decimator::initialise( int inLength, int decFactor)
 {
     m_inputLength = inLength;
     m_decFactor = decFactor;
@@ -152,9 +152,9 @@ void Decimator::resetFilter()
     o1=o2=o3=o4=o5=o6=o7=0;
 }
 
-void Decimator::doAntiAlias(const double *src, double *dst, unsigned int length)
+void Decimator::doAntiAlias(const double *src, double *dst, int length)
 {
-    for( unsigned int i = 0; i < length; i++ ) {
+    for (int i = 0; i < length; i++ ) {
         
         Input = (double)src[ i ];
 
@@ -172,9 +172,9 @@ void Decimator::doAntiAlias(const double *src, double *dst, unsigned int length)
     }
 }
 
-void Decimator::doAntiAlias(const float *src, double *dst, unsigned int length)
+void Decimator::doAntiAlias(const float *src, double *dst, int length)
 {
-    for( unsigned int i = 0; i < length; i++ ) {
+    for (int i = 0; i < length; i++ ) {
         
         Input = (double)src[ i ];
 
@@ -195,7 +195,7 @@ void Decimator::doAntiAlias(const float *src, double *dst, unsigned int length)
 void Decimator::process(const double *src, double *dst)
 {
     if (m_decFactor == 1) {
-        for( unsigned int i = 0; i < m_outputLength; i++ ) {
+        for (int i = 0; i < m_outputLength; i++ ) {
             dst[i] = src[i];
         }
         return;
@@ -205,7 +205,7 @@ void Decimator::process(const double *src, double *dst)
 
     unsigned idx = 0;
 
-    for( unsigned int i = 0; i < m_outputLength; i++ ) {
+    for (int i = 0; i < m_outputLength; i++ ) {
         dst[ idx++ ] = decBuffer[ m_decFactor * i ];
     }
 }
@@ -213,7 +213,7 @@ void Decimator::process(const double *src, double *dst)
 void Decimator::process(const float *src, float *dst)
 {
     if (m_decFactor == 1) {
-        for( unsigned int i = 0; i < m_outputLength; i++ ) {
+        for (int i = 0; i < m_outputLength; i++ ) {
             dst[i] = src[i];
         }
         return;
@@ -221,9 +221,9 @@ void Decimator::process(const float *src, float *dst)
 
     doAntiAlias( src, decBuffer, m_inputLength );
 
-    unsigned idx = 0;
+    int idx = 0;
 
-    for( unsigned int i = 0; i < m_outputLength; i++ ) {
+    for (int i = 0; i < m_outputLength; i++ ) {
         dst[ idx++ ] = decBuffer[ m_decFactor * i ];
     }
 }
