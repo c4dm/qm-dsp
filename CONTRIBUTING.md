@@ -76,6 +76,6 @@ Code style
 
  * Please keep lines to no more than 80 characters in length
 
-Some of the older code in this library does not follow these
-guidelines - usually this means the code needs to be updated.
+ * Avoid using unsigned int types, unless doing bit manipulation (see
+   http://soundsoftware.ac.uk/c-pitfall-unsigned.html for rationale)
 
