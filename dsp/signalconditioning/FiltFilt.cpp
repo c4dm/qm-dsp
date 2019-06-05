@@ -15,10 +15,6 @@
 
 #include "FiltFilt.h"
 
-//////////////////////////////////////////////////////////////////////
-// Construction/Destruction
-//////////////////////////////////////////////////////////////////////
-
 FiltFilt::FiltFilt(Filter::Parameters parameters) :
     m_filter(parameters)
 {
@@ -29,7 +25,9 @@ FiltFilt::~FiltFilt()
 {
 }
 
-void FiltFilt::process(double *src, double *dst, int length)
+void FiltFilt::process(const double *const QM_R__ src,
+                       double *const QM_R__ dst,
+                       const int length)
 {       
     int i;
 
@@ -53,19 +51,25 @@ void FiltFilt::process(double *src, double *dst, int length)
 
     int index = 0;
     for (i = nFact; i > 0; i--) {
-        filtScratchIn[ index++ ] = sample0 - src[ i ];
+        if (i < length) {
+            filtScratchIn[index] = sample0 - src[ i ];
+        }
+        ++index;
     }
     index = 0;
     for (i = 0; i < nFact; i++) {
-        filtScratchIn[ (nExt - nFact) + index++ ] =
-            sampleN - src[ (length - 2) - i ];
+        if (i < length) {
+            filtScratchIn[(nExt - nFact) + index] =
+                sampleN - src[ (length - 2) - i ];
+        }
+        ++index;
     }
 
     index = 0;
     for (i = 0; i < length; i++) {
         filtScratchIn[ i + nFact ] = src[ i ];
     }
-        
+    
     ////////////////////////////////
     // Do 0Ph filtering
     m_filter.process(filtScratchIn, filtScratchOut, nExt);
@@ -75,9 +79,12 @@ void FiltFilt::process(double *src, double *dst, int length)
         filtScratchIn[ i ] = filtScratchOut[ nExt - i - 1];
     }
 
+    // clear filter state
+    m_filter.reset();
+    
     // do FILTER again 
     m_filter.process(filtScratchIn, filtScratchOut, nExt);
-        
+
     // reverse the series back 
     for (i = 0; i < nExt; i++) {
         filtScratchIn[ i ] = filtScratchOut[ nExt - i - 1 ];
@@ -95,7 +102,3 @@ void FiltFilt::process(double *src, double *dst, int length)
     delete [] filtScratchOut;
 }
 
-void FiltFilt::reset()
-{
-
-}

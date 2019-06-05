@@ -28,8 +28,9 @@ public:
     FiltFilt(Filter::Parameters);
     virtual ~FiltFilt();
 
-    void reset();
-    void process(double* src, double* dst, int length);
+    void process(const double *const QM_R__ src,
+                 double *const QM_R__ dst,
+                 const int length);
 
 private:
     Filter m_filter;
