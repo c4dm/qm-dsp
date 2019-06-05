@@ -63,9 +63,9 @@ void DFProcess::initialise( DFProcConfig config )
 
     Filter::Parameters params;
     params.a = std::vector<double>
-        (Config.LPACoeffs, Config.LPACoeffs + Config.LPOrd + 1);
+        (config.LPACoeffs, config.LPACoeffs + config.LPOrd + 1);
     params.b = std::vector<double>
-        (Config.LPBCoeffs, Config.LPBCoeffs + Config.LPOrd + 1);
+        (config.LPBCoeffs, config.LPBCoeffs + config.LPOrd + 1);
     
     m_FiltFilt = new FiltFilt(params);
         
