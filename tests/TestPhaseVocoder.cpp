@@ -18,17 +18,17 @@ BOOST_AUTO_TEST_SUITE(TestFFT)
 
 #define COMPARE_CONST(a, n) \
     for (int cmp_i = 0; cmp_i < (int)(sizeof(a)/sizeof(a[0])); ++cmp_i) { \
-        BOOST_CHECK_SMALL(a[cmp_i] - n, 1e-7);				\
+        BOOST_CHECK_SMALL(a[cmp_i] - n, 1e-7);                          \
     }
 
-#define COMPARE_ARRAY(a, b)						\
+#define COMPARE_ARRAY(a, b)                                             \
     for (int cmp_i = 0; cmp_i < (int)(sizeof(a)/sizeof(a[0])); ++cmp_i) { \
-        BOOST_CHECK_SMALL(a[cmp_i] - b[cmp_i], 1e-7);			\
+        BOOST_CHECK_SMALL(a[cmp_i] - b[cmp_i], 1e-7);                   \
     }
 
-#define COMPARE_ARRAY_EXACT(a, b)						\
+#define COMPARE_ARRAY_EXACT(a, b)                                               \
     for (int cmp_i = 0; cmp_i < (int)(sizeof(a)/sizeof(a[0])); ++cmp_i) { \
-        BOOST_CHECK_EQUAL(a[cmp_i], b[cmp_i]);			\
+        BOOST_CHECK_EQUAL(a[cmp_i], b[cmp_i]);                  \
     }
 
 BOOST_AUTO_TEST_CASE(fullcycle)
@@ -116,9 +116,9 @@ BOOST_AUTO_TEST_CASE(overlapping)
     // the first frame if it did).
 
     double data[32] = { // 3 x 8-sample frames which we pretend are overlapping
-	0, 1, 0, -1, 0, 1, 0, -1,
-	1, 1.70710678, 0, -1.70710678, -1, 0.29289322, 0, -0.29289322,
-	-1, 0.29289322, 0, -0.29289322, 1, 1.70710678, 0, -1.70710678,
+        0, 1, 0, -1, 0, 1, 0, -1,
+        1, 1.70710678, 0, -1.70710678, -1, 0.29289322, 0, -0.29289322,
+        -1, 0.29289322, 0, -0.29289322, 1, 1.70710678, 0, -1.70710678,
     };
 
     PhaseVocoder pvoc(8, 4);

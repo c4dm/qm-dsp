@@ -132,7 +132,6 @@
     <ClCompile Include="..\..\base\SincWindow.cpp" />
     <ClCompile Include="..\..\dsp\chromagram\Chromagram.cpp" />
     <ClCompile Include="..\..\dsp\chromagram\ConstantQ.cpp" />
-    <ClCompile Include="..\..\dsp\chromagram\CQprecalc.cpp" />
     <ClCompile Include="..\..\dsp\keydetection\GetKeyMode.cpp" />
     <ClCompile Include="..\..\dsp\mfcc\MFCC.cpp" />
     <ClCompile Include="..\..\dsp\onsets\DetectionFunction.cpp" />
