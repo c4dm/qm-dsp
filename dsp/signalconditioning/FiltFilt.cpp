@@ -58,7 +58,7 @@ void FiltFilt::process(const double *const QM_R__ src,
     }
     index = 0;
     for (i = 0; i < nFact; i++) {
-        if (i < length) {
+        if (i + 1 < length) {
             filtScratchIn[(nExt - nFact) + index] =
                 sampleN - src[ (length - 2) - i ];
         }
