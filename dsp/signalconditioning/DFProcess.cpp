@@ -32,7 +32,7 @@
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
 
-DFProcess::DFProcess( DFProcConfig Config )
+DFProcess::DFProcess( DFProcConfig config )
 {
     filtSrc = NULL;
     filtDst = NULL;     
@@ -41,7 +41,7 @@ DFProcess::DFProcess( DFProcConfig Config )
 
     m_FFOrd = 0;
 
-    initialise( Config );
+    initialise( config );
 }
 
 DFProcess::~DFProcess()
@@ -49,14 +49,14 @@ DFProcess::~DFProcess()
     deInitialise();
 }
 
-void DFProcess::initialise( DFProcConfig Config )
+void DFProcess::initialise( DFProcConfig config )
 {
-    m_length = Config.length;
-    m_winPre = Config.winPre;
-    m_winPost = Config.winPost;
-    m_alphaNormParam = Config.AlphaNormParam;
+    m_length = config.length;
+    m_winPre = config.winPre;
+    m_winPost = config.winPost;
+    m_alphaNormParam = config.AlphaNormParam;
 
-    m_isMedianPositive = Config.isMedianPositive;
+    m_isMedianPositive = config.isMedianPositive;
 
     filtSrc = new double[ m_length ];
     filtDst = new double[ m_length ];
@@ -70,7 +70,7 @@ void DFProcess::initialise( DFProcConfig Config )
     m_FiltFilt = new FiltFilt(params);
         
     //add delta threshold
-    m_delta = Config.delta;
+    m_delta = config.delta;
 }
 
 void DFProcess::deInitialise()

@@ -29,7 +29,7 @@ public:
     virtual ~FiltFilt();
 
     void reset();
-    void process( double* src, double* dst, unsigned int length );
+    void process(double* src, double* dst, int length);
 
 private:
     Filter m_filter;

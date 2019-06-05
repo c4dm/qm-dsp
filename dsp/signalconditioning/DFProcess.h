@@ -24,16 +24,18 @@
 #ifndef QM_DSP_DFPROCESS_H
 #define QM_DSP_DFPROCESS_H
 
-#include <stdio.h>
 #include "FiltFilt.h"
 
-struct DFProcConfig{
-    unsigned int length; 
-    unsigned int LPOrd; 
+#include <stdio.h>
+
+struct DFProcConfig
+{
+    int length; 
+    int LPOrd; 
     double *LPACoeffs; 
     double *LPBCoeffs; 
-    unsigned int winPre;
-    unsigned int winPost; 
+    int winPre;
+    int winPost; 
     double AlphaNormParam;
     bool isMedianPositive;
     float delta; //delta threshold used as an offset when computing the smoothed detection function
