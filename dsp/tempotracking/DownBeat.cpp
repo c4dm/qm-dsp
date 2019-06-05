@@ -246,9 +246,9 @@ DownBeat::measureSpecDiff(d_vec_t oldspec, d_vec_t newspec)
 {
     // JENSEN-SHANNON DIVERGENCE BETWEEN SPECTRAL FRAMES
 
-    unsigned int SPECSIZE = 512;   // ONLY LOOK AT FIRST 512 SAMPLES OF SPECTRUM. 
-    if (SPECSIZE > oldspec.size()/4) {
-        SPECSIZE = oldspec.size()/4;
+    int SPECSIZE = 512;   // ONLY LOOK AT FIRST 512 SAMPLES OF SPECTRUM. 
+    if (SPECSIZE > int(oldspec.size())/4) {
+        SPECSIZE = int(oldspec.size())/4;
     }
     double SD = 0.;
     double sd1 = 0.;
@@ -256,7 +256,7 @@ DownBeat::measureSpecDiff(d_vec_t oldspec, d_vec_t newspec)
     double sumnew = 0.;
     double sumold = 0.;
   
-    for (unsigned int i = 0;i < SPECSIZE;i++) {
+    for (int i = 0;i < SPECSIZE;i++) {
         
         newspec[i] +=EPS;
         oldspec[i] +=EPS;
@@ -265,7 +265,7 @@ DownBeat::measureSpecDiff(d_vec_t oldspec, d_vec_t newspec)
         sumold+=oldspec[i];
     } 
     
-    for (unsigned int i = 0;i < SPECSIZE;i++) {
+    for (int i = 0;i < SPECSIZE;i++) {
         
         newspec[i] /= (sumnew);
         oldspec[i] /= (sumold);

@@ -203,7 +203,7 @@ void Decimator::process(const double *src, double *dst)
         
     doAntiAlias( src, decBuffer, m_inputLength );
 
-    unsigned idx = 0;
+    int idx = 0;
 
     for (int i = 0; i < m_outputLength; i++ ) {
         dst[ idx++ ] = decBuffer[ m_decFactor * i ];
