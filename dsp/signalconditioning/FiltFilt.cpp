@@ -65,7 +65,6 @@ void FiltFilt::process(const double *const QM_R__ src,
         ++index;
     }
 
-    index = 0;
     for (i = 0; i < length; i++) {
         filtScratchIn[ i + nFact ] = src[ i ];
     }
@@ -85,18 +84,10 @@ void FiltFilt::process(const double *const QM_R__ src,
     // do FILTER again 
     m_filter.process(filtScratchIn, filtScratchOut, nExt);
 
-    // reverse the series back 
-    for (i = 0; i < nExt; i++) {
-        filtScratchIn[ i ] = filtScratchOut[ nExt - i - 1 ];
-    }
-    for (i = 0; i < nExt; i++) {
-        filtScratchOut[ i ] = filtScratchIn[ i ];
-    }
-
-    index = 0;
+    // reverse the series to output
     for (i = 0; i < length; i++) {
-        dst[ index++ ] = filtScratchOut[ i + nFact ];
-    }   
+        dst[ i ] = filtScratchOut[ nExt - nFact - i - 1 ];
+    }
 
     delete [] filtScratchIn;
     delete [] filtScratchOut;
