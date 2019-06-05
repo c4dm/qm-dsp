@@ -269,11 +269,11 @@ TempoTrackV2::viterbi_decode(const d_mat_t &rcfmat, const d_vec_t &wv, d_vec_t &
         }
     }
 
-    int T = delta.size();
+    int T = int(delta.size());
 
     if (T < 2) return; // can't do anything at all meaningful
 
-    int Q = delta[0].size();
+    int Q = int(delta[0].size());
 
     // initialize first column of delta
     for (int j = 0; j < Q; j++) {

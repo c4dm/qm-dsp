@@ -96,7 +96,7 @@ private:
     // Config structure for DFProcess
     DFProcConfig m_DFPParams;
 
-        // also want to smooth m_tempoScratch 
+    // also want to smooth m_tempoScratch 
     DFProcess* m_RCFConditioning;
     // Config structure for RCFProcess
     DFProcConfig m_RCFPParams;
