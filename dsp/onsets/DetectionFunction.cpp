@@ -16,9 +16,9 @@
 #include "DetectionFunction.h"
 #include <cstring>
 
-//////////////////////////////////////////////////////////////////////
-// Construction/Destruction
-//////////////////////////////////////////////////////////////////////
+#include <iostream>
+using std::cerr;
+using std::endl;
 
 DetectionFunction::DetectionFunction( DFConfig config ) :
     m_window(0)
@@ -111,7 +111,43 @@ double DetectionFunction::processFrequencyDomain(const double *reals,
 
     if (m_whiten) whiten();
 
-    return runDF();
+    double value = runDF();
+
+    if (fabs(value - 697.063) < 0.01) {
+        cerr << "\nDetectionFunction: value = " << value << " (whiten = " << m_whiten << ", halfLength = " << m_halfLength << ")" << endl;
+        cerr << "\nreals:" << endl;
+        for (int i = 0; i < m_halfLength; ++i) {
+            if (i > 0) cerr << ", ";
+            if (i % 8 == 0) cerr << "\n" << i << ": ";
+            cerr << reals[i];
+        }
+        cerr << "\n\nimags:" << endl;
+        for (int i = 0; i < m_halfLength; ++i) {
+            if (i > 0) cerr << ", ";
+            if (i % 8 == 0) cerr << "\n" << i << ": ";
+            cerr << imags[i];
+        }
+        cerr << "\n\nmagnitudes:" << endl;
+        for (int i = 0; i < m_halfLength; ++i) {
+            if (i > 0) cerr << ", ";
+            if (i % 8 == 0) cerr << "\n" << i << ": ";
+            cerr << m_magnitude[i];
+        }
+        cerr << "\n\nphases:" << endl;
+        for (int i = 0; i < m_halfLength; ++i) {
+            if (i > 0) cerr << ", ";
+            if (i % 8 == 0) cerr << "\n" << i << ": ";
+            cerr << m_thetaAngle[i];
+        }
+        cerr << "\n\nunwrapped:" << endl;
+        for (int i = 0; i < m_halfLength; ++i) {
+            if (i > 0) cerr << ", ";
+            if (i % 8 == 0) cerr << "\n" << i << ": ";
+            cerr << m_unwrapped[i];
+        }
+    }        
+    
+    return value;
 }
 
 void DetectionFunction::whiten()
