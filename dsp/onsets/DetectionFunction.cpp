@@ -17,6 +17,7 @@
 #include <cstring>
 
 #include <iostream>
+#include <iomanip>
 using std::cerr;
 using std::endl;
 
@@ -145,6 +146,10 @@ double DetectionFunction::processFrequencyDomain(const double *reals,
             if (i % 8 == 0) cerr << "\n" << i << ": ";
             cerr << m_unwrapped[i];
         }
+
+        cerr << "\n... so we're returning " << value << " (actually "
+             << std::setprecision(12) << value << std::setprecision(6) << ")"
+             << endl;
     }        
     
     return value;
