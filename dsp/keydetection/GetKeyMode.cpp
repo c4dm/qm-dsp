@@ -16,6 +16,10 @@
 */
 
 #include "GetKeyMode.h"
+
+#include "dsp/rateconversion/Decimator.h"
+#include "dsp/chromagram/Chromagram.h"
+
 #include "maths/MathUtilities.h"
 #include "base/Pitch.h"
 
@@ -47,10 +51,10 @@ static double MinProfile[kBinsPerOctave] = {
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
 
-GetKeyMode::GetKeyMode( int sampleRate, float tuningFrequency,
-                        double hpcpAverage, double medianAverage ) :
-    m_hpcpAverage( hpcpAverage ),
-    m_medianAverage( medianAverage ),
+GetKeyMode::GetKeyMode(Config config) :
+    m_hpcpAverage(config.hpcpAverage),
+    m_medianAverage(config.medianAverage),
+    m_decimationFactor(config.decimationFactor),
     m_chrPointer(0),
     m_decimatedBuffer(0),
     m_chromaBuffer(0),
@@ -61,38 +65,41 @@ GetKeyMode::GetKeyMode( int sampleRate, float tuningFrequency,
     m_sortedBuffer(0),
     m_keyStrengths(0)
 {
-    m_decimationFactor = 8;
-        
+    ChromaConfig chromaConfig;
+    
     // Chromagram configuration parameters
-    m_chromaConfig.normalise = MathUtilities::NormaliseUnitMax;
-    m_chromaConfig.FS = sampleRate / (double)m_decimationFactor;
-    if (m_chromaConfig.FS < 1) {
-        m_chromaConfig.FS = 1;
+    chromaConfig.normalise = MathUtilities::NormaliseUnitMax;
+    chromaConfig.FS = config.sampleRate / (double)m_decimationFactor;
+    if (chromaConfig.FS < 1) {
+        chromaConfig.FS = 1;
     }
 
     // Set C3 (= MIDI #48) as our base:
     // This implies that key = 1 => Cmaj, key = 12 => Bmaj, key = 13 => Cmin, etc.
-    m_chromaConfig.min = Pitch::getFrequencyForPitch( 48, 0, tuningFrequency );
-    m_chromaConfig.max = Pitch::getFrequencyForPitch( 96, 0, tuningFrequency );
+    chromaConfig.min =
+        Pitch::getFrequencyForPitch( 48, 0, config.tuningFrequency );
+    chromaConfig.max =
+        Pitch::getFrequencyForPitch( 96, 0, config.tuningFrequency );
 
-    m_chromaConfig.BPO = kBinsPerOctave;
-    m_chromaConfig.CQThresh = 0.0054;
+    chromaConfig.BPO = kBinsPerOctave;
+    chromaConfig.CQThresh = 0.0054;
 
     // Chromagram inst.
-    m_chroma = new Chromagram( m_chromaConfig );
+    m_chroma = new Chromagram(chromaConfig);
 
     // Get calculated parameters from chroma object
     m_chromaFrameSize = m_chroma->getFrameSize();
+
     // override hopsize for this application
-    m_chromaHopSize = m_chromaFrameSize;
+    m_chromaHopSize = m_chromaFrameSize / config.frameOverlapFactor;
 
 //    std::cerr << "chroma frame size = " << m_ChromaFrameSize << ", decimation factor = " << m_DecimationFactor << " therefore block size = " << getBlockSize() << std::endl;
 
     // Chromagram average and estimated key median filter lengths
     m_chromaBufferSize = (int)ceil
-        (m_hpcpAverage * m_chromaConfig.FS / m_chromaFrameSize);
+        (m_hpcpAverage * chromaConfig.FS / m_chromaFrameSize);
     m_medianWinSize = (int)ceil
-        (m_medianAverage * m_chromaConfig.FS / m_chromaFrameSize);
+        (m_medianAverage * chromaConfig.FS / m_chromaFrameSize);
     
     // Reset counters
     m_bufferIndex = 0;
@@ -280,17 +287,6 @@ int GetKeyMode::process(double *pcmData)
     key = m_sortedBuffer[midpoint-1];
 
     return key;
-}
-
-
-bool GetKeyMode::isModeMinor( int key )
-{ 
-    return (key > 12);
-}
-
-int GetKeyMode::getChromaSize() 
-{ 
-    return kBinsPerOctave; 
 }
 
 double* GetKeyMode::getKeyStrengths() {
