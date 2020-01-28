@@ -1,5 +1,5 @@
 
-CFLAGS := -DNDEBUG -O3 -fPIC -ffast-math -msse -mfpmath=sse -ftree-vectorize -fomit-frame-pointer -DUSE_PTHREADS -I./include
+CFLAGS := -DNDEBUG -O3 -fPIC -msse -mfpmath=sse -ftree-vectorize -fomit-frame-pointer -DUSE_PTHREADS -I./include
 
 #CFLAGS := -DNDEBUG -g -fPIC -DUSE_PTHREADS -I./include
 
