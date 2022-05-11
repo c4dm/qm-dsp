@@ -1,5 +1,5 @@
 
-CFLAGS := -DNDEBUG -Wall -Wextra -O3 -fPIC -msse -msse2 -mfpmath=sse -ftree-vectorize -DUSE_PTHREADS
+CFLAGS := -DNDEBUG -Wall -Wextra -Wfloat-conversion -O3 -fPIC -msse -msse2 -mfpmath=sse -ftree-vectorize -DUSE_PTHREADS
 
 CXXFLAGS := $(CFLAGS) -std=c++98
 
